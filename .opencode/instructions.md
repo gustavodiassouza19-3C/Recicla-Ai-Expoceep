@@ -344,6 +344,41 @@ npm run storybook
 
 ---
 
-**Última atualização**: 2026-08-20  
-**Versão**: 1.0  
+## 13. Ferramentas de Design com IA
+
+### Impeccable (pbakaus/impeccable)
+- **Init**: `/impeccable init` → gera `PRODUCT.md` + `DESIGN.md` no raiz do projeto
+- **Audit**: `/impeccable audit` → detecta anti-patterns visuais antes do merge
+- **Polish**: `/impeccable polish` → limpeza final anti-slop
+- **Hooks**: ativos via `.claude/settings.local.json` (roda em cada edição de UI)
+- **Configuração**: `.impeccable/config.json`, `PRODUCT.md`, `DESIGN.md`
+- **Comandos**: `audit`, `polish`, `critique`, `distill`, `shape`, `adapt`, `bolder`, `quieter`, `colorize`, `typeset`, `animate`, `onboard`, `optimize`, `overdrive`, `extract`, `document`, `live`
+- **Links**: [impeccable.style](https://impeccable.style) · [github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable)
+
+### SkillUI (amaancoderx/npxskillui)
+- **Extração local**: `npx skillui --dir ./src --name "ReciclaAi" --out ./design-systems/recicla-ai`
+- **Extração URL**: `npx skillui --url <url> --mode ultra` (requer Playwright)
+- **Saída**: `design-systems/recicla-ai/reciclaai-design/` (gitignored) com `SKILL.md`, `DESIGN.md`, `tokens/*.json`, `references/`, `screens/`, `fonts/`
+- **Leitura obrigatória**: `SKILL.md` + `references/DESIGN.md` antes de implementar qualquer UI
+- **Links**: [skillui.vercel.app](https://skillui.vercel.app) · [github.com/amaancoderx/npxskillui](https://github.com/amaancoderx/npxskillui)
+
+### Playwright
+- **Testes**: `npm run test` ou `npx playwright test`
+- **Projetos configurados**: `chromium` (1920px), `mobile` (iPhone 13), `dark`
+- **Obrigatório**: screenshot em todos os cenários antes de considerar UI concluído
+- **Arquivos**: `playwright.config.ts`, `tests/screenshot-dashboard.spec.ts`
+- **Links**: [playwright.dev](https://playwright.dev) · [github.com/microsoft/playwright](https://github.com/microsoft/playwright)
+
+### Ordem obrigatória antes de criar UI:
+1. **Figma MCP** → tokens do template (mandatório)
+2. **SkillUI** `--dir ./src` → design system atual
+3. **Impeccable** `/impeccable audit` → validação visual
+4. **Playwright** `npm run test` → regressão visual (mobile + desktop + dark + hover)
+5. **`.opencode/instructions.md` §1-§11** → regras absolutas de UI
+
+### Hierarquia de autoridade visual:
+`Figma MCP tokens > Impeccable audit > Emil guidelines (.opencode/instructions.md §1-§11)`
+
+**Última atualização**: 2026-09-03  
+**Versão**: 1.1  
 **Autoridade**: Engenheiro Lead — OpenCode Environment
