@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  role         Role          @default(CITIZEN)
+  points       Int           @default(0)
+  stationId    String?
+  station      Station?      @relation("StationStaff", fields: [stationId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lacres       Lacre[]       @relation("LacreOwner")
+  histories    LacreHistory[] @relation("UserHistory")
+  redemptions  Redemption[]   @relation("UserRedemptions")
+  auditLogs    AuditLog[]    @relation("AuditActor")
+
+  @@index([role])
+}
+
+model Station {
+  id        String    @id @default(cuid())
+  name      String
+  address   String
+  city      String
+  lat       Float?
+  lng       Float?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lacres    Lacre[]   @relation("StationLacres")
+  staff     User[]    @relation("StationStaff")
+}
+
+model Lacre {
+  id           String        @id @default(cuid())
+  code         String        @unique
+  status       LacreStatus   @default(DISPONIVEL)
+  ownerId      String?
+  owner        User?         @relation("LacreOwner", fields: [ownerId], references: [id])
+  stationId    String?
+  station      Station?      @relation("StationLacres", fields: [stationId], references: [id])
+  occurredAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  history      LacreHistory[] @relation("LacreHistory")
+  redemptions  Redemption[]  @relation("RedemptionLacre")
+
+  @@index([status])
+  @@index([ownerId])
+  @@index([stationId])
+}
+
+model LacreHistory {
+  id         String      @id @default(cuid())
+  lacreId    String
+  lacre      Lacre       @relation("LacreHistory", fields: [lacreId], references: [id])
+  userId     String?
+  user       User?       @relation("UserHistory", fields: [userId], references: [id])
+  fromStatus LacreStatus
+  toStatus   LacreStatus
+  note       String?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([lacreId])
+}
+
+model Reward {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  costPoints  Int
+  stock       Int          @default(0)
+  partnerId   String?
+  partnerName String?
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  redemptions Redemption[] @relation("RedemptionReward")
+
+  @@index([active])
+}
+
+model Redemption {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation("UserRedemptions", fields: [userId], references: [id])
+  rewardId  String
+  reward    Reward           @relation("RedemptionReward", fields: [rewardId], references: [id])
+  pointsCost Int
+  status    RedemptionStatus @default(PENDENTE)
+  lacreId   String?
+  lacre     Lacre?           @relation("RedemptionLacre", fields: [lacreId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([rewardId])
+}
+
+model PointRule {
+  id         String    @id @default(cuid())
+  name       String
+  code       String    @unique
+  basePoints Int       @default(10)
+  multiplier Float     @default(1)
+  active     Boolean   @default(true)
+  startsAt   DateTime?
+  endsAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  metadata   Json?
+
+  @@index([active])
+}
+
+model AuditLog {
+  id         String           @id @default(cuid())
+  actorId    String?
+  actor      User?             @relation("AuditActor", fields: [actorId], references: [id])
+  targetType AuditTargetType
+  targetId   String
+  action     String
+  metadata   Json?
+  createdAt  DateTime         @default(now())
+
+  @@index([targetType, targetId])
+  @@index([actorId])
+}
+
+enum Role {
+  CITIZEN
+  COOPERATIVA
+  ADMIN
+}
+
+enum LacreStatus {
+  DISPONIVEL
+  ASSOCIADO
+  EM_USO
+  COLETADO
+  EM_TRIAGEM
+  VALIDADO
+  PONTUADO
+  RESETADO
+  PERDIDO
+  CANCELADO
+  INVALIDO
+  SUSPEITO
+  DUPLICADO
+}
+
+enum RedemptionStatus {
+  PENDENTE
+  CONFIRMADA
+  ENTREGUE
+  CANCELADA
+}
+
+enum AuditTargetType {
+  USER
+  LACRE
+  STATION
+  REWARD
+  REDEMPTION
+  POINT_RULE
+}
