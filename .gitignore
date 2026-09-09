@@ -1,1 +1,37 @@
+# skills / local tooling (untracked)
 apple-design-skill/
+.impeccable/
+.claude/*.local.json
+
+# dependencies
+node_modules/
+recicla-ai-expoceep-app/node_modules/
+
+# next.js
+recicla-ai-expoceep-app/.next/
+recicla-ai-expoceep-app/out/
+.next/
+out/
+
+# production
+build/
+recicla-ai-expoceep-app/build/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

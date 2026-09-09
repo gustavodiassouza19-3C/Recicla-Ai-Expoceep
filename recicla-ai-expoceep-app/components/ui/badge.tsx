@@ -6,18 +6,23 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   asChild?: boolean;
 }
 
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({ className, asChild = false, children, ...props }, ref) => {
-  const Comp = asChild ? Slot : "span";
-  return (
-    <Comp
-      className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold", "bg-primary/10 text-primary", className), "data-[state=active]": "bg-primary/30", "data-[state=hover]": "bg-primary/80", "data-[state=focus]": "bg-primary/40" },
-      ref={ref}
-    >
-      {children}
-    </Comp>
-  );
-});
+const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ className, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "span";
+    return (
+      <Comp
+        className={cn(
+          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+          "bg-primary/10 text-primary",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
 
 Badge.displayName = "Badge";
 
-export { Badge as badge };
+export { Badge, Badge as badge };

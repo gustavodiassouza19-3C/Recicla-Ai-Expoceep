@@ -1,18 +1,19 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export { cn };
-
-export const label = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>({ className, ...props }, ref) => {
+const Label = React.forwardRef<
+  HTMLLabelElement,
+  React.LabelHTMLAttributes<HTMLLabelElement>
+>(({ className, ...props }, ref) => {
   return (
     <label
-      className={cn("flex h-10 w-full select-none cursor-pointer", className)}
+      className={cn("select-none font-medium", className)}
       ref={ref}
       {...props}
     />
   );
 });
 
-label.displayName = "Label";
+Label.displayName = "Label";
 
-export { label };
+export { Label, Label as label };
