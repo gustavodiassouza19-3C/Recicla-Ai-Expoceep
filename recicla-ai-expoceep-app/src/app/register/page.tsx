@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +24,7 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    const result = await register(nome, email, password);
+    const result = await register(nome, email, password, cpf || undefined);
 
     if (result.error) {
       setError(result.error);
@@ -54,6 +55,17 @@ export default function RegisterPage() {
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="cpf">CPF</Label>
+            <Input
+              id="cpf"
+              type="text"
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
+              placeholder="000.000.000-00"
             />
           </div>
 

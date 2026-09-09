@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string;
   nome: string;
+  cpf?: string;
 }
 
 interface AuthContextType {
@@ -15,7 +16,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  register: (nome: string, email: string, password: string) => Promise<{ error?: string }>;
+  register: (nome: string, email: string, password: string, cpf?: string) => Promise<{ error?: string }>;
   logout: () => void;
 }
 
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: data.user.id,
       email: data.user.email || "",
       nome: data.user.user_metadata?.nome || email.split("@")[0],
+      cpf: data.user.user_metadata?.cpf,
     };
 
     localStorage.setItem("supabase_token", jwt);
@@ -63,12 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
-  const register = async (nome: string, email: string, password: string) => {
+  const register = async (nome: string, email: string, password: string, cpf?: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { nome },
+        data: { nome, cpf },
       },
     });
 
@@ -82,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
         email: data.user.email || "",
         nome,
+        cpf,
       };
 
       localStorage.setItem("supabase_token", jwt);

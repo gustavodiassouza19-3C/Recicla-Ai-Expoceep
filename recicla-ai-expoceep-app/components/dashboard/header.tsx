@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Target, MapPin, Sun, Moon } from "lucide-react";
+import { Home, Target, MapPin, User, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -11,6 +11,7 @@ const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
   { id: "/missions", label: "Missoes", icon: Target },
   { id: "/eco-points", label: "EcoPoints", icon: MapPin },
+  { id: "/profile", label: "Perfil", icon: User },
 ];
 
 function Header() {
