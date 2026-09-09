@@ -5,21 +5,22 @@ Regras obrigatórias para qualquer IA trabalhando neste repositório.
 ## Estrutura do repo
 
 - `recicla-ai-expoceep-app/` — app Next.js (App Router em `src/app/`, componentes em `components/ui/`, util `src/lib/utils.ts`).
-- Raiz — somente `README.md`, `LICENSE`, `.gitignore`. Nada de código solto na raiz.
+- Raiz — `README.md`, `LICENSE`, `.gitignore`, `AGENTS.md`, `opencode.json`. Nada de código solto na raiz.
 - `apple-design-skill/` — skill de design review (gitignored, sem `.git` aninhado).
 
-## REGRA DE OURO DO FRONTEND — componentes 100% originais
+## FRONTEND — shadcn liberado via MCP
 
-**É proibido usar qualquer biblioteca de componentes pronta ou código copiado:**
+**Componentes shadcn são permitidos neste projeto.** O MCP `shadcn`
+(`opencode.json`) dá acesso ao registry: buscar, listar e instalar componentes,
+blocos e templates por linguagem natural (ex. "adicione o dialog do registry
+shadcn").
 
-- Nada de shadcn, MUI, Chakra, Ant Design, DaisyUI, Headless UI ou similares.
-- Nada de `components.json`, CLI de shadcn, nem copiar código de shadcn para dentro do repo.
-- Nada de instalar nova lib de UI sem aprovação explícita do dono.
-
-**Componentes são criados à mão, com as skills, do zero.** Ferramentas permitidas
-(primitivos, não componentes prontos): Tailwind CSS, `clsx` + `tailwind-merge`
-(via `cn()` em `src/lib/utils.ts`), `@radix-ui/react-slot` (polimorfismo `asChild`)
-e framer-motion (motion expressivo).
+- Instalar componentes via MCP/CLI do shadcn é o fluxo padrão; nada de
+  reinventar button, dialog, card etc. à mão.
+- Novas libs de UI fora do ecossistema shadcn (MUI, Chakra, Ant Design,
+  DaisyUI...) continuam proibidas sem aprovação explícita do dono.
+- `components.json` do app vive em `recicla-ai-expoceep-app/` (o MCP usa ele
+  para saber onde instalar). Não mover para a raiz.
 
 ### Fluxo obrigatório ao criar ou alterar qualquer UI
 
@@ -28,8 +29,9 @@ Ferramentar as 3 skills **em conjunto**, nesta ordem:
 1. **`ReciclaAi-design`** (skill `ReciclaAi-design`) — ler ANTES de escrever qualquer
    CSS/JSX. Fonte da verdade para tokens: paleta oklch, grade 4px, escala de raio,
    padrões de componentes, motion, anti-patterns. Nenhum valor fora dos tokens.
-2. **Construir o componente original** em `recicla-ai-expoceep-app/components/ui/`
-   (ou pasta de domínio, ex. `components/dashboard/`), partindo dos tokens.
+2. **Obter o componente via MCP/CLI do shadcn** em
+   `recicla-ai-expoceep-app/components/ui/` (ou pasta de domínio, ex.
+   `components/dashboard/`), aplicando os tokens do passo 1.
 3. **`impeccable`** — antes de finalizar, ler `reference/craft-floor.md` e aplicar
    o piso de craft; rodar `audit`/`polish` no alvo antes de commitar.
 4. **`apple-design-skill`** (`./apple-design-skill/SKILL.md` + `references/hig/`) —
@@ -49,8 +51,8 @@ Ferramentar as 3 skills **em conjunto**, nesta ordem:
 ### Legado
 
 Os arquivos atuais em `components/ui/` vieram de um upload derivado de shadcn e
-são **legado**: substituí-los progressivamente por componentes originais seguindo
-este fluxo. Não copiar esse estilo para componentes novos.
+são a base sancionada: evoluí-los via MCP/CLI do shadcn seguindo este fluxo.
+Não copiar esse estilo para componentes novos sem passar pelo fluxo acima.
 
 ## Git
 
