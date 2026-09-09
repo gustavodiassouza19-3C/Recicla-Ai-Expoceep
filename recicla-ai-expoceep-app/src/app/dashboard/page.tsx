@@ -1,129 +1,107 @@
 "use client";
 
-import { Card, separator, Badge } from "@/components/ui";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { Card } from "@/components/ui";
+import { ScoreChart } from "@/components/dashboard/score-chart";
+import { ScoreDisplay } from "@/components/dashboard/score-display";
+import { HistoryList } from "@/components/dashboard/history-list";
+import { ImpactCard } from "@/components/dashboard/impact-card";
+import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
+import { MissionsCard } from "@/components/dashboard/missions-card";
+import { EcoPointsCard } from "@/components/dashboard/eco-points-card";
 
 export default function Dashboard() {
-  const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // Sample data - will be replaced with Supabase queries
-  const rewards = [
-    { id: 1, name: "Desconto 10%", type: "desconto", value: "R$ 10,00", date: "2024-01-15", status: "usado" },
-    { id: 2, name: "Desconto 5%", type: "desconto", value: "R$ 5,00", date: "2024-01-10", status: "disponivel" },
-    { id: 3, name: "Gift Card R$ 20", type: "giftcard", value: "R$ 20,00", date: "2024-01-05", status: "disponivel" },
-  ];
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
 
-  const recyclingHistory = [
-    { id: 1, material: "Papel", weight: "2.5kg", date: "2024-01-20", reward: "R$ 5,00" },
-    { id: 2, material: "Plástico", weight: "1.2kg", date: "2024-01-18", reward: "R$ 3,00" },
-    { id: 3, material: "Vidro", weight: "3.0kg", date: "2024-01-15", reward: "R$ 5,00" },
-  ];
-
-  const nfcTags = [
-    { id: 1, status: "disponivel", lastUsed: "2024-01-10" },
-    { id: 2, status: "em-uso", lastUsed: "2024-01-15" },
-    { id: 3, status: "disponivel", lastUsed: "2024-01-05" },
-  ];
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
-    <main className="flex-1 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold textforeground">Painel de Controle</h1>
-          <p className="text-muted-foreground mt-1">Bem-vindo de volta, cidadão!</p>
-        </header>
+    <div className="p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground">
+            Painel de Controle
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Bem-vindo de volta, {user.nome}!
+          </p>
+        </div>
 
-        {/* Rewards Balance */}
-        <Card className="mb-6">
-          <h2 className="text-lg font-medium mb-4">Saldo de Recompensas</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {rewards.map((reward) => (
-              <Card key={reward.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{reward.name}</p>
-                    <p className="text-sm text-muted-foreground">{reward.type}</p>
-                  </div>
-                  <Badge>{reward.value}</Badge>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </Card>
-
-        {/* Recycling History */}
-        <Card>
-          <h2 className="text-lg font-medium mb-4">Histórico de Reciclagem</h2>
-          {recyclingHistory.length === 0 ? (
-            <p className="text-muted-foreground">Nenhuma reciclagem registrada.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {recyclingHistory.map((item) => (
-                <Card key={item.id} className="p-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{item.material}</p>
-                      <p className="text-xs text-muted-foreground">{item.date}</p>
-                    </div>
-                    <span className="text-sm">{item.reward}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        {/* NFC Tags */}
-        <Card>
-          <h2 className="text-lg font-medium mb-4">Tags NFC</h2>
-          {nfcTags.length === 0 ? (
-            <p className="text-muted-foreground">Nenhuma tag vinculada.</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {nfcTags.map((tag) => (
-                <Card key={tag.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <span>Tag #{tag.id}</span>
-                    <Badge>{tag.status}</Badge>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-4 w-full"
-          >
-            Vincular Nova Tag
-          </Button>
-        </Card>
-
-        {/* Modal for adding new tag */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-            <Card className="p-6 w-full max-w-md">
-              <h2 className="text-xl font-medium mb-4">Vincular Nova Tag</h2>
-              <Input
-                placeholder="Digite o código da tag NFC"
-                className="mb-4"
-              />
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={() => setIsModalOpen(false)}>
-                  Vincular
-                </Button>
+        {/* Row 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
+          <div className="md:col-span-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Pontuacao Mensal
+                </h2>
+                <ScoreDisplay />
               </div>
+              <ScoreChart />
             </Card>
           </div>
-        )}
+          <div className="md:col-span-2">
+            <Card className="flex flex-col h-[320px]">
+              <div className="px-4 pt-4 pb-2">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Historico
+                </h2>
+              </div>
+              <HistoryList className="flex-1 min-h-0" />
+            </Card>
+          </div>
+        </div>
+
+        {/* Row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mt-6">
+          <div className="md:col-span-2">
+            <Card className="p-4">
+              <h2 className="text-sm font-semibold text-foreground mb-4">
+                Impacto Ambiental
+              </h2>
+              <ImpactCard />
+            </Card>
+          </div>
+          <div className="md:col-span-2">
+            <Card className="p-4">
+              <h2 className="text-sm font-semibold text-foreground mb-4">
+                Tags NFC
+              </h2>
+              <NfcTagsCard />
+            </Card>
+          </div>
+          <div className="md:col-span-2">
+            <Card className="p-4">
+              <h2 className="text-sm font-semibold text-foreground mb-4">
+                Missoes
+              </h2>
+              <MissionsCard />
+            </Card>
+          </div>
+        </div>
+
+        {/* Row 3 */}
+        <div className="mt-6">
+          <Card className="p-4">
+            <EcoPointsCard />
+          </Card>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

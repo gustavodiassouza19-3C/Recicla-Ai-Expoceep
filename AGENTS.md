@@ -59,3 +59,12 @@ Não copiar esse estilo para componentes novos sem passar pelo fluxo acima.
 - Commits pequenos e descritivos (`feat:`, `fix:`, `chore:`).
 - Push somente para `main` do `origin` após build passando.
 - Nunca commitar `node_modules/`, `.next/`, `.env*`, `*.local.json` ou `.git` aninhado.
+
+## Referência — Claude Cookbooks
+
+- Repo: `anthropics/claude-cookbooks` clonado em `./claude-cookbooks/`.
+- Contém notebooks Python com padrões de uso da API Claude: tool use, RAG,
+  classificação, visão, agentes, evaluations, extended thinking.
+- **Não é uma lib instalável** — é material de referência/educacional.
+- Para integrar Claude API no Next.js, usar `@anthropic-ai/sdk` (TypeScript SDK).
+- Patterns úteis: `tool_use/`, `capabilities/`, `skills/`, `extended_thinking/`.

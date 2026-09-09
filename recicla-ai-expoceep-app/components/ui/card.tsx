@@ -11,7 +11,11 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const Comp = asChild ? Slot : "div";
     return (
       <Comp
-        className={cn("rounded-lg border border-border bg-card p-6", className)}
+        className={cn(
+          "rounded-lg border border-border bg-card text-card-foreground",
+          "shadow-[var(--shadow-raised)]",
+          className
+        )}
         ref={ref}
         {...props}
       />
