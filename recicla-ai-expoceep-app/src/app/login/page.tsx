@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SplashScreen } from "@/components/splash-screen";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
@@ -30,8 +32,12 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    setLoggedIn(true);
   };
+
+  if (loggedIn) {
+    return <SplashScreen onComplete={() => router.push("/dashboard")} />;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">

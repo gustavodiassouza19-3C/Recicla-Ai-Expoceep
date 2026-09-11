@@ -119,9 +119,6 @@ function EcoPointsCard() {
               <p className="text-sm font-medium text-foreground truncate">
                 {point.name}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {point.address}
-              </p>
             </div>
             <div className="flex items-center gap-2 ml-3">
               <span className="text-xs text-muted-foreground whitespace-nowrap">

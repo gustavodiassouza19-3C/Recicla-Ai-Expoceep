@@ -10,7 +10,7 @@ import { HistoryList } from "@/components/dashboard/history-list";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { MissionsCard } from "@/components/dashboard/missions-card";
-import { EcoPointsCard } from "@/components/dashboard/eco-points-card";
+
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -95,12 +95,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Row 3 */}
-        <div className="mt-6">
-          <Card className="p-4">
-            <EcoPointsCard />
-          </Card>
-        </div>
       </div>
     </div>
   );

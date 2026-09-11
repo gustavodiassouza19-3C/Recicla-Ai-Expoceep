@@ -21,3 +21,5 @@ class RecyclingValidate(BaseModel):
     pontos_ganhos: int
     novo_total: int
     message: str
+    conquistas_novas: list[dict] = []
+    pontos_conquistas: int = 0

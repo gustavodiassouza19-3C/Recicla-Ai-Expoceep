@@ -5,6 +5,7 @@ from app.auth import get_current_user
 from app.models.recycling import RecyclingCreate, RecyclingValidate
 from app.services.tag_service import validate_tag_code
 from app.services.points_service import get_user_points
+from app.services.achievement_service import check_achievements
 from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/recycle", tags=["recycling"])
@@ -42,11 +43,15 @@ async def register_recycling(
 
     novo_total = get_user_points(supabase, user["id"])
 
+    achievement_result = check_achievements(supabase, user["id"])
+
     return RecyclingValidate(
         success=True,
         pontos_ganhos=PONTOS_POR_RECICLAGEM,
         novo_total=novo_total,
         message="Reciclagem registrada com sucesso!",
+        conquistas_novas=achievement_result["novas_conquistas"],
+        pontos_conquistas=achievement_result["pontos_ganhos_total"],
     )
 
 
