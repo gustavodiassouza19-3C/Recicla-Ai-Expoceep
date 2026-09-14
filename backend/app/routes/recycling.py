@@ -11,6 +11,20 @@ from datetime import datetime, timezone
 router = APIRouter(prefix="/api/recycle", tags=["recycling"])
 
 PONTOS_POR_RECICLAGEM = 10
+LIMITE_MENSAL = 5
+
+
+def _count_monthly_recycles(supabase: Client, usuario_id: int) -> int:
+    now = datetime.now(timezone.utc)
+    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    result = (
+        supabase.table("reciclagens")
+        .select("id", count="exact")
+        .eq("usuario_id", usuario_id)
+        .gte("data_entrega", start.isoformat())
+        .execute()
+    )
+    return result.count or 0
 
 
 @router.post("", response_model=RecyclingValidate)
@@ -22,6 +36,15 @@ async def register_recycling(
     tag = validate_tag_code(supabase, data.tag_code)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag invalida ou inativa")
+
+    monthly_count = _count_monthly_recycles(supabase, user["id"])
+    if monthly_count >= LIMITE_MENSAL:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Limite mensal de {LIMITE_MENSAL} reciclagens atingido",
+        )
+
+    supabase.table("tags").update({"status": "em_uso"}).eq("id", tag["id"]).execute()
 
     recycling_data = {
         "usuario_id": user["id"],
@@ -41,8 +64,9 @@ async def register_recycling(
         }
     ).execute()
 
-    novo_total = get_user_points(supabase, user["id"])
+    supabase.table("tags").update({"status": "ativa"}).eq("id", tag["id"]).execute()
 
+    novo_total = get_user_points(supabase, user["id"])
     achievement_result = check_achievements(supabase, user["id"])
 
     return RecyclingValidate(
@@ -69,3 +93,44 @@ async def get_history(
         .execute()
     )
     return result.data
+
+
+@router.get("/score-history")
+async def get_score_history(
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+):
+    result = (
+        supabase.table("reciclagens")
+        .select("data_entrega")
+        .eq("usuario_id", user["id"])
+        .order("data_entrega", asc=True)
+        .execute()
+    )
+
+    monthly: dict[str, int] = {}
+    for entry in result.data:
+        dt = datetime.fromisoformat(entry["data_entrega"].replace("Z", "+00:00"))
+        key = dt.strftime("%b")
+        monthly[key] = monthly.get(key, 0) + PONTOS_POR_RECICLAGEM
+
+    month_order = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    return [{"month": m, "score": monthly.get(m, 0)} for m in month_order if monthly.get(m, 0) > 0]
+
+
+@router.get("/impact")
+async def get_impact(
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+):
+    result = (
+        supabase.table("reciclagens")
+        .select("id", count="exact")
+        .eq("usuario_id", user["id"])
+        .eq("status", "validada")
+        .execute()
+    )
+    count = result.count or 0
+    trees = round(count * 0.004, 4)
+    water = count * 8
+    return {"validated_count": count, "trees": trees, "water_liters": water}

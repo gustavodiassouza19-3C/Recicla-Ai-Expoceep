@@ -328,6 +328,16 @@ def has_commitment_kept(supabase: Client, usuario_id: int) -> bool:
     return consecutive >= 7
 
 
+def get_total_earned_achievements(supabase: Client, usuario_id: int) -> int:
+    result = (
+        supabase.table("usuario_conquistas")
+        .select("id", count="exact")
+        .eq("usuario_id", usuario_id)
+        .execute()
+    )
+    return result.count or 0
+
+
 def check_achievements(supabase: Client, usuario_id: int) -> dict:
     all_achievements = get_all_achievements(supabase)
     user_achievements = get_user_achievements(supabase, usuario_id)
@@ -384,6 +394,8 @@ def check_achievements(supabase: Client, usuario_id: int) -> dict:
             earned = participation_months >= condition_value
         elif condition_type == "total_participacoes":
             earned = total_participations >= condition_value
+        elif condition_type == "total_conquistas":
+            earned = len(earned_codes) >= condition_value
 
         if earned:
             supabase.table("usuario_conquistas").insert(
@@ -394,6 +406,7 @@ def check_achievements(supabase: Client, usuario_id: int) -> dict:
                     "pontos_ganhos": achievement["pontos"],
                 }
             ).execute()
+            earned_codes.add(code)
 
             new_achievements.append(
                 {
@@ -431,6 +444,7 @@ def get_user_achievement_progress(supabase: Client, usuario_id: int) -> list[dic
     frequency_increase = has_frequency_increase(supabase, usuario_id)
     frequency_increase_2 = has_frequency_increase_periods(supabase, usuario_id, 2)
     commitment_kept = has_commitment_kept(supabase, usuario_id)
+    total_earned = len(earned_map)
 
     progress_list = []
 
@@ -471,6 +485,8 @@ def get_user_achievement_progress(supabase: Client, usuario_id: int) -> list[dic
             current = participation_months
         elif condition_type == "total_participacoes":
             current = total_participations
+        elif condition_type == "total_conquistas":
+            current = total_earned
 
         progress_list.append(
             {

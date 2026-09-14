@@ -1,0 +1,52 @@
+♻️ 50 conquistas do Recicla Aí
+#	Conquista	Condição	Pontos
+1	🌱 Primeiro Passo	Primeira TAG validada	50
+2	♻️ Começando a Reciclar	2 TAGs validadas	30
+3	🔄 De Volta ao Ciclo	3 TAGs validadas	50
+4	🌿 Consciência Verde	5 TAGs validadas	100
+5	🚀 Ritmo Verde	10 TAGs validadas	200
+6	🏅 Reciclador Ativo	15 TAGs validadas	300
+7	🌎 Impacto Local	20 TAGs validadas	400
+8	💚 Compromisso Verde	30 TAGs validadas	600
+9	🌳 Agente Ambiental	50 TAGs validadas	1.000
+10	🏆 Embaixador da Reciclagem	100 TAGs validadas	2.000
+11	🔥 Primeira Sequência	2 participações consecutivas	50
+12	🔥 Sem Parar	3 participações consecutivas	75
+13	🔥 Constância Verde	5 participações consecutivas	150
+14	🔥 Ritmo Sustentável	10 participações consecutivas	300
+15	🔥 Imparável	20 participações consecutivas	700
+16	📅 Semana Verde	Participar em 1 semana	50
+17	📅 Duas Semanas	Participar em 2 semanas consecutivas	100
+18	📅 Mês Sustentável	Participar durante 1 mês	200
+19	📅 Dois Meses Verdes	Participar durante 2 meses consecutivos	400
+20	📅 Trimestre Sustentável	Participar durante 3 meses consecutivos	700
+21	🗓️ Seis Meses de Compromisso	Participar durante 6 meses consecutivos	1.500
+22	🏠 Casa Sustentável	5 TAGs validadas	100
+23	🏠 Rotina Verde	10 TAGs validadas	200
+24	🏠 Hábito Sustentável	25 TAGs validadas	500
+25	🏠 Estilo de Vida Verde	50 TAGs validadas	1.000
+26	🎯 Primeira Meta	Alcançar 500 pontos	50
+27	🎯 Mil Pontos	Alcançar 1.000 pontos	100
+28	🎯 Dois Mil	Alcançar 2.000 pontos	200
+29	🎯 Cinco Mil	Alcançar 5.000 pontos	500
+30	🎯 Dez Mil	Alcançar 10.000 pontos	1.000
+31	⚡ Começo Rápido	Validar 3 TAGs em pouco tempo	100
+32	⚡ Alta Frequência	Validar 5 TAGs em um período curto	200
+33	⚡ Semana Perfeita	Ter participação válida em todos os dias possíveis da semana*	150
+34	📈 Em Evolução	Aumentar sua frequência de participação	100
+35	📈 Novo Ritmo	Aumentar a frequência por 2 períodos consecutivos	200
+36	🔒 Compromisso Mantido	Não interromper uma sequência durante o período definido	150
+37	🌱 Primeiro Mês	Completar o primeiro mês de participação	250
+38	🌱 Três Meses Verdes	Completar 3 meses de participação	500
+39	🌱 Seis Meses Verdes	Completar 6 meses de participação	1.000
+40	🏆 Veterano Verde	Completar 1 ano de participação	2.000
+41	♻️ 10 Participações	10 participações validadas	150
+42	♻️ 25 Participações	25 participações validadas	350
+43	♻️ 50 Participações	50 participações validadas	750
+44	♻️ 75 Participações	75 participações validadas	1.200
+45	♻️ 100 Participações	100 participações validadas	2.000
+46	🥉 Reciclador Bronze	Completar 5 conquistas	100
+47	🥈 Reciclador Prata	Completar 15 conquistas	300
+48	🥇 Reciclador Ouro	Completar 30 conquistas	750
+49	💎 Reciclador Diamante	Completar 40 conquistas	1.500
+50	👑 Lenda Verde	Completar todas as conquistas	3.000

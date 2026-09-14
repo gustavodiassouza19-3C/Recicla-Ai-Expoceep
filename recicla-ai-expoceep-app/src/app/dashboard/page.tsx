@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Card } from "@/components/ui";
@@ -10,17 +10,44 @@ import { HistoryList } from "@/components/dashboard/history-list";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { MissionsCard } from "@/components/dashboard/missions-card";
+import {
+  fetchScoreHistory,
+  fetchHistory,
+  fetchMyTags,
+  fetchImpact,
+  fetchMyMissions,
+  type ScoreDataPoint,
+  type HistoryEntry,
+  type UserTag,
+  type ImpactData,
+  type UserMissionItem,
+} from "@/lib/api";
 
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
+  const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
+  const [tagsData, setTagsData] = useState<UserTag[]>([]);
+  const [impactData, setImpactData] = useState<ImpactData | null>(null);
+  const [missionsData, setMissionsData] = useState<UserMissionItem[]>([]);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchScoreHistory().then(setScoreData).catch(() => {});
+    fetchHistory().then(setHistoryData).catch(() => {});
+    fetchMyTags().then(setTagsData).catch(() => {});
+    fetchImpact().then(setImpactData).catch(() => {});
+    fetchMyMissions().then(setMissionsData).catch(() => {});
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -52,7 +79,7 @@ export default function Dashboard() {
                 </h2>
                 <ScoreDisplay />
               </div>
-              <ScoreChart />
+              <ScoreChart data={scoreData.length > 0 ? scoreData : undefined} />
             </Card>
           </div>
           <div className="md:col-span-2">
@@ -62,7 +89,20 @@ export default function Dashboard() {
                   Historico
                 </h2>
               </div>
-              <HistoryList className="flex-1 min-h-0" />
+              <HistoryList
+                className="flex-1 min-h-0"
+                data={
+                  historyData.length > 0
+                    ? historyData.map((e) => ({
+                        id: String(e.id),
+                        attachedAt: new Date(e.data_entrega).toLocaleDateString("pt-BR"),
+                        status: e.status === "validada" ? "validada" as const : "pendente" as const,
+                        validatedAt: e.status === "validada" ? new Date(e.data_entrega).toLocaleDateString("pt-BR") : null,
+                        location: e.tags?.codigo_nfc ? `Tag ${e.tags.codigo_nfc}` : null,
+                      }))
+                    : undefined
+                }
+              />
             </Card>
           </div>
         </div>
@@ -74,7 +114,9 @@ export default function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Impacto Ambiental
               </h2>
-              <ImpactCard />
+              <ImpactCard
+                validatedTags={impactData?.validated_count ?? 12}
+              />
             </Card>
           </div>
           <div className="md:col-span-2">
@@ -82,7 +124,17 @@ export default function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Tags NFC
               </h2>
-              <NfcTagsCard />
+              <NfcTagsCard
+                tags={
+                  tagsData.length > 0
+                    ? tagsData.map((t) => ({
+                        id: String(t.id),
+                        status: t.status === "ativa" ? "disponivel" as const : "em-uso" as const,
+                        lastUsed: new Date(t.last_used).toLocaleDateString("pt-BR"),
+                      }))
+                    : undefined
+                }
+              />
             </Card>
           </div>
           <div className="md:col-span-2">
@@ -90,7 +142,21 @@ export default function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Missoes
               </h2>
-              <MissionsCard />
+              <MissionsCard
+                missions={
+                  missionsData.length > 0
+                    ? missionsData.map((m) => ({
+                        id: String(m.mission.id),
+                        name: m.mission.titulo,
+                        description: m.mission.descricao,
+                        current: m.progress,
+                        target: m.mission.meta,
+                        reward: m.mission.recompensa_pontos,
+                        completed: m.completed,
+                      }))
+                    : undefined
+                }
+              />
             </Card>
           </div>
         </div>
