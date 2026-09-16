@@ -18,7 +18,7 @@ function EcoPointsCard() {
   const [isMapOpen, setIsMapOpen] = useState(true);
   const [selectedPoint, setSelectedPoint] = useState<EcoPoint | null>(null);
   const [points, setPoints] = useState<EcoPoint[]>([]);
-  const listRefs = useRef<HTMLDivElement[]>([]);
+  const listRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     fetchEcoPoints()
@@ -63,36 +63,28 @@ function EcoPointsCard() {
 
       <div className="flex flex-col gap-2 mb-4">
         {points.map((point, index) => (
-          <div
+          <a
             key={point.id}
             ref={(el) => { if (el) listRefs.current[index] = el; }}
-            className={`flex items-center justify-between rounded-lg border px-4 py-3 cursor-pointer transition-colors opacity-0 ${
-              selectedPoint?.id === point.id
-                ? "border-success bg-success/10"
-                : "border-border/50 bg-muted/30 hover:bg-muted/50"
-            }`}
-            onClick={() => setSelectedPoint(point)}
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 px-4 py-3 cursor-pointer transition-colors opacity-0"
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
                 {point.nome}
               </p>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-primary underline truncate block"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <p className="text-xs text-muted-foreground truncate">
                 {point.endereco}
-              </a>
+              </p>
             </div>
             <div className="flex items-center gap-2 ml-3">
               <Badge variant={point.status === "aberto" ? "success" : "destructive"}>
                 {point.status}
               </Badge>
             </div>
-          </div>
+          </a>
         ))}
       </div>
 
