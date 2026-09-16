@@ -1,32 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
-import { MapPin, Navigation } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { MapPin } from "lucide-react";
 import { fetchEcoPoints, type EcoPoint } from "@/lib/api";
 import { animate, stagger } from "animejs";
 
-const EcoPointMap = dynamic(
-  () => import("./google-map-container").then((m) => m.EcoPointMap),
-  { ssr: false }
-);
-
 function EcoPointsCard() {
-  const [isMapOpen, setIsMapOpen] = useState(true);
-  const [selectedPoint, setSelectedPoint] = useState<EcoPoint | null>(null);
   const [points, setPoints] = useState<EcoPoint[]>([]);
   const listRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
-    fetchEcoPoints()
-      .then((data) => {
-        setPoints(data);
-        if (data.length > 0) setSelectedPoint(data[0]);
-      })
-      .catch(() => {});
+    fetchEcoPoints().then(setPoints).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -43,25 +27,14 @@ function EcoPointsCard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-success" />
-          <h2 className="text-sm font-semibold text-foreground">
-            EcoPoints em Cascavel
-          </h2>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsMapOpen(!isMapOpen)}
-          className="gap-2"
-        >
-          <Navigation className="h-4 w-4" />
-          {isMapOpen ? "Esconder Mapa" : "Ver Mapa"}
-        </Button>
+      <div className="flex items-center gap-2 mb-4">
+        <MapPin className="h-5 w-5 text-success" />
+        <h2 className="text-sm font-semibold text-foreground">
+          EcoPoints em Cascavel
+        </h2>
       </div>
 
-      <div className="flex flex-col gap-2 mb-4">
+      <div className="flex flex-col gap-2">
         {points.map((point, index) => (
           <a
             key={point.id}
@@ -79,29 +52,9 @@ function EcoPointsCard() {
                 {point.endereco}
               </p>
             </div>
-            <div className="flex items-center gap-2 ml-3">
-              <Badge variant={point.status === "aberto" ? "success" : "destructive"}>
-                {point.status}
-              </Badge>
-            </div>
           </a>
         ))}
       </div>
-
-      <motion.div
-        initial={false}
-        animate={{ height: isMapOpen ? "auto" : 0, opacity: isMapOpen ? 1 : 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="overflow-hidden"
-      >
-        <div className="w-full h-[400px] rounded-xl overflow-hidden border border-border">
-          <EcoPointMap
-            points={points}
-            selectedPoint={selectedPoint}
-            onSelectPoint={setSelectedPoint}
-          />
-        </div>
-      </motion.div>
     </div>
   );
 }
