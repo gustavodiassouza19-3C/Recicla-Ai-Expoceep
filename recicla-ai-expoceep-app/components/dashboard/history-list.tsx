@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { animate, stagger } from "animejs";
 
 interface HistoryEntry {
   id: string;
@@ -114,6 +116,20 @@ export interface HistoryListProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const HistoryList = React.forwardRef<HTMLDivElement, HistoryListProps>(
   ({ className, data = mockHistory, ...props }, ref) => {
+    const itemsRef = useRef<HTMLDivElement[]>([]);
+
+    useEffect(() => {
+      const items = itemsRef.current.filter(Boolean);
+      if (items.length === 0) return;
+      animate(items, {
+        opacity: [0, 1],
+        translateX: [-10, 0],
+        duration: 500,
+        delay: stagger(80),
+        ease: "outExpo",
+      });
+    }, [data]);
+
     return (
       <div
         ref={ref}
@@ -126,10 +142,11 @@ const HistoryList = React.forwardRef<HTMLDivElement, HistoryListProps>(
       >
         <ScrollArea className="h-full">
           <div className="flex flex-col gap-2 p-4">
-            {data.map((entry) => (
+            {data.map((entry, index) => (
               <div
                 key={entry.id}
-                className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/30 px-4 py-3"
+                ref={(el) => { if (el) itemsRef.current[index] = el; }}
+                className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/30 px-4 py-3 opacity-0"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PixelCard from "@/components/PixelCard";
+import { animate } from "animejs";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -11,6 +12,7 @@ interface SplashScreenProps {
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(false), 1500);
@@ -22,6 +24,14 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     const pixelCardEl = wrapperRef.current.querySelector("[class*='group']");
     if (pixelCardEl) {
       pixelCardEl.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    }
+    if (titleRef.current) {
+      animate(titleRef.current, {
+        opacity: [0, 1],
+        scale: [0.8, 1],
+        duration: 800,
+        ease: "outExpo",
+      });
     }
   }, []);
 
@@ -44,7 +54,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
               className="!w-full !h-full !rounded-none !aspect-auto !border-none"
             >
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <h1 className="text-4xl font-bold text-foreground mb-2">
+                <h1 ref={titleRef} className="text-4xl font-bold text-foreground mb-2 opacity-0">
                   Recicla Ai
                 </h1>
                 <p className="text-sm text-muted-foreground animate-pulse">

@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { animate, stagger } from "animejs";
 
 interface Mission {
   id: string;
@@ -82,6 +84,22 @@ export interface MissionsCardProps extends React.HTMLAttributes<HTMLDivElement> 
 
 const MissionsCard = React.forwardRef<HTMLDivElement, MissionsCardProps>(
   ({ className, missions = mockMissions, ...props }, ref) => {
+    const progressRefs = useRef<HTMLDivElement[]>([]);
+
+    useEffect(() => {
+      const bars = progressRefs.current.filter(Boolean);
+      if (bars.length === 0) return;
+      bars.forEach((bar, i) => {
+        const target = bar.dataset.target || "0%";
+        animate(bar, {
+          width: target,
+          duration: 1200,
+          delay: i * 150,
+          ease: "outExpo",
+        });
+      });
+    }, [missions]);
+
     return (
       <div ref={ref} className={cn("flex flex-col gap-3", className)} {...props}>
         <motion.div
@@ -90,7 +108,7 @@ const MissionsCard = React.forwardRef<HTMLDivElement, MissionsCardProps>(
           initial="hidden"
           animate="visible"
         >
-          {missions.map((mission) => (
+          {missions.map((mission, index) => (
             <motion.div
               key={mission.id}
               variants={itemVariants}
@@ -116,10 +134,10 @@ const MissionsCard = React.forwardRef<HTMLDivElement, MissionsCardProps>(
                 <div className="flex flex-col gap-1.5">
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
-                      style={{
-                        width: `${(mission.current / mission.target) * 100}%`,
-                      }}
+                      ref={(el: HTMLDivElement | null) => { if (el) progressRefs.current[index] = el; }}
+                      data-target={`${(mission.current / mission.target) * 100}%`}
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: "0%" }}
                     />
                   </div>
                   <span className="text-xs text-muted-foreground">

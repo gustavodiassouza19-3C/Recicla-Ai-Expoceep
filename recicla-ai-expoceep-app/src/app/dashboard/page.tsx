@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Card } from "@/components/ui";
@@ -22,11 +22,13 @@ import {
   type ImpactData,
   type UserMissionItem,
 } from "@/lib/api";
+import { stagger, animate } from "animejs";
 
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const cardsRef = useRef<HTMLDivElement[]>([]);
 
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
@@ -47,6 +49,18 @@ export default function Dashboard() {
     fetchMyTags().then(setTagsData).catch(() => {});
     fetchImpact().then(setImpactData).catch(() => {});
     fetchMyMissions().then(setMissionsData).catch(() => {});
+  }, [user]);
+
+  useEffect(() => {
+    const cards = cardsRef.current.filter(Boolean);
+    if (cards.length === 0) return;
+    animate(cards, {
+      opacity: [0, 1],
+      translateY: [20, 0],
+      duration: 600,
+      delay: stagger(100),
+      ease: "outExpo",
+    });
   }, [user]);
 
   if (loading || !user) {
@@ -72,7 +86,7 @@ export default function Dashboard() {
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
           <div className="md:col-span-4">
-            <Card className="p-4">
+            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 opacity-0">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold text-foreground">
                   Pontuacao Mensal
@@ -83,7 +97,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card className="flex flex-col h-[320px]">
+            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="flex flex-col h-[320px] opacity-0">
               <div className="px-4 pt-4 pb-2">
                 <h2 className="text-sm font-semibold text-foreground">
                   Historico
@@ -110,7 +124,7 @@ export default function Dashboard() {
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mt-6">
           <div className="md:col-span-2">
-            <Card className="p-4">
+            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 opacity-0">
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Impacto Ambiental
               </h2>
@@ -120,7 +134,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card className="p-4">
+            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 opacity-0">
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Tags NFC
               </h2>
@@ -138,7 +152,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card className="p-4">
+            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-4 opacity-0">
               <h2 className="text-sm font-semibold text-foreground mb-4">
                 Missoes
               </h2>

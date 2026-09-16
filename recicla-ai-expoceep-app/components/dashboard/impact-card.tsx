@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { animate } from "animejs";
 
 interface ImpactCardProps extends React.HTMLAttributes<HTMLDivElement> {
   validatedTags?: number;
@@ -49,6 +51,33 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
   ({ className, validatedTags = 12, ...props }, ref) => {
     const trees = Math.floor(validatedTags * 0.004 * 100) / 100;
     const water = Math.floor(validatedTags * 8);
+    const treesRef = useRef<HTMLSpanElement>(null);
+    const waterRef = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+      if (treesRef.current) {
+        const obj = { val: 0 };
+        animate(obj, {
+          val: trees,
+          duration: 1800,
+          ease: "outExpo",
+          onUpdate: () => {
+            if (treesRef.current) treesRef.current.textContent = obj.val.toFixed(2);
+          },
+        });
+      }
+      if (waterRef.current) {
+        const obj = { val: 0 };
+        animate(obj, {
+          val: water,
+          duration: 1800,
+          ease: "outExpo",
+          onUpdate: () => {
+            if (waterRef.current) waterRef.current.textContent = `${Math.round(obj.val)} L`;
+          },
+        });
+      }
+    }, [trees, water]);
 
     return (
       <div ref={ref} className={cn("flex flex-col gap-4", className)} {...props}>
@@ -60,8 +89,8 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
         >
           <TreeIcon />
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
-              {trees.toFixed(2)}
+            <span ref={treesRef} className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
+              0.00
             </span>
             <span className="text-xs text-muted-foreground mt-1">
               Arvores preservadas
@@ -77,8 +106,8 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
         >
           <DropIcon />
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
-              {water} L
+            <span ref={waterRef} className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
+              0 L
             </span>
             <span className="text-xs text-muted-foreground mt-1">
               Agua economizada

@@ -1,20 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Card } from "@/components/ui";
 import { EcoPointsCard } from "@/components/dashboard/eco-points-card";
+import { animate } from "animejs";
 
 export default function EcoPointsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      animate(cardRef.current, {
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 800,
+        ease: "outExpo",
+      });
+    }
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -33,7 +46,7 @@ export default function EcoPointsPage() {
             Encontre ecopontos proximos para entregar seus reciclaveis.
           </p>
         </div>
-        <Card className="p-4">
+        <Card ref={cardRef} className="p-4 opacity-0">
           <EcoPointsCard />
         </Card>
       </div>

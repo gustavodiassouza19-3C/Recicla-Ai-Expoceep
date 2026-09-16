@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { animate } from "animejs";
 
 interface ScoreDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
   score?: number;
@@ -61,6 +63,22 @@ function CoinPlantIcon({ className }: { className?: string }) {
 
 const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
   ({ className, score = 420, ...props }, ref) => {
+    const scoreRef = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+      if (!scoreRef.current) return;
+      const el = scoreRef.current;
+      const obj = { val: 0 };
+      animate(obj, {
+        val: score,
+        duration: 1500,
+        ease: "outExpo",
+        onUpdate: () => {
+          if (el) el.textContent = Math.round(obj.val).toLocaleString();
+        },
+      });
+    }, [score]);
+
     return (
       <div
         ref={ref}
@@ -72,8 +90,8 @@ const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
           <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
             Pontuacao total
           </span>
-          <span className="text-3xl font-bold text-foreground font-mono tabular-nums leading-none mt-1">
-            {score.toLocaleString()}
+          <span ref={scoreRef} className="text-3xl font-bold text-foreground font-mono tabular-nums leading-none mt-1">
+            0
           </span>
           <span className="text-[11px] text-muted-foreground mt-1">
             pontos acumulados

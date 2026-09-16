@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { animate } from "animejs";
 
 interface AchievementBadgeProps {
   icone: string;
@@ -28,6 +30,18 @@ function AchievementBadge({
       : desbloqueada
         ? 100
         : 0;
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!desbloqueada && progressBarRef.current) {
+      const el = progressBarRef.current;
+      animate(el, {
+        width: `${progressPercent}%`,
+        duration: 1000,
+        ease: "outExpo",
+      });
+    }
+  }, [progressPercent, desbloqueada]);
 
   return (
     <motion.button
@@ -61,11 +75,10 @@ function AchievementBadge({
       {!desbloqueada && progresso !== undefined && total !== undefined && (
         <div className="w-full">
           <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+            <div
+              ref={progressBarRef}
               className="h-full rounded-full bg-success/60"
+              style={{ width: "0%" }}
             />
           </div>
           <p className="text-[9px] text-muted-foreground mt-0.5">

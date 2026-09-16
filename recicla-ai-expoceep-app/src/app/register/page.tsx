@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { animate } from "animejs";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
@@ -18,6 +19,18 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      animate(cardRef.current, {
+        opacity: [0, 1],
+        translateY: [30, 0],
+        duration: 800,
+        ease: "outExpo",
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +50,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md p-6">
+      <Card ref={cardRef} className="w-full max-w-md p-6 opacity-0">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-foreground">Recicla Ai</h1>
           <p className="text-sm text-muted-foreground mt-1">

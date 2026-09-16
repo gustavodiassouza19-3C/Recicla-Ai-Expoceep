@@ -39,12 +39,12 @@ CREATE INDEX IF NOT EXISTS idx_missoes_usuario_user ON missoes_usuario(usuario_i
 
 -- Seeds: eco-pontos de Cascavel/PR
 INSERT INTO eco_pontos (nome, endereco, lat, lng) VALUES
-('Ecoponto Quebec', 'Rua Aparecida dos Portos, 2095 – Jardim Quebec/Guarujá, Cascavel/PR', -24.9520, -53.4620),
-('Ecoponto Santa Cruz', 'Rua Tupinambás, 1400 – Santa Cruz, Cascavel/PR', -24.9610, -53.4490),
-('Ecoponto Cascavel Velho', 'Rua Hermes da Fonseca, 2100 – Cascavel Velho, Cascavel/PR', -24.9480, -53.4480),
-('Ecoponto Melissa', 'Rua Hibiscos, 225 – Brasmadeira, Cascavel/PR', -24.9650, -53.4580),
-('Ecoponto Brasília', 'Rua Noel Rosa, 52 – Jardim Brasília, Cascavel/PR', -24.9580, -53.4650),
-('Ecoponto Manaus', 'Rua Manaus, 1524 – Country, Cascavel/PR', -24.9500, -53.4520)
+('Ecoponto Manaus', 'Rua Manaus, 1524 – Country, Cascavel/PR', -24.9500, -53.4520),
+('Ecoponto Brasília - Unicacoop', 'Rua Valmor Frasson, 79 – Brasília, Cascavel/PR', -24.9580, -53.4650),
+('Ecoponto Melissa', 'Rua Hibiscos, 153–181 – Brasmadeira, Cascavel/PR', -24.9650, -53.4580),
+('Ecoponto Quebec', 'Rua Aparecida dos Portos – Guarujá, Cascavel/PR', -24.9520, -53.4620),
+('Ecoponto Cascavel Velho', 'Cascavel Velho, Cascavel/PR', -24.9480, -53.4480),
+('Ecoponto Santa Cruz', 'Santa Cruz, Cascavel/PR', -24.9610, -53.4490)
 ON CONFLICT DO NOTHING;
 
 -- Seeds: missoes iniciais
