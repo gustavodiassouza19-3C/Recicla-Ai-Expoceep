@@ -51,7 +51,7 @@ function EcoPointsCard() {
               <p className="text-sm font-medium text-foreground truncate">
                 {point.nome}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-success font-medium truncate">
                 {point.endereco}
               </p>
             </div>
