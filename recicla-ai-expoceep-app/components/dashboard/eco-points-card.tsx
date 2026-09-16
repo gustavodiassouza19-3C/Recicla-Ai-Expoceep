@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
-import { fetchEcoPoints, type EcoPoint } from "@/lib/api";
 import { animate, stagger } from "animejs";
 
-function EcoPointsCard() {
-  const [points, setPoints] = useState<EcoPoint[]>([]);
-  const listRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+const ECO_POINTS = [
+  { id: 1, nome: "Ecoponto Manaus", endereco: "Rua Manaus, 1524 – Country" },
+  { id: 2, nome: "Ecoponto Brasília - Unicacoop", endereco: "Rua Valmor Frasson, 79 – Brasília" },
+  { id: 3, nome: "Ecoponto Melissa", endereco: "Rua Hibiscos, 153–181 – Brasmadeira" },
+  { id: 4, nome: "Ecoponto Quebec", endereco: "Rua Aparecida dos Portos – Guarujá" },
+  { id: 5, nome: "Ecoponto Cascavel Velho", endereco: "Cascavel Velho" },
+  { id: 6, nome: "Ecoponto Santa Cruz", endereco: "Santa Cruz" },
+];
 
-  useEffect(() => {
-    fetchEcoPoints().then(setPoints).catch(() => {});
-  }, []);
+function EcoPointsCard() {
+  const listRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     const items = listRefs.current.filter(Boolean);
@@ -23,7 +26,7 @@ function EcoPointsCard() {
       delay: stagger(80),
       ease: "outExpo",
     });
-  }, [points]);
+  }, []);
 
   return (
     <div>
@@ -35,7 +38,7 @@ function EcoPointsCard() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {points.map((point, index) => (
+        {ECO_POINTS.map((point, index) => (
           <a
             key={point.id}
             ref={(el) => { if (el) listRefs.current[index] = el; }}
