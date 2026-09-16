@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { MapPin, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchEcoPoints, type EcoPoint } from "@/lib/api";
-import { EcoPointMap } from "./google-map-container";
 import { animate, stagger } from "animejs";
+
+const EcoPointMap = dynamic(
+  () => import("./google-map-container").then((m) => m.EcoPointMap),
+  { ssr: false }
+);
 
 function EcoPointsCard() {
   const [isMapOpen, setIsMapOpen] = useState(true);
