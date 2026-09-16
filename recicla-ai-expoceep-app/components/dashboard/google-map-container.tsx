@@ -66,9 +66,14 @@ export function EcoPointMap({ points, selectedPoint, onSelectPoint }: EcoPointMa
               <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>
                 {point.nome}
               </p>
-              <p style={{ fontSize: 12, color: "#666", margin: "4px 0 0" }}>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, color: "#2563eb", margin: "4px 0 0", textDecoration: "underline", cursor: "pointer" }}
+              >
                 {point.endereco}
-              </p>
+              </a>
               <span
                 style={{
                   display: "inline-block",

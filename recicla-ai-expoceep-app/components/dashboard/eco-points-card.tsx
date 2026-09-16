@@ -77,9 +77,15 @@ function EcoPointsCard() {
               <p className="text-sm font-medium text-foreground truncate">
                 {point.nome}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary underline truncate block"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {point.endereco}
-              </p>
+              </a>
             </div>
             <div className="flex items-center gap-2 ml-3">
               <Badge variant={point.status === "aberto" ? "success" : "destructive"}>
