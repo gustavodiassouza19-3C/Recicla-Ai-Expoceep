@@ -62,11 +62,17 @@ function CoinPlantIcon({ className }: { className?: string }) {
 }
 
 const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
-  ({ className, score = 420, ...props }, ref) => {
+  ({ className, score = 0, ...props }, ref) => {
     const scoreRef = useRef<HTMLSpanElement>(null);
+    const animated = useRef(false);
 
     useEffect(() => {
-      if (!scoreRef.current) return;
+      if (!scoreRef.current || score === 0) return;
+      if (animated.current) {
+        scoreRef.current.textContent = score.toLocaleString("pt-BR");
+        return;
+      }
+      animated.current = true;
       const el = scoreRef.current;
       const obj = { val: 0 };
       animate(obj, {
@@ -74,7 +80,7 @@ const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
         duration: 1500,
         ease: "outExpo",
         onUpdate: () => {
-          if (el) el.textContent = Math.round(obj.val).toLocaleString();
+          if (el) el.textContent = Math.round(obj.val).toLocaleString("pt-BR");
         },
       });
     }, [score]);
