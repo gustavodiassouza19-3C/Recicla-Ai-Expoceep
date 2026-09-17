@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [tagsData, setTagsData] = useState<UserTag[]>([]);
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [missionsData, setMissionsData] = useState<UserMissionItem[]>([]);
+  const [userPoints, setUserPoints] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,6 +50,18 @@ export default function Dashboard() {
     fetchMyTags().then(setTagsData).catch(() => {});
     fetchImpact().then(setImpactData).catch(() => {});
     fetchMyMissions().then(setMissionsData).catch(() => {});
+
+    const token = localStorage.getItem("supabase_token");
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.pontos !== undefined) setUserPoints(data.pontos);
+        })
+        .catch(() => {});
+    }
   }, [user]);
 
   useEffect(() => {
@@ -91,7 +104,7 @@ export default function Dashboard() {
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pontuacao Mensal
                 </h2>
-                <ScoreDisplay />
+                <ScoreDisplay score={userPoints} />
               </div>
               <ScoreChart data={scoreData.length > 0 ? scoreData : undefined} />
             </Card>

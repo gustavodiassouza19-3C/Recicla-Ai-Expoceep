@@ -108,10 +108,16 @@ export default function RewardsPage() {
 
   useEffect(() => {
     if (!user) return;
-    const stored = localStorage.getItem("supabase_user");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setPoints(parsed.pontos || 0);
+    const token = localStorage.getItem("supabase_token");
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.pontos !== undefined) setPoints(data.pontos);
+        })
+        .catch(() => {});
     }
   }, [user]);
 

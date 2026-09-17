@@ -68,3 +68,22 @@ Não copiar esse estilo para componentes novos sem passar pelo fluxo acima.
 - **Não é uma lib instalável** — é material de referência/educacional.
 - Para integrar Claude API no Next.js, usar `@anthropic-ai/sdk` (TypeScript SDK).
 - Patterns úteis: `tool_use/`, `capabilities/`, `skills/`, `extended_thinking/`.
+
+## TAREFA PENDENTE — MCP Supabase
+
+**Status:** Aguardando configuracao do MCP Supabase.
+
+Quando o MCP do Supabase estiver configurado, a IA deve:
+
+1. **Sincronizar schema** — usar o MCP para inspectar as tabelas reais no
+   Supabase (`usuarios`, `tags`, `reciclagens`, `recompensas`, `missoes`,
+   `conquistas`, `eco_pontos`) e comparar com as migrations em
+   `backend/migrations/`.
+2. **Corrigir divergencias** — ajustar migrations ou modelos Pydantic para
+   refletir o estado real do banco (campos extras, tipos diferentes, etc).
+3. **Verificar RLS** — confirmar que as Row Level Security policies estao
+   corretas para cada tabela (auth, select, insert, update).
+4. **Limpar dados de teste** — avaliar se os seeds ficticios (migration 005)
+   devem ser mantidos ou removidos.
+5. **Testar endpoints** — usar o MCP para executar queries diretas e validar
+   que os endpoints do FastAPI retornam dados corretos.
