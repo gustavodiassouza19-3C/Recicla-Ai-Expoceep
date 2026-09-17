@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Target, MapPin, User, Sun, Moon } from "lucide-react";
+import { Home, Target, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -17,28 +16,7 @@ const tabs = [
 function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isDark, setIsDark] = useState(false);
-  const { user, loading, logout } = useAuth();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      setIsDark(true);
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
+  const { user, loading } = useAuth();
 
   if (loading) return null;
   if (!user) return null;
@@ -53,21 +31,6 @@ function Header() {
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span className="text-sm font-bold text-foreground">Recicla Ai</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? "Mudar para tema claro" : "Mudar para tema escuro"}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-            >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-            <button
-              onClick={logout}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-xs text-muted-foreground"
-            >
-              Sair
-            </button>
           </div>
         </div>
 
