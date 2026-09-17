@@ -42,7 +42,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/95 backdrop-blur-sm px-4 py-3 shadow-[var(--shadow-floating)]">
+    <div className="border-2 border-border/60 bg-card/95 backdrop-blur-sm px-4 py-3 shadow-[2px_2px_0_theme(colors.border/30)]" style={{ borderRadius: 2 }}>
       <p className="text-[11px] font-semibold text-foreground mb-2 tracking-wide uppercase">
         {label}
       </p>
@@ -81,12 +81,12 @@ const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
               <linearGradient id="fillScore" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="0%"
-                  stopColor="var(--primary)"
+                  stopColor="var(--success)"
                   stopOpacity={0.35}
                 />
                 <stop
                   offset="100%"
-                  stopColor="var(--primary)"
+                  stopColor="var(--success)"
                   stopOpacity={0.02}
                 />
               </linearGradient>
@@ -122,16 +122,15 @@ const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
               type="natural"
               dataKey="score"
               name="Pontuacao"
-              stroke="var(--primary)"
+              stroke="var(--success)"
               fill="url(#fillScore)"
               strokeWidth={2.5}
               dot={false}
               activeDot={{
-                r: 6,
-                strokeWidth: 3,
-                stroke: "var(--background)",
-                fill: "var(--primary)",
-                filter: "url(#glow)",
+                r: 5,
+                strokeWidth: 2,
+                stroke: "var(--success)",
+                fill: "var(--card)",
               }}
             />
           </AreaChart>

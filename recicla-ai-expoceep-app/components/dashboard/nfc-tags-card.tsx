@@ -75,7 +75,8 @@ const NfcTagsCard = React.forwardRef<HTMLDivElement, NfcTagsCardProps>(
             <motion.div
               key={tag.id}
               variants={itemVariants}
-              className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-4 py-3"
+              className="flex items-center gap-3 border-2 border-border/40 bg-card px-4 py-3 shadow-[2px_2px_0_theme(colors.border/20)]"
+              style={{ borderRadius: 2 }}
             >
               <NfcIcon />
               <div className="flex flex-col min-w-0 flex-1">

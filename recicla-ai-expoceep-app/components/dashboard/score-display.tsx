@@ -87,10 +87,10 @@ const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
       >
         <CoinPlantIcon />
         <div className="flex flex-col">
-          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+          <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
             Pontuacao total
           </span>
-          <span ref={scoreRef} className="text-3xl font-bold text-foreground font-mono tabular-nums leading-none mt-1">
+          <span ref={scoreRef} className="text-3xl font-bold text-success font-mono tabular-nums leading-none mt-1">
             0
           </span>
           <span className="text-[11px] text-muted-foreground mt-1">

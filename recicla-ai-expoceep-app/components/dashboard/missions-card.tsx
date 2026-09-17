@@ -112,7 +112,8 @@ const MissionsCard = React.forwardRef<HTMLDivElement, MissionsCardProps>(
             <motion.div
               key={mission.id}
               variants={itemVariants}
-              className="flex flex-col gap-2 rounded-lg border border-border/50 bg-muted/30 px-4 py-3"
+              className="flex flex-col gap-2 border-2 border-border/40 bg-card px-4 py-3 shadow-[2px_2px_0_theme(colors.border/20)]"
+              style={{ borderRadius: 2 }}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-semibold text-foreground truncate">
@@ -132,12 +133,12 @@ const MissionsCard = React.forwardRef<HTMLDivElement, MissionsCardProps>(
                 </div>
               ) : (
                 <div className="flex flex-col gap-1.5">
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-2 bg-muted overflow-hidden border border-border/40" style={{ borderRadius: 2 }}>
                     <div
                       ref={(el: HTMLDivElement | null) => { if (el) progressRefs.current[index] = el; }}
                       data-target={`${(mission.current / mission.target) * 100}%`}
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: "0%" }}
+                      className="h-full bg-success"
+                      style={{ width: "0%", borderRadius: 2 }}
                     />
                   </div>
                   <span className="text-xs text-muted-foreground">

@@ -87,7 +87,9 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <TreeIcon />
+          <div className="flex items-center justify-center w-10 h-10 border-2 border-success/30 bg-success/10" style={{ borderRadius: 2 }}>
+            <TreeIcon />
+          </div>
           <div className="flex flex-col">
             <span ref={treesRef} className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
               0.00
@@ -104,7 +106,9 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <DropIcon />
+          <div className="flex items-center justify-center w-10 h-10 border-2 border-primary/30 bg-primary/10" style={{ borderRadius: 2 }}>
+            <DropIcon />
+          </div>
           <div className="flex flex-col">
             <span ref={waterRef} className="text-2xl font-bold text-foreground font-mono tabular-nums leading-none">
               0 L
