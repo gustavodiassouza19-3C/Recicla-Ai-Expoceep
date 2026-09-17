@@ -41,12 +41,12 @@ export default function EcoPointsPage() {
     <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">EcoPoints</h1>
+          <h1 className="text-2xl font-bold uppercase tracking-wide text-foreground">EcoPoints</h1>
           <p className="text-muted-foreground mt-1">
             Encontre ecopontos proximos para entregar seus reciclaveis.
           </p>
         </div>
-        <Card ref={cardRef} className="p-6 opacity-0 border-[3px] border-success shadow-[3px_3px_0_theme(colors.success/30)]">
+        <Card ref={cardRef} className="p-6 opacity-0 retro-border-card retro-shadow-md retro-radius">
           <EcoPointsCard />
         </Card>
       </div>

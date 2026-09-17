@@ -42,7 +42,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="border-2 border-border/60 bg-card/95 backdrop-blur-sm px-4 py-3 shadow-[2px_2px_0_theme(colors.border/30)]" style={{ borderRadius: 2 }}>
+    <div className="retro-border-item retro-shadow-sm retro-radius bg-card/95 backdrop-blur-sm px-4 py-3">
       <p className="text-[11px] font-semibold text-foreground mb-2 tracking-wide uppercase">
         {label}
       </p>

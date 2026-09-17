@@ -87,7 +87,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="flex items-center justify-center w-10 h-10 border-2 border-success/30 bg-success/10" style={{ borderRadius: 2 }}>
+          <div className="flex items-center justify-center w-10 h-10 border-2 border-success/30 bg-success/10 retro-radius">
             <TreeIcon />
           </div>
           <div className="flex flex-col">
@@ -106,7 +106,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <div className="flex items-center justify-center w-10 h-10 border-2 border-primary/30 bg-primary/10" style={{ borderRadius: 2 }}>
+          <div className="flex items-center justify-center w-10 h-10 border-2 border-primary/30 bg-primary/10 retro-radius">
             <DropIcon />
           </div>
           <div className="flex flex-col">

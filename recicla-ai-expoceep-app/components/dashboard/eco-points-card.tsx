@@ -31,7 +31,7 @@ function EcoPointsCard() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex items-center justify-center w-8 h-8 border-2 border-success bg-success/10" style={{ borderRadius: 2 }}>
+        <div className="flex items-center justify-center w-8 h-8 border-2 border-success bg-success/10 retro-radius">
           <MapPin className="h-4 w-4 text-success" />
         </div>
         <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
@@ -47,8 +47,7 @@ function EcoPointsCard() {
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center justify-between border-2 border-success/30 bg-card px-4 py-3 cursor-pointer opacity-0 transition-all duration-150 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0_theme(colors.success/20)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-            style={{ borderRadius: 2 }}
+            className="group flex items-center justify-between retro-border-item retro-shadow-sm retro-radius bg-card px-4 py-3 cursor-pointer opacity-0 transition-all duration-150 retro-press"
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold uppercase tracking-wide text-foreground truncate">

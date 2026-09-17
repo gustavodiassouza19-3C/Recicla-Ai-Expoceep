@@ -86,7 +86,7 @@ export default function Dashboard() {
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="md:col-span-4">
-            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 opacity-0 border-2 border-success/20 shadow-[3px_3px_0_theme(colors.success/15)]" style={{ borderRadius: 2 }}>
+            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pontuacao Mensal
@@ -97,7 +97,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="flex flex-col h-[320px] opacity-0 border-2 border-success/20 shadow-[3px_3px_0_theme(colors.success/15)]" style={{ borderRadius: 2 }}>
+            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="flex flex-col h-[320px] opacity-0 retro-border-card retro-shadow-md retro-radius">
               <div className="px-4 pt-4 pb-2">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Historico
@@ -124,7 +124,7 @@ export default function Dashboard() {
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 opacity-0 border-2 border-success/20 shadow-[3px_3px_0_theme(colors.success/15)]" style={{ borderRadius: 2 }}>
+            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                 Impacto Ambiental
               </h2>
@@ -134,7 +134,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 opacity-0 border-2 border-success/20 shadow-[3px_3px_0_theme(colors.success/15)]" style={{ borderRadius: 2 }}>
+            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                 Tags NFC
               </h2>
@@ -152,7 +152,7 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-4 opacity-0 border-2 border-success/20 shadow-[3px_3px_0_theme(colors.success/15)]" style={{ borderRadius: 2 }}>
+            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                 Missoes
               </h2>

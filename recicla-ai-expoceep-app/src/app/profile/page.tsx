@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Sun, Moon, LogOut, Save, Loader2 } from "lucide-react";
+import { User, Sun, Moon, LogOut, Save, Loader2, Palette } from "lucide-react";
+import { useVisualStyle } from "@/hooks/use-visual-style";
 
 export default function ProfilePage() {
   const { user, token, loading: authLoading, logout } = useAuth();
@@ -27,6 +28,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
 
   const [isDark, setIsDark] = useState(false);
+  const { style: visualStyle, toggleStyle } = useVisualStyle();
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -279,11 +281,27 @@ export default function ProfilePage() {
                 <span className="text-sm text-foreground">Tema</span>
               </div>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
               >
                 {isDark ? "Escuro" : "Claro"}
+              </Button>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Visual</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleStyle}
+              >
+                {visualStyle === "retro" ? "Retro" : "Moderno"}
               </Button>
             </div>
 

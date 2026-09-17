@@ -12,11 +12,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <Comp
         className={cn(
-          "border-2 border-border bg-card text-card-foreground",
-          "shadow-[3px_3px_0_theme(colors.border/40)]",
+          "retro-border-card retro-shadow-md retro-radius",
+          "bg-card text-card-foreground",
           className
         )}
-        style={{ borderRadius: 2 }}
         ref={ref}
         {...props}
       />

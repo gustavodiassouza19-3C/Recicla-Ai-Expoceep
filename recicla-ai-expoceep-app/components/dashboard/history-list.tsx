@@ -146,8 +146,7 @@ const HistoryList = React.forwardRef<HTMLDivElement, HistoryListProps>(
               <div
                 key={entry.id}
                 ref={(el) => { if (el) itemsRef.current[index] = el; }}
-                className="flex flex-col gap-2 border-2 border-border/40 bg-card px-4 py-3 opacity-0 shadow-[2px_2px_0_theme(colors.border/20)]"
-                style={{ borderRadius: 2 }}
+                className="flex flex-col gap-2 retro-border-item retro-shadow-sm retro-radius bg-card px-4 py-3 opacity-0"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -158,10 +157,9 @@ const HistoryList = React.forwardRef<HTMLDivElement, HistoryListProps>(
                   </div>
                   <span
                     className={cn(
-                      "inline-flex shrink-0 items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border",
+                      "inline-flex shrink-0 items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border retro-radius",
                       entry.status === "validada" ? "border-success/30 bg-success/10 text-success" : "border-warning/30 bg-warning/10 text-warning"
                     )}
-                    style={{ borderRadius: 2 }}
                   >
                     {entry.status}
                   </span>

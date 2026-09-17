@@ -18,11 +18,10 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         className={cn(
           "inline-flex items-center px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide",
-          "squircle",
+          "squircle retro-radius",
           variantStyles[variant],
           className
         )}
-        style={{ borderRadius: 2 }}
         ref={ref}
         {...props}
       />

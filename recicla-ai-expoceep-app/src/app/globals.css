@@ -235,3 +235,53 @@ body {
 .squircle {
   filter: url(#SquiCircleFilter);
 }
+
+/* ── Visual Style: Retro (7a0) vs Moderno ── */
+
+:root {
+  --v-radius: 2px;
+  --v-shadow-hard-sm: 2px 2px 0 oklch(0.922 0 0 / 0.2);
+  --v-shadow-hard-md: 3px 3px 0 oklch(0.6 0.13 150 / 0.15);
+  --v-shadow-hard-lg: 4px 4px 0 oklch(0.6 0.13 150 / 0.2);
+}
+
+body:not(.style-retro) {
+  --v-radius: var(--radius-md);
+  --v-shadow-hard-sm: var(--shadow-raised);
+  --v-shadow-hard-md: var(--shadow-raised);
+  --v-shadow-hard-lg: var(--shadow-floating);
+}
+
+.retro-radius { border-radius: var(--v-radius); }
+.retro-shadow-sm { box-shadow: var(--v-shadow-hard-sm); }
+.retro-shadow-md { box-shadow: var(--v-shadow-hard-md); }
+.retro-shadow-lg { box-shadow: var(--v-shadow-hard-lg); }
+
+/* Press-down effect only in retro mode */
+.style-retro .retro-press:active {
+  transform: translate(2px, 2px);
+}
+.style-retro .retro-press-lg:active {
+  transform: translate(3px, 3px);
+}
+
+/* Retro border accents */
+.retro-border-card {
+  border-width: 2px;
+  border-style: solid;
+  border-color: oklch(0.6 0.13 150 / 0.2);
+}
+body:not(.style-retro) .retro-border-card {
+  border-width: 1px;
+  border-color: var(--border);
+}
+
+.retro-border-item {
+  border-width: 2px;
+  border-style: solid;
+  border-color: oklch(0.922 0 0 / 0.4);
+}
+body:not(.style-retro) .retro-border-item {
+  border-width: 1px;
+  border-color: var(--border);
+}
