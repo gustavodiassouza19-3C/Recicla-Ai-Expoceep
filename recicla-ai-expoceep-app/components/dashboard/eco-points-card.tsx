@@ -31,13 +31,15 @@ function EcoPointsCard() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <MapPin className="h-5 w-5 text-success" />
-        <h2 className="text-sm font-semibold text-foreground">
+        <div className="flex items-center justify-center w-8 h-8 border-2 border-success bg-success/10" style={{ borderRadius: 2 }}>
+          <MapPin className="h-4 w-4 text-success" />
+        </div>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
           EcoPoints em Cascavel
         </h2>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {ECO_POINTS.map((point, index) => (
           <a
             key={point.id}
@@ -45,16 +47,20 @@ function EcoPointsCard() {
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.endereco + ", Cascavel/PR")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 px-4 py-3 cursor-pointer transition-colors opacity-0"
+            className="group flex items-center justify-between border-2 border-success/30 bg-card px-4 py-3 cursor-pointer opacity-0 transition-all duration-150 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[2px_2px_0_theme(colors.success/20)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            style={{ borderRadius: 2 }}
           >
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+              <p className="text-sm font-bold uppercase tracking-wide text-foreground truncate">
                 {point.nome}
               </p>
-              <p className="text-xs text-success/50 font-medium truncate">
+              <p className="text-xs text-success/60 font-medium truncate mt-0.5">
                 {point.endereco}
               </p>
             </div>
+            <span className="text-xs font-bold text-success/40 group-hover:text-success transition-colors ml-3">
+              →
+            </span>
           </a>
         ))}
       </div>

@@ -46,7 +46,7 @@ export default function EcoPointsPage() {
             Encontre ecopontos proximos para entregar seus reciclaveis.
           </p>
         </div>
-        <Card ref={cardRef} className="p-4 opacity-0">
+        <Card ref={cardRef} className="p-6 opacity-0 border-[3px] border-success shadow-[3px_3px_0_theme(colors.success/30)]">
           <EcoPointsCard />
         </Card>
       </div>
