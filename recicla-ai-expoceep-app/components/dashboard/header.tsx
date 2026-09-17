@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Target, MapPin, User } from "lucide-react";
+import { Home, Target, MapPin, Gift, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 
 const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
   { id: "/missions", label: "Missoes", icon: Target },
+  { id: "/rewards", label: "Recompensas", icon: Gift },
   { id: "/eco-points", label: "EcoPoints", icon: MapPin },
   { id: "/profile", label: "Perfil", icon: User },
 ];
