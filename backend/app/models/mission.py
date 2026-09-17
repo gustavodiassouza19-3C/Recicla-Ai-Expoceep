@@ -3,19 +3,20 @@ from typing import Optional
 
 
 class MissionCreate(BaseModel):
-    title: str
-    description: str
-    target_count: int
-    reward_points: int
+    titulo: str
+    descricao: str
+    meta: int
+    recompensa_pontos: int
 
 
 class MissionResponse(BaseModel):
     id: int
-    title: str
-    description: str
-    target_count: int
-    reward_points: int
-    created_at: Optional[str] = None
+    titulo: str
+    descricao: str
+    meta: int
+    recompensa_pontos: int
+    ativa: bool = True
+    criado_em: Optional[str] = None
 
 
 class UserMissionResponse(BaseModel):
