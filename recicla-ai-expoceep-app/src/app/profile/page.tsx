@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, LogOut, Save, Loader2, Palette } from "lucide-react";
-import { useVisualStyle } from "@/hooks/use-visual-style";
+import { User, Sun, Moon, LogOut, Save, Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, token, loading: authLoading, logout } = useAuth();
@@ -27,7 +26,14 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { style: visualStyle, toggleStyle } = useVisualStyle();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+      setIsDark(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -102,6 +108,18 @@ export default function ProfilePage() {
       setError("Erro ao conectar com o servidor");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    if (next) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
@@ -253,15 +271,19 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">Visual</span>
+                {isDark ? (
+                  <Moon className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Sun className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm text-foreground">Tema</span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleStyle}
+                onClick={toggleTheme}
               >
-                {visualStyle === "retro" ? "Retro" : "Moderno"}
+                {isDark ? "Escuro" : "Claro"}
               </Button>
             </div>
 
