@@ -27,7 +27,7 @@ const REWARDS: RewardItem[] = [
     description: "Desconto em lojas parceiras de Cascavel",
     cost: 100,
     category: "desconto",
-    icon: "🏷️",
+    icon: "D",
     available: true,
   },
   {
@@ -36,7 +36,7 @@ const REWARDS: RewardItem[] = [
     description: "Doar sua pontuacao para plantio de arvore",
     cost: 200,
     category: "doacao",
-    icon: "🌳",
+    icon: "A",
     available: true,
   },
   {
@@ -45,7 +45,7 @@ const REWARDS: RewardItem[] = [
     description: "Um cafe gratis no Parque Ecologico",
     cost: 50,
     category: "parceiro",
-    icon: "☕",
+    icon: "C",
     available: true,
   },
   {
@@ -54,7 +54,7 @@ const REWARDS: RewardItem[] = [
     description: "Lixeira separadora para sua casa",
     cost: 300,
     category: "parceiro",
-    icon: "♻️",
+    icon: "R",
     available: true,
   },
   {
@@ -63,7 +63,7 @@ const REWARDS: RewardItem[] = [
     description: "5 litros de agua doados para projecao social",
     cost: 150,
     category: "doacao",
-    icon: "💧",
+    icon: "5L",
     available: true,
   },
   {
@@ -72,7 +72,7 @@ const REWARDS: RewardItem[] = [
     description: "Desconto especial em lojas de Cascavel",
     cost: 250,
     category: "desconto",
-    icon: "🎉",
+    icon: "20",
     available: false,
   },
 ];
@@ -295,7 +295,7 @@ export default function RewardsPage() {
               <motion.div key={reward.id} variants={item}>
                 <Card className="p-4 retro-border-item retro-shadow-sm retro-radius cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 bg-muted retro-radius text-xl shrink-0">
+                    <div className="flex items-center justify-center w-10 h-10 bg-success/10 text-success font-bold text-sm retro-radius shrink-0">
                       {reward.icon}
                     </div>
                     <div className="flex-1 min-w-0">
