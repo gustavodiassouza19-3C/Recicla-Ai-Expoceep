@@ -252,10 +252,22 @@ body:not(.style-retro) {
   --v-shadow-hard-lg: var(--shadow-floating);
 }
 
-.retro-radius { border-radius: var(--v-radius); }
-.retro-shadow-sm { box-shadow: var(--v-shadow-hard-sm); }
-.retro-shadow-md { box-shadow: var(--v-shadow-hard-md); }
-.retro-shadow-lg { box-shadow: var(--v-shadow-hard-lg); }
+.retro-radius {
+  border-radius: var(--v-radius);
+  transition: border-radius 0.3s ease;
+}
+.retro-shadow-sm {
+  box-shadow: var(--v-shadow-hard-sm);
+  transition: box-shadow 0.3s ease;
+}
+.retro-shadow-md {
+  box-shadow: var(--v-shadow-hard-md);
+  transition: box-shadow 0.3s ease;
+}
+.retro-shadow-lg {
+  box-shadow: var(--v-shadow-hard-lg);
+  transition: box-shadow 0.3s ease;
+}
 
 /* Press-down effect only in retro mode */
 .style-retro .retro-press:active {
@@ -264,12 +276,16 @@ body:not(.style-retro) {
 .style-retro .retro-press-lg:active {
   transform: translate(3px, 3px);
 }
+.retro-press {
+  transition: transform 0.1s ease, box-shadow 0.3s ease;
+}
 
 /* Retro border accents */
 .retro-border-card {
   border-width: 2px;
   border-style: solid;
   border-color: oklch(0.6 0.13 150 / 0.2);
+  transition: border-width 0.3s ease, border-color 0.3s ease;
 }
 body:not(.style-retro) .retro-border-card {
   border-width: 1px;
@@ -280,6 +296,7 @@ body:not(.style-retro) .retro-border-card {
   border-width: 2px;
   border-style: solid;
   border-color: oklch(0.922 0 0 / 0.4);
+  transition: border-width 0.3s ease, border-color 0.3s ease;
 }
 body:not(.style-retro) .retro-border-item {
   border-width: 1px;

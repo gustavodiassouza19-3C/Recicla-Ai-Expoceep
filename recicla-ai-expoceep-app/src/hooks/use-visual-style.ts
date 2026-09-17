@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 type VisualStyle = "retro" | "moderno";
 
@@ -13,21 +13,23 @@ function applyStyle(style: VisualStyle) {
 }
 
 export function useVisualStyle() {
-  const [style, setStyle] = useState<VisualStyle>("moderno");
+  const [style, setStyle] = useState<VisualStyle>("retro");
 
   useEffect(() => {
-    const stored = localStorage.getItem("visual-style") as VisualStyle | null;
-    const initial = stored === "retro" || stored === "moderno" ? stored : "moderno";
+    const stored = localStorage.getItem("visual-style");
+    const initial: VisualStyle = stored === "moderno" ? "moderno" : "retro";
     setStyle(initial);
     applyStyle(initial);
   }, []);
 
-  const toggleStyle = () => {
-    const next: VisualStyle = style === "retro" ? "moderno" : "retro";
-    setStyle(next);
-    localStorage.setItem("visual-style", next);
-    applyStyle(next);
-  };
+  const toggleStyle = useCallback(() => {
+    setStyle((prev) => {
+      const next: VisualStyle = prev === "retro" ? "moderno" : "retro";
+      localStorage.setItem("visual-style", next);
+      applyStyle(next);
+      return next;
+    });
+  }, []);
 
   return { style, toggleStyle };
 }
