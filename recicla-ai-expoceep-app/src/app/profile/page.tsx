@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Sun, Moon, LogOut, Save, Loader2, Palette } from "lucide-react";
+import { User, LogOut, Save, Loader2, Palette } from "lucide-react";
 import { useVisualStyle } from "@/hooks/use-visual-style";
 
 export default function ProfilePage() {
@@ -27,15 +27,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const [isDark, setIsDark] = useState(false);
   const { style: visualStyle, toggleStyle } = useVisualStyle();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      setIsDark(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -110,18 +102,6 @@ export default function ProfilePage() {
       setError("Erro ao conectar com o servidor");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
   };
 
@@ -271,26 +251,6 @@ export default function ProfilePage() {
           </h2>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {isDark ? (
-                  <Moon className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Sun className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm text-foreground">Tema</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-              >
-                {isDark ? "Escuro" : "Claro"}
-              </Button>
-            </div>
-
-            <Separator />
-
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-muted-foreground" />
