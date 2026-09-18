@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { usePoints } from "@/contexts/points-context";
 import { Card } from "@/components/ui";
 import { ScoreChart } from "@/components/dashboard/score-chart";
 import { ScoreDisplay } from "@/components/dashboard/score-display";
@@ -16,6 +17,7 @@ import {
   fetchMyTags,
   fetchImpact,
   fetchMyMissions,
+  addTag,
   type ScoreDataPoint,
   type HistoryEntry,
   type UserTag,
@@ -29,13 +31,13 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const cardsRef = useRef<HTMLDivElement[]>([]);
+  const { points, refetchPoints } = usePoints();
 
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
   const [tagsData, setTagsData] = useState<UserTag[]>([]);
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [missionsData, setMissionsData] = useState<UserMissionItem[]>([]);
-  const [userPoints, setUserPoints] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -50,19 +52,12 @@ export default function Dashboard() {
     fetchMyTags().then(setTagsData).catch(() => {});
     fetchImpact().then(setImpactData).catch(() => {});
     fetchMyMissions().then(setMissionsData).catch(() => {});
+    refetchPoints();
+  }, [user, refetchPoints]);
 
-    const token = localStorage.getItem("supabase_token");
-    if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.pontos !== undefined) setUserPoints(data.pontos);
-        })
-        .catch(() => {});
-    }
-  }, [user]);
+  const handleAddTag = () => {
+    fetchMyTags().then(setTagsData).catch(() => {});
+  };
 
   useEffect(() => {
     const cards = cardsRef.current.filter(Boolean);
@@ -104,7 +99,7 @@ export default function Dashboard() {
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pontuacao Mensal
                 </h2>
-                <ScoreDisplay score={userPoints} />
+                <ScoreDisplay score={points} />
               </div>
               <ScoreChart data={scoreData.length > 0 ? scoreData : undefined} />
             </Card>
@@ -151,17 +146,18 @@ export default function Dashboard() {
               <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
                 Tags NFC
               </h2>
-              <NfcTagsCard
-                tags={
-                  tagsData.length > 0
-                    ? tagsData.map((t) => ({
-                        id: String(t.id),
-                        status: t.status === "ativa" ? "disponivel" as const : "em-uso" as const,
-                        lastUsed: new Date(t.last_used).toLocaleDateString("pt-BR"),
-                      }))
-                    : undefined
-                }
-              />
+<NfcTagsCard
+                    tags={
+                      tagsData.length > 0
+                        ? tagsData.map((t) => ({
+                            id: String(t.id),
+                            status: t.status === "ativa" ? "disponivel" as const : "em-uso" as const,
+                            lastUsed: new Date(t.last_used).toLocaleDateString("pt-BR"),
+                          }))
+                        : undefined
+                    }
+                    onAddTag={handleAddTag}
+                  />
             </Card>
           </div>
           <div className="md:col-span-2">

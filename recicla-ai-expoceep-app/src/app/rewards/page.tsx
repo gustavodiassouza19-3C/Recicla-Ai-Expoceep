@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { usePoints } from "@/contexts/points-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -96,7 +97,7 @@ const item = {
 export default function RewardsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [points, setPoints] = useState(0);
+  const { points, refetchPoints } = usePoints();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const pointsRef = useRef<HTMLSpanElement>(null);
 
@@ -108,18 +109,8 @@ export default function RewardsPage() {
 
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem("supabase_token");
-    if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.pontos !== undefined) setPoints(data.pontos);
-        })
-        .catch(() => {});
-    }
-  }, [user]);
+    refetchPoints();
+  }, [user, refetchPoints]);
 
   useEffect(() => {
     if (pointsRef.current && points > 0) {

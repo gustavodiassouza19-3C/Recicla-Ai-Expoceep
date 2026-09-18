@@ -83,8 +83,19 @@ export function fetchHistory(): Promise<HistoryEntry[]> {
   return apiFetch("/api/recycle/history");
 }
 
+export interface TagInput {
+  codigo_nfc: string;
+}
+
 export function fetchMyTags(): Promise<UserTag[]> {
   return apiFetch("/api/tags/me");
+}
+
+export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string; status: string }> {
+  return apiFetch("/api/tags", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export function fetchImpact(): Promise<ImpactData> {

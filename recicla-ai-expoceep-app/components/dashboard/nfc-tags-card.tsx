@@ -4,7 +4,9 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import { AddTagDialog } from "./add-tag-dialog";
 
 interface NfcTag {
   id: string;
@@ -59,10 +61,13 @@ const itemVariants = {
 
 export interface NfcTagsCardProps extends React.HTMLAttributes<HTMLDivElement> {
   tags?: NfcTag[];
+  onAddTag?: () => void;
 }
 
 const NfcTagsCard = React.forwardRef<HTMLDivElement, NfcTagsCardProps>(
-  ({ className, tags = mockTags, ...props }, ref) => {
+  ({ className, tags = mockTags, onAddTag, ...props }, ref) => {
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
     return (
       <div ref={ref} className={cn("flex flex-col", className)} {...props}>
         <motion.div
@@ -92,9 +97,19 @@ const NfcTagsCard = React.forwardRef<HTMLDivElement, NfcTagsCardProps>(
             </motion.div>
           ))}
         </motion.div>
-        <Button variant="ghost" className="w-full mt-3">
+        <Button
+          variant="ghost"
+          className="w-full mt-3"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
           Vincular Nova Tag
         </Button>
+        <AddTagDialog
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          onSuccess={onAddTag}
+        />
       </div>
     );
   }
