@@ -9,12 +9,14 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { animate } from "animejs";
+import { Users, Minus, Plus } from "lucide-react";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [householdSize, setHouseholdSize] = useState(1);
+  const [showCustom, setShowCustom] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -35,9 +37,15 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (householdSize < 1) {
+      setError("Informe pelo menos 1 pessoa na residência.");
+      return;
+    }
+
     setLoading(true);
 
-    const result = await register(nome, email, password, cpf || undefined);
+    const result = await register(nome, email, password, householdSize);
 
     if (result.error) {
       setError(result.error);
@@ -48,19 +56,25 @@ export default function RegisterPage() {
     router.push("/dashboard");
   };
 
+  const presets = [1, 2, 3, 4, 5];
+
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card ref={cardRef} className="w-full max-w-md p-6 opacity-0">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-foreground">Recicla Ai</h1>
+    <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-b from-success/[0.03] to-transparent">
+      <Card ref={cardRef} className="w-full max-w-sm p-8 opacity-0">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            Recicla Ai
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Crie sua conta
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="nome">Nome</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="nome" className="text-xs font-semibold uppercase tracking-wider">
+              Nome
+            </Label>
             <Input
               id="nome"
               type="text"
@@ -71,19 +85,10 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div>
-            <Label htmlFor="cpf">CPF</Label>
-            <Input
-              id="cpf"
-              type="text"
-              value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
-              placeholder="000.000.000-00"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -94,8 +99,10 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div>
-            <Label htmlFor="password">Senha</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider">
+              Senha
+            </Label>
             <Input
               id="password"
               type="password"
@@ -106,18 +113,92 @@ export default function RegisterPage() {
             />
           </div>
 
+          {/* Household size */}
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <Users className="h-3 w-3" />
+                Quantas pessoas moram com você?
+              </span>
+            </Label>
+
+            <div className="flex gap-2">
+              {presets.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => { setHouseholdSize(n); setShowCustom(false); }}
+                  className={`flex-1 h-10 rounded-lg text-sm font-medium transition-all ${
+                    householdSize === n && !showCustom
+                      ? "bg-success text-success-foreground shadow-sm"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setShowCustom(true)}
+                className={`flex-1 h-10 rounded-lg text-sm font-medium transition-all ${
+                  showCustom
+                    ? "bg-success text-success-foreground shadow-sm"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                6+
+              </button>
+            </div>
+
+            {showCustom && (
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setHouseholdSize(Math.max(1, householdSize - 1))}
+                  className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                >
+                  <Minus className="h-3 w-3" />
+                </button>
+                <Input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={householdSize}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
+                    if (!isNaN(v) && v >= 1) setHouseholdSize(v);
+                  }}
+                  className="h-8 w-20 text-center text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setHouseholdSize(householdSize + 1)}
+                  className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
+            <p className="text-[10px] text-muted-foreground">
+              Usado para estimar seu impacto ambiental
+            </p>
+          </div>
+
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive bg-destructive/5 px-3 py-2 rounded-lg">
+              {error}
+            </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
             {loading ? "Cadastrando..." : "Cadastrar"}
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Ja tem conta?{" "}
-          <Link href="/login" className="text-foreground hover:underline font-medium">
+          <Link href="/login" className="text-foreground hover:underline font-semibold">
             Entre
           </Link>
         </p>

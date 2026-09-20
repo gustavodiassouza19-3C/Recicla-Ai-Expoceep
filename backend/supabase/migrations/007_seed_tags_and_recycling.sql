@@ -1,6 +1,7 @@
--- Tags ficticias com codigos de 5 caracteres
--- CORRIGIDO: usuario_id agora usa o primeiro usuario existente
--- (original referenciava id=1 que pode nao existir)
+-- ============================================================
+-- Migration 007: Seeds - Tags NFC e Reciclagens ficticias
+-- Aplicado via MCP em 2026-09-19
+-- ============================================================
 
 -- Inserir 10 tags NFC ficticias
 INSERT INTO tags (codigo_nfc, status) VALUES
@@ -16,7 +17,7 @@ INSERT INTO tags (codigo_nfc, status) VALUES
 ('C9D0E', 'ativa')
 ON CONFLICT (codigo_nfc) DO NOTHING;
 
--- Inserir reciclagens ficticias para o primeiro usuario existente
+-- Inserir reciclagens ficticias para o usuario existente
 DO $$
 DECLARE
   v_usuario_id BIGINT;

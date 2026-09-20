@@ -8,7 +8,8 @@ interface User {
   id: string;
   email: string;
   nome: string;
-  cpf?: string;
+  usuario_id: number | null;
+  household_size: number;
 }
 
 interface AuthContextType {
@@ -16,8 +17,9 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  register: (nome: string, email: string, password: string, cpf?: string) => Promise<{ error?: string }>;
+  register: (nome: string, email: string, password: string, householdSize: number) => Promise<{ error?: string }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +41,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  async function fetchUsuarioData(authUserId: string): Promise<{ usuario_id: number | null; household_size: number }> {
+    let usuarioId: number | null = null;
+    let householdSize = 1;
+
+    try {
+      const { data: uid } = await supabase.rpc("get_current_usuario_id");
+      if (uid) usuarioId = uid;
+    } catch {}
+
+    if (usuarioId) {
+      try {
+        const { data: row } = await supabase
+          .from("usuarios")
+          .select("household_size")
+          .eq("id", usuarioId)
+          .single();
+        if (row?.household_size) householdSize = row.household_size;
+      } catch {}
+    }
+
+    return { usuario_id: usuarioId, household_size: householdSize };
+  }
+
+  const refreshUser = async () => {
+    if (!user?.usuario_id) return;
+    try {
+      const { data: row } = await supabase
+        .from("usuarios")
+        .select("household_size")
+        .eq("id", user.usuario_id)
+        .single();
+      if (row?.household_size !== undefined) {
+        const updated = { ...user, household_size: row.household_size };
+        setUser(updated);
+        localStorage.setItem("supabase_user", JSON.stringify(updated));
+      }
+    } catch {}
+  };
+
   const login = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -50,11 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const jwt = data.session.access_token;
+    const { usuario_id, household_size } = await fetchUsuarioData(data.user.id);
+
     const userData: User = {
       id: data.user.id,
       email: data.user.email || "",
       nome: data.user.user_metadata?.nome || email.split("@")[0],
-      cpf: data.user.user_metadata?.cpf,
+      usuario_id,
+      household_size,
     };
 
     localStorage.setItem("supabase_token", jwt);
@@ -65,12 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
-  const register = async (nome: string, email: string, password: string, cpf?: string) => {
+  const register = async (nome: string, email: string, password: string, householdSize: number) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { nome, cpf },
+        data: { nome },
       },
     });
 
@@ -80,11 +124,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (data.session && data.user) {
       const jwt = data.session.access_token;
+      const { usuario_id, household_size } = await fetchUsuarioData(data.user.id);
+
+      // Atualiza household_size se não veio do fetch (usuário novo)
+      if (usuario_id && household_size === 1 && householdSize > 1) {
+        await supabase
+          .from("usuarios")
+          .update({ household_size: householdSize })
+          .eq("id", usuario_id);
+      }
+
       const userData: User = {
         id: data.user.id,
         email: data.user.email || "",
         nome,
-        cpf,
+        usuario_id,
+        household_size: householdSize,
       };
 
       localStorage.setItem("supabase_token", jwt);
@@ -106,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

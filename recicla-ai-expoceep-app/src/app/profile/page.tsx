@@ -3,23 +3,25 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Sun, Moon, LogOut, Save, Loader2 } from "lucide-react";
+import { User, Sun, Moon, LogOut, Save, Loader2, Users, Home } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
-  const { user, token, loading: authLoading, logout } = useAuth();
+  const { user, token, loading: authLoading, logout, refreshUser } = useAuth();
   const router = useRouter();
 
   const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [tipo, setTipo] = useState("");
   const [criadoEm, setCriadoEm] = useState("");
   const [pontos, setPontos] = useState(0);
+  const [householdSize, setHouseholdSize] = useState(1);
+  const [showCustomHousehold, setShowCustomHousehold] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -42,6 +44,14 @@ export default function ProfilePage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
+    if (user) {
+      setNome(user.nome || "");
+      setEmail(user.email || "");
+      setHouseholdSize(user.household_size || 1);
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (!user || !token) return;
 
     const fetchProfile = async () => {
@@ -55,16 +65,13 @@ export default function ProfilePage() {
         if (res.ok) {
           const data = await res.json();
           setNome(data.nome || "");
-          setCpf(data.cpf || "");
           setEmail(data.email || "");
           setTipo(data.tipo || "");
           setCriadoEm(data.criado_em || "");
           setPontos(data.pontos || 0);
         }
       } catch {
-        setNome(user.nome || "");
-        setEmail(user.email || "");
-        setCpf(user.cpf || "");
+        // fallback to auth data
       }
     };
 
@@ -77,20 +84,36 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
+      // Update household_size in Supabase
+      if (user?.usuario_id) {
+        const { error: updateError } = await supabase
+          .from("usuarios")
+          .update({ household_size: householdSize })
+          .eq("id", user.usuario_id);
+
+        if (updateError) {
+          setError("Erro ao atualizar residência.");
+          setSaving(false);
+          return;
+        }
+
+        // Refresh user data in context
+        await refreshUser();
+      }
+
+      // Update nome via API
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ nome, cpf }),
+        body: JSON.stringify({ nome }),
       });
 
       if (res.ok) {
         const data = await res.json();
         setNome(data.nome);
-        setCpf(data.cpf);
-        setPontos(data.pontos);
         setSuccess("Perfil atualizado com sucesso!");
         setIsEditing(false);
 
@@ -98,7 +121,7 @@ export default function ProfilePage() {
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
           parsed.nome = data.nome;
-          parsed.cpf = data.cpf;
+          parsed.household_size = householdSize;
           localStorage.setItem("supabase_user", JSON.stringify(parsed));
         }
       } else {
@@ -132,6 +155,8 @@ export default function ProfilePage() {
     }
   };
 
+  const presets = [1, 2, 3, 4, 5];
+
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -141,165 +166,209 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-md mx-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Meu Perfil</h1>
-          {!isEditing && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-            >
-              Editar
-            </Button>
-          )}
-        </div>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">
-              Dados Pessoais
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">Nome</Label>
-              {isEditing ? (
-                <Input
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  className="mt-1"
-                />
-              ) : (
-                <p className="text-sm text-foreground mt-1">{nome || "—"}</p>
-              )}
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Email</Label>
-              <p className="text-sm text-foreground mt-1">{email || "—"}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Nao e possivel alterar
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">CPF</Label>
-              {isEditing ? (
-                <Input
-                  value={cpf}
-                  onChange={(e) => setCpf(e.target.value)}
-                  placeholder="000.000.000-00"
-                  className="mt-1"
-                />
-              ) : (
-                <p className="text-sm text-foreground mt-1">{cpf || "—"}</p>
-              )}
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-xs text-muted-foreground">Tipo</Label>
-                <p className="text-sm text-foreground mt-1">{tipo || "—"}</p>
-              </div>
-              <div className="text-right">
-                <Label className="text-xs text-muted-foreground">Pontos</Label>
-                <p className="text-sm font-bold text-foreground mt-1">
-                  {pontos}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">
-                Membro desde
-              </Label>
-              <p className="text-sm text-foreground mt-1">
-                {formatDate(criadoEm)}
-              </p>
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="flex gap-2 mt-4">
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-md mx-auto">
+        <div className="border rounded-2xl bg-card border-border p-6 shadow-lg max-w-md mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl font-extrabold tracking-tight">{isEditing ? "Editar Perfil" : "Meu Perfil"}</h1>
+            {!isEditing && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setIsEditing(false);
-                  setError("");
-                  setSuccess("");
-                }}
-                className="flex-1"
+                onClick={() => setIsEditing(true)}
               >
-                Cancelar
+                Editar
               </Button>
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1"
-              >
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                ) : (
-                  <Save className="h-4 w-4 mr-1" />
-                )}
-                Salvar
-              </Button>
-            </div>
-          )}
-
-          {error && (
-            <p className="text-xs text-destructive mt-2">{error}</p>
-          )}
-          {success && (
-            <p className="text-xs text-success mt-2">{success}</p>
-          )}
-        </Card>
-
-        <Card className="p-4">
-          <h2 className="text-sm font-semibold text-foreground mb-4">
-            Configuracoes
-          </h2>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {isDark ? (
-                  <Moon className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Sun className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm text-foreground">Tema</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-              >
-                {isDark ? "Escuro" : "Claro"}
-              </Button>
-            </div>
-
-            <Separator />
-
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={logout}
-              className="w-full"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair da conta
-            </Button>
+            )}
           </div>
-        </Card>
+
+          {isEditing ? (
+            <Card className="p-6 space-y-4">
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  handleSave();
+                }}
+              >
+                <div className="space-y-3">
+                  <div>
+                    <Label className="block text-sm font-medium mb-1.5">Nome</Label>
+                    <Input
+                      value={nome}
+                      onChange={(e) => setNome(e.target.value)}
+                      placeholder="Seu nome completo"
+                      className="rounded-xl border-input bg-input p-3.5 text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-inset"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="block text-sm font-medium mb-1.5">Email</Label>
+                    <Input
+                      disabled
+                      value={email}
+                      placeholder="seu@email.com"
+                      className="rounded-xl border-input bg-input p-3.5 text-lg transition-colors"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Não é possível alterar
+                    </p>
+                  </div>
+
+                  {/* Household size */}
+                  <div>
+                    <Label className="block text-sm font-medium mb-1.5">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="h-3 w-3" />
+                        Quantas pessoas moram com você?
+                      </span>
+                    </Label>
+
+                    <div className="flex gap-2">
+                      {presets.map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => { setHouseholdSize(n); setShowCustomHousehold(false); }}
+                          className={`flex-1 h-10 rounded-lg text-sm font-medium transition-all ${
+                            householdSize === n && !showCustomHousehold
+                              ? "bg-success text-success-foreground shadow-sm"
+                              : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setShowCustomHousehold(true)}
+                        className={`flex-1 h-10 rounded-lg text-sm font-medium transition-all ${
+                          showCustomHousehold
+                            ? "bg-success text-success-foreground shadow-sm"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        6+
+                      </button>
+                    </div>
+
+                    {showCustomHousehold && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={householdSize}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value);
+                            if (!isNaN(v) && v >= 1) setHouseholdSize(v);
+                          }}
+                          className="h-8 w-20 text-center text-sm"
+                        />
+                        <span className="text-xs text-muted-foreground">pessoas</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="w-full py-3.5 px-4 rounded-xl font-medium transition-all hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    {saving ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-1" />
+                    )}
+                    Salvar
+                  </Button>
+                </div>
+              </form>
+
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
+              {success && (
+                <p className="text-sm text-success">✓ {success}</p>
+              )}
+            </Card>
+          ) : (
+            <Card className="p-6 pt-2">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <User className="h-6 w-6 rounded-xl bg-primary/10 text-primary" />
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">{nome || "—"}</h2>
+                    <p className="text-sm text-muted-foreground">Membro desde {formatDate(criadoEm)}</p>
+                  </div>
+                </div>
+
+                <dl className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="capitalize text-sm text-muted-foreground">Tipo de conta</Label>
+                    <p className="text-sm text-foreground">{tipo || "—"}</p>
+                  </div>
+
+                  <div>
+                    <Label className="capitalize text-sm text-muted-foreground">Pontos</Label>
+                    <p className="text-sm font-bold text-foreground">{pontos} pts</p>
+                  </div>
+                </dl>
+
+                <Separator />
+
+                {/* Household info */}
+                <Card className="p-4 rounded-xl border-border/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Home className="h-4 w-4 text-success" />
+                    <h3 className="text-sm font-medium">Residência</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {householdSize} {householdSize === 1 ? "pessoa" : "pessoas"} morando na residência
+                  </p>
+                </Card>
+
+                <Separator />
+
+                <Card className="p-4 rounded-xl border-border/20">
+                  <h3 className="capitalize text-sm font-medium mb-3">Configurações</h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {isDark ? (
+                          <Moon className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Sun className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className="text-sm text-foreground">Tema</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleTheme}
+                        className="px-3 rounded-full py-1.5 text-xs transition-colors"
+                      >
+                        {isDark ? "Escuro" : "Claro"}
+                      </Button>
+                    </div>
+
+                    <Separator />
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={logout}
+                      className="w-full py-3 rounded-xl font-medium transition-all hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sair da conta
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

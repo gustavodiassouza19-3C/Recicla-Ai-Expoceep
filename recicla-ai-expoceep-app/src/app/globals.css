@@ -5,17 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --card: oklch(1 0 0);
+  --card: oklch(0.985 0.005 80);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.985 0.005 80);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.955 0.008 80);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.955 0.008 80);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.955 0.008 80);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.98 0.01 145);
@@ -23,8 +23,8 @@
   --success-foreground: oklch(0.98 0.01 145);
   --warning: oklch(0.75 0.15 75);
   --warning-foreground: oklch(0.28 0.04 75);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.905 0.01 80);
+  --input: oklch(0.905 0.01 80);
   --ring: oklch(0.708 0 0);
 
   --radius-sm: 4px;
@@ -37,7 +37,7 @@
     0 4px 8px -2px rgb(0 0 0/0.06), 0 12px 16px -4px rgb(0 0 0/0.04);
   --shadow-overlay: 0 4px 8px -3px rgb(0 0 0/0.06),
     0 12px 24px -4px rgb(0 0 0/0.08), 0 24px 32px -8px rgb(0 0 0/0.06);
-  --background: oklch(1 0 0);
+  --background: oklch(0.975 0.006 80);
   --foreground: oklch(0.145 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);

@@ -7,25 +7,12 @@ import { usePoints } from "@/contexts/points-context";
 import { Card } from "@/components/ui";
 import { ScoreChart } from "@/components/dashboard/score-chart";
 import { ScoreDisplay } from "@/components/dashboard/score-display";
-import { HistoryList } from "@/components/dashboard/history-list";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
-import { MissionsCard } from "@/components/dashboard/missions-card";
-import {
-  fetchScoreHistory,
-  fetchHistory,
-  fetchMyTags,
-  fetchImpact,
-  fetchMyMissions,
-  addTag,
-  type ScoreDataPoint,
-  type HistoryEntry,
-  type UserTag,
-  type ImpactData,
-  type UserMissionItem,
-} from "@/lib/api";
+import { DashboardHistory } from "@/components/dashboard/dashboard-history";
 import { stagger, animate } from "animejs";
-
+import { dashboardService } from "@/lib/dashboard-service";
+import { Leaf, Recycle, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -33,11 +20,8 @@ export default function Dashboard() {
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const { points, refetchPoints } = usePoints();
 
-  const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
-  const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
-  const [tagsData, setTagsData] = useState<UserTag[]>([]);
-  const [impactData, setImpactData] = useState<ImpactData | null>(null);
-  const [missionsData, setMissionsData] = useState<UserMissionItem[]>([]);
+  const [scoreData, setScoreData] = useState<Array<{ month: string; score: number }>>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -47,17 +31,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    fetchScoreHistory().then(setScoreData).catch(() => {});
-    fetchHistory().then(setHistoryData).catch(() => {});
-    fetchMyTags().then(setTagsData).catch(() => {});
-    fetchImpact().then(setImpactData).catch(() => {});
-    fetchMyMissions().then(setMissionsData).catch(() => {});
+    dashboardService.getDashboardSummary().then(({ scoreData: sd }) => {
+      setScoreData(sd || []);
+    });
     refetchPoints();
-  }, [user, refetchPoints]);
-
-  const handleAddTag = () => {
-    fetchMyTags().then(setTagsData).catch(() => {});
-  };
+  }, [user, refreshKey, refetchPoints]);
 
   useEffect(() => {
     const cards = cardsRef.current.filter(Boolean);
@@ -71,7 +49,7 @@ export default function Dashboard() {
     });
   }, [user]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">Carregando...</p>
@@ -82,108 +60,78 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
+        {/* Welcome header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold uppercase tracking-wide text-foreground">
-            Painel de Controle
+          <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-success/10">
+              <Leaf className="h-4 w-4 text-success" />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest text-success">
+              Eco Points
+            </span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            Ola, {user?.nome || "--"}
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Bem-vindo de volta, {user.nome}!
+          <p className="text-sm text-muted-foreground mt-1">
+            Seu impacto ambiental em tempo real
           </p>
         </div>
 
-        {/* Row 1 */}
+        {/* Row 1 - Score */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <div className="md:col-span-4">
-            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
+          <div className="md:col-span-6">
+            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 md:p-6 opacity-0 border-success/10 bg-gradient-to-br from-success/[0.02] to-transparent">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Pontuacao Mensal
-                </h2>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-success" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Pontuacao Mensal
+                  </h2>
+                </div>
                 <ScoreDisplay score={points} />
               </div>
-              <ScoreChart data={scoreData.length > 0 ? scoreData : undefined} />
-            </Card>
-          </div>
-          <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="flex flex-col h-[320px] opacity-0 retro-border-card retro-shadow-md retro-radius">
-              <div className="px-4 pt-4 pb-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Historico
-                </h2>
-              </div>
-              <HistoryList
-                className="flex-1 min-h-0"
-                data={
-                  historyData.length > 0
-                    ? historyData.map((e) => ({
-                        id: String(e.id),
-                        attachedAt: new Date(e.data_entrega).toLocaleDateString("pt-BR"),
-                        status: e.status === "validada" ? "validada" as const : "pendente" as const,
-                        validatedAt: e.status === "validada" ? new Date(e.data_entrega).toLocaleDateString("pt-BR") : null,
-                        location: e.tags?.codigo_nfc ? `Tag ${e.tags.codigo_nfc}` : null,
-                      }))
-                    : undefined
-                }
-              />
+              <ScoreChart data={scoreData} />
             </Card>
           </div>
         </div>
 
-        {/* Row 2 */}
+        {/* Row 2 - Impact + Tags + History */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-                Impacto Ambiental
-              </h2>
+            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 md:p-5 opacity-0">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
+                  <Leaf className="h-3 w-3 text-success" />
+                </div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Impacto Estimado
+                </h2>
+              </div>
               <ImpactCard
-                validatedTags={impactData?.validated_count ?? 12}
+                householdSize={user?.household_size ?? 1}
               />
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-                Tags NFC
-              </h2>
-<NfcTagsCard
-                    tags={
-                      tagsData.length > 0
-                        ? tagsData.map((t) => ({
-                            id: String(t.id),
-                            status: t.status === "ativa" ? "disponivel" as const : "em-uso" as const,
-                            lastUsed: new Date(t.last_used).toLocaleDateString("pt-BR"),
-                          }))
-                        : undefined
-                    }
-                    onAddTag={handleAddTag}
-                  />
+            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 md:p-5 opacity-0">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
+                  <Recycle className="h-3 w-3 text-success" />
+                </div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Tags NFC
+                </h2>
+              </div>
+              <NfcTagsCard onTagLinked={() => { setRefreshKey((k) => k + 1); refetchPoints(); }} />
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
-                Missoes
-              </h2>
-              <MissionsCard
-                missions={
-                  missionsData.length > 0
-                    ? missionsData.map((m) => ({
-                        id: String(m.mission.id),
-                        name: m.mission.titulo,
-                        description: m.mission.descricao,
-                        current: m.progress,
-                        target: m.mission.meta,
-                        reward: m.mission.recompensa_pontos,
-                        completed: m.completed,
-                      }))
-                    : undefined
-                }
-              />
+            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-3 md:p-4 opacity-0">
+              <DashboardHistory />
             </Card>
           </div>
         </div>
-
       </div>
     </div>
   );

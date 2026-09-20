@@ -3,6 +3,16 @@ apple-design-skill/
 .impeccable/
 .claude/*.local.json
 claude-cookbooks/
+.opencode/
+
+# playwright / screenshots
+recicla-ai-expoceep-app/.playwright-mcp/
+recicla-ai-expoceep-app/test-results/
+*.png
+
+# prisma / supabase local
+recicla-ai-expoceep-app/prisma/
+recicla-ai-expoceep-app/supabase/
 
 # dependencies
 node_modules/

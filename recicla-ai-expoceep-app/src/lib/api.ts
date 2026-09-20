@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 function getAuthHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {};
@@ -48,20 +48,6 @@ export interface ImpactData {
   water_liters: number;
 }
 
-export interface MissionItem {
-  id: number;
-  titulo: string;
-  descricao: string;
-  meta: number;
-  recompensa_pontos: number;
-}
-
-export interface UserMissionItem {
-  mission: MissionItem;
-  progress: number;
-  completed: boolean;
-}
-
 export interface EcoPoint {
   id: number;
   nome: string;
@@ -76,11 +62,25 @@ export interface EcoPointNearby extends EcoPoint {
 }
 
 export function fetchScoreHistory(): Promise<ScoreDataPoint[]> {
-  return apiFetch("/api/recycle/score-history");
+  return fetch("/api/recycle/score-history", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Erro");
+    return res.json();
+  });
 }
 
 export function fetchHistory(): Promise<HistoryEntry[]> {
-  return apiFetch("/api/recycle/history");
+  return fetch("/api/recycle/history", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Erro");
+    return res.json();
+  });
 }
 
 export interface TagInput {
@@ -88,7 +88,14 @@ export interface TagInput {
 }
 
 export function fetchMyTags(): Promise<UserTag[]> {
-  return apiFetch("/api/tags/me");
+  return fetch("/api/tags/me", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Erro");
+    return res.json();
+  });
 }
 
 export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string; status: string }> {
@@ -99,11 +106,14 @@ export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string
 }
 
 export function fetchImpact(): Promise<ImpactData> {
-  return apiFetch("/api/recycle/impact");
-}
-
-export function fetchMyMissions(): Promise<UserMissionItem[]> {
-  return apiFetch("/api/missions/me");
+  return fetch("/api/recycle/impact", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Erro");
+    return res.json();
+  });
 }
 
 export function fetchEcoPoints(): Promise<EcoPoint[]> {
