@@ -1,0 +1,118 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e6]:
+      - button "Recicla Ai" [ref=e7]
+      - navigation [ref=e12]:
+        - link "Como funciona" [ref=e13] [cursor=pointer]:
+          - /url: "#como-funciona"
+        - link "Funcionalidades" [ref=e14] [cursor=pointer]:
+          - /url: "#features"
+        - link "Perguntas" [ref=e15] [cursor=pointer]:
+          - /url: "#faq"
+        - button "Entrar" [ref=e16]
+        - button "Comecar Agora" [ref=e17]
+    - main [ref=e18]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - heading "Somos incansaveis para voce reciclar." [level=1] [ref=e25]: Somosincansaveispara vocereciclar.
+          - paragraph [ref=e26]: Recicle, acumule pontos e transforme o planeta. E aquele cartao? E so o comeco.
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: Crie sua conta gratuita
+          - generic [ref=e30]:
+            - textbox "Digite seu email" [ref=e31]
+            - button "Quero Reciclar" [ref=e32]
+          - paragraph [ref=e35]: Sem tarifas. Sem complicacao.
+      - generic [ref=e40]:
+        - heading "Junte-se aos que ja escolheram reciclar." [level=2] [ref=e42]: Junte-se aosque ja escolheramreciclar.
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: 150+
+            - paragraph [ref=e46]: Usuarios ativos reciclando
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: "1.200"
+            - paragraph [ref=e49]: Reciclagens validadas
+          - generic [ref=e50]:
+            - paragraph [ref=e51]: "50"
+            - paragraph [ref=e52]: Conquistas para desbloquear
+      - generic [ref=e54]:
+        - heading "Tres passos. Simples assim." [level=2] [ref=e56]: Tres passos.Simples assim.
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]: "01"
+              - heading "Crie sua conta" [level=3] [ref=e61]
+              - paragraph [ref=e62]: Cadastre-se com email e senha. Sem burocracia, sem tarifa.
+            - img "Crie sua conta" [ref=e65]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: "02"
+              - heading "Vincule sua tag NFC" [level=3] [ref=e69]
+              - paragraph [ref=e70]: Receba uma tag no ecoponto e vincule pelo app em segundos.
+            - img "Vincule sua tag NFC" [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]: "03"
+              - heading "Recicle e ganhe pontos" [level=3] [ref=e77]
+              - paragraph [ref=e78]: Leve seus reciclaveis ao ecoponto, valide com a tag e acumule pontos.
+            - img "Recicle e ganhe pontos" [ref=e81]
+      - generic [ref=e83]:
+        - heading "Tudo que voce precisa para reciclar." [level=2] [ref=e85]: Tudo que voce precisapara reciclar.
+        - generic [ref=e86]:
+          - generic [ref=e89] [cursor=pointer]:
+            - heading "Gamificacao" [level=3] [ref=e97]
+            - paragraph [ref=e98]: 50 conquistas para desbloquear. Cada reciclagem te aproxima do proximo nivel.
+          - generic [ref=e101] [cursor=pointer]:
+            - heading "Tags NFC" [level=3] [ref=e108]
+            - paragraph [ref=e109]: Vincule tags fisicas as suas reciclagems. Validacao instantanea no ecoponto.
+          - generic [ref=e112] [cursor=pointer]:
+            - heading "Impacto Ambiental" [level=3] [ref=e116]
+            - paragraph [ref=e117]: Acompanhe CO2 economizado, agua poupada e arvores salvas.
+          - generic [ref=e120] [cursor=pointer]:
+            - heading "Recompensas" [level=3] [ref=e126]
+            - paragraph [ref=e127]: Troque seus pontos por recompensas reais de parceiros da comunidade.
+      - generic [ref=e129]:
+        - heading "Impacto da comunidade." [level=2] [ref=e131]: Impacto dacomunidade.
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - generic [ref=e136]:
+              - generic [ref=e137]: "3.400"
+              - generic [ref=e138]: kg
+            - paragraph [ref=e139]: CO2e economizados
+            - paragraph [ref=e140]: Equivalente a tirar 2 carros da rua por um mes
+          - generic [ref=e141]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: "31.800"
+              - generic [ref=e147]: L
+            - paragraph [ref=e148]: Agua poupada
+            - paragraph [ref=e149]: Suficiente para abastecer uma familia por 3 meses
+          - generic [ref=e150]:
+            - generic [ref=e153]: "20"
+            - paragraph [ref=e155]: Arvores salvas
+            - paragraph [ref=e156]: Cada arvore absorve 22kg de CO2 por ano
+      - generic [ref=e159]:
+        - heading "Perguntas frequentes." [level=2] [ref=e161]: Perguntasfrequentes.
+        - generic [ref=e162]:
+          - button "O que e o Recicla Ai?" [ref=e164]
+          - button "Preciso comprar uma tag NFC?" [ref=e169]
+          - button "Como funcionam os pontos?" [ref=e174]
+          - button "Quais materiais posso reciclar?" [ref=e179]
+          - button "Meus dados estao seguros?" [ref=e184]
+      - generic [ref=e192]:
+        - heading "Pronto para reciclar?" [level=2] [ref=e193]: Pronto parareciclar?
+        - paragraph [ref=e194]: Crie sua conta em menos de 1 minuto e comecar a acumular pontos hoje.
+        - button "Criar Conta Gratis" [ref=e195]
+  - contentinfo [ref=e198]:
+    - generic [ref=e200]:
+      - generic [ref=e201]: Recicla Ai
+      - navigation [ref=e207]:
+        - link "Como funciona" [ref=e208] [cursor=pointer]:
+          - /url: /como-funciona
+        - link "Conquistas" [ref=e209] [cursor=pointer]:
+          - /url: /achievements
+        - link "Recompensas" [ref=e210] [cursor=pointer]:
+          - /url: /rewards
+        - link "Perfil" [ref=e211] [cursor=pointer]:
+          - /url: /profile
+      - generic [ref=e212]:
+        - generic [ref=e213]: Feito com
+        - generic [ref=e216]: para o planeta

@@ -17,7 +17,7 @@ export async function GET() {
   }
 
   // Calculate impact from conquistas points
-  const totalPoints = (data || []).reduce((sum: number, item: any) => sum + (item.pontos || 0), 0);
+  const totalPoints = (data || []).reduce((sum: number, item: { pontos?: number }) => sum + (item.pontos || 0), 0);
 
   // Transform for dashboard compatibility
   const impactData = {

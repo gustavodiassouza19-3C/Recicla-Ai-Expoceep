@@ -8,7 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export async function GET() {
   const { data, error } = await supabase
     .from('reciclagens')
-    .select('id, data_entrega, status')
+    .select('id, data_entrega, status, tags')
     .order('id', { ascending: false });
 
   if (error) {
@@ -16,7 +16,7 @@ export async function GET() {
   }
 
   // Transform for dashboard compatibility
-  const historyData = (data || []).map((item: any) => ({
+  const historyData = (data || []).map((item) => ({
     id: item.id,
     tag_id: item.id,
     data_entrega: item.data_entrega,

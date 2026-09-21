@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - main [ref=e3]:
+    - generic [ref=e219]:
+      - generic [ref=e220]:
+        - heading "Recicla Ai" [level=1] [ref=e226]
+        - paragraph [ref=e227]: Recicle, acumule pontos, transforme.
+      - generic [ref=e228]:
+        - generic [ref=e229]:
+          - text: Email
+          - textbox "Email" [ref=e230]:
+            - /placeholder: seu@email.com
+        - generic [ref=e231]:
+          - text: Senha
+          - textbox "Senha" [ref=e232]:
+            - /placeholder: Sua senha
+        - button "Entrar" [ref=e233]
+      - generic [ref=e234]:
+        - paragraph [ref=e235]:
+          - text: Nao tem conta?
+          - link "Cadastre-se" [ref=e236] [cursor=pointer]:
+            - /url: /register
+        - paragraph [ref=e237]:
+          - link "Como funciona?" [ref=e238] [cursor=pointer]:
+            - /url: /como-funciona
+  - alert [ref=e217]

@@ -57,7 +57,7 @@ export class DashboardService {
         .select('pontos_ganhos');
 
       const conquestPoints = (!ucError && userConquests)
-        ? userConquests.reduce((sum: number, uc: any) => sum + (uc.pontos_ganhos || 0), 0)
+        ? userConquests.reduce((sum: number, uc: { pontos_ganhos?: number }) => sum + (uc.pontos_ganhos || 0), 0)
         : 0;
 
       // 2. Pontos de reciclagens via recompensas (RLS filtra por reciclagem do usuario)
@@ -66,7 +66,7 @@ export class DashboardService {
         .select('valor');
 
       const rewardPoints = (!rError && rewards)
-        ? rewards.reduce((sum: number, r: any) => sum + (parseFloat(r.valor) || 0), 0)
+        ? rewards.reduce((sum: number, r: { valor: string }) => sum + (parseFloat(r.valor) || 0), 0)
         : 0;
 
       return Math.round(conquestPoints + rewardPoints);
@@ -93,12 +93,12 @@ export class DashboardService {
         return [];
       }
 
-      const entries: HistoryEntry[] = (data || []).map((item: any) => ({
+      const entries: HistoryEntry[] = (data || []).map((item) => ({
         id: item.id,
         tag_id: item.tag_id,
         data_entrega: item.data_entrega,
         status: item.status,
-        tags: item.tags ? { codigo_nfc: item.tags.codigo_nfc, status: item.status } : undefined,
+        tags: item.tags?.[0] ? { codigo_nfc: item.tags[0].codigo_nfc, status: item.status } : undefined,
       }));
 
       return entries;
@@ -125,7 +125,7 @@ export class DashboardService {
       }
 
       // Transforma para o formato esperado pelo NfcTagsCard
-      const tags: UserTag[] = (data || []).map((item: any) => ({
+      const tags: UserTag[] = (data || []).map((item: { id: number; codigo_nfc: string; status: string; last_used?: string }) => ({
         id: item.id,
         codigo_nfc: item.codigo_nfc,
         status: item.status,
@@ -157,7 +157,7 @@ export class DashboardService {
       }
 
       const totalPoints = (conquests || []).reduce(
-        (sum: number, item: any) => sum + (item.pontos || 0),
+        (sum: number, item: { pontos?: number }) => sum + (item.pontos || 0),
         0
       );
 
@@ -245,7 +245,7 @@ export class DashboardService {
 
       const monthlyScores: Record<number, number> = {};
 
-      (recyclages || []).forEach((item: any) => {
+      (recyclages || []).forEach((item: { data_entrega: string }) => {
         const date = new Date(item.data_entrega);
         if (!isNaN(date.getTime())) {
           const monthIndex = date.getUTCMonth();

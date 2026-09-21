@@ -182,7 +182,7 @@ export default function AchievementsPage() {
 
       const unlockedMap = new Map<number, { pontos_ganhos: number; concedida_em: string | null }>();
       if (!ucError && userConquistas) {
-        userConquistas.forEach((uc: any) => {
+        userConquistas.forEach((uc: { conquista_id: number; pontos_ganhos: number; concedida_em: string | null }) => {
           unlockedMap.set(uc.conquista_id, {
             pontos_ganhos: uc.pontos_ganhos,
             concedida_em: uc.concedida_em,

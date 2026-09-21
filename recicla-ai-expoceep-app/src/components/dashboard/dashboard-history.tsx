@@ -36,9 +36,9 @@ function DashboardHistory() {
       .then(({ data, error }) => {
         if (!error && data) {
           setHistory(
-            data.map((item: any) => ({
+            data.map((item) => ({
               id: item.id,
-              tag_codigo: item.tags?.codigo_nfc ?? "---",
+              tag_codigo: item.tags?.[0]?.codigo_nfc ?? "---",
               data_entrega: item.data_entrega,
               status: item.status,
             }))

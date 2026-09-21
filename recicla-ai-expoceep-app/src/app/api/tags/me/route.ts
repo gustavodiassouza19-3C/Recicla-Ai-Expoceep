@@ -16,7 +16,7 @@ export async function GET() {
   }
 
   // Transform for dashboard compatibility
-  const tagsData = (data || []).map((item: any) => ({
+  const tagsData = (data || []).map((item: { id: number; codigo_nfc: string; status: string }) => ({
     id: item.id,
     codigo_nfc: item.codigo_nfc,
     status: item.status,
