@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import (
+    admin_router,
     users_router,
     tags_router,
     recycling_router,
@@ -23,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(admin_router)
 app.include_router(users_router)
 app.include_router(tags_router)
 app.include_router(recycling_router)

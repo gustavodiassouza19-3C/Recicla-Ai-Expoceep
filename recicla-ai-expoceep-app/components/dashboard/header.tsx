@@ -21,7 +21,7 @@ function Header() {
 
   if (loading) return null;
   if (!user) return null;
-  if (pathname === "/login" || pathname === "/register") return null;
+  if (pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
