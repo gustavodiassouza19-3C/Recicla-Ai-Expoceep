@@ -29,22 +29,18 @@ interface User {
   tipo?: string;
   criado_em?: string;
   pontos: number;
+  tags_validadas?: number;
 }
 
 interface Stats {
   total_usuarios: number;
+  total_tags_validadas: number;
   total_pontos: number;
   por_sexo: { masculino: number; feminino: number; outro: number; nao_informado: number };
   por_faixa_etaria: { "18-25": number; "26-35": number; "36-45": number; "46-55": number; "56+": number };
 }
 
 const COLORS = ["#4ade80", "#f472b6", "#facc15", "#94a3b8"];
-const SEXO_COLORS: Record<string, string> = {
-  masculino: "#4ade80",
-  feminino: "#f472b6",
-  outro: "#facc15",
-  nao_informado: "#94a3b8",
-};
 const SEXO_LABELS: Record<string, string> = {
   masculino: "Masculino",
   feminino: "Feminino",
@@ -59,6 +55,8 @@ export default function AdminDashboardPage() {
   const [filtroSexo, setFiltroSexo] = useState("todos");
   const [filtroIdadeMin, setFiltroIdadeMin] = useState("");
   const [filtroIdadeMax, setFiltroIdadeMax] = useState("");
+  const [metricView, setMetricView] = useState<"users" | "tags">("tags");
+  const [chartType, setChartType] = useState<"sexo" | "idade">("sexo");
 
   const fetchData = useCallback(async () => {
     try {
@@ -68,7 +66,7 @@ export default function AdminDashboardPage() {
       if (filtroIdadeMax) params.set("idade_max", filtroIdadeMax);
 
       const [usersRes, statsRes] = await Promise.all([
-        fetch(`/api/admin/users?${params}`),
+        fetch(`/api/admin/users/tags?${params}`),
         fetch("/api/admin/stats"),
       ]);
       const usersData = await usersRes.json();
@@ -85,18 +83,6 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const [chartType, setChartType] = useState<"sexo" | "idade">("sexo");
-
-  const handleClearFilters = () => {
-    setFiltroSexo("todos");
-    setFiltroIdadeMin("");
-    setFiltroIdadeMax("");
-  };
-
-  const handleApplyFilters = () => {
-    fetchData();
-  };
 
   const sexoChartData = stats
     ? [
@@ -119,6 +105,15 @@ export default function AdminDashboardPage() {
   const chartTypeLabel = chartType === "sexo" ? "Sexo" : "Faixa Etaria";
   const chartTypeVariant = chartType === "sexo" ? "default" : "success";
   const isPieChart = chartType === "sexo";
+
+  const metricLabel = metricView === "tags" ? "Tags Validadas" : "Usuarios";
+  const metricValue = metricView === "tags"
+    ? stats?.total_tags_validadas || 0
+    : stats?.total_usuarios || 0;
+  const metricSecondary = metricView === "tags"
+    ? stats?.total_usuarios || 0
+    : stats?.total_tags_validadas || 0;
+  const metricSecondaryLabel = metricView === "tags" ? "Usuarios" : "Tags Validadas";
 
   const renderChart = () => {
     if (chartData.length === 0) {
@@ -172,6 +167,16 @@ export default function AdminDashboardPage() {
     );
   };
 
+  const handleClearFilters = () => {
+    setFiltroSexo("todos");
+    setFiltroIdadeMin("");
+    setFiltroIdadeMax("");
+  };
+
+  const handleApplyFilters = () => {
+    fetchData();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -183,7 +188,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Visao geral dos usuarios do sistema
+            Visao geral do sistema
           </p>
         </div>
         <Button variant="secondary" onClick={handleClearFilters}>
@@ -194,20 +199,20 @@ export default function AdminDashboardPage() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Total de Usuarios</p>
-            <p className="text-3xl font-bold text-foreground mt-2">{stats.total_usuarios}</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{metricLabel}</p>
+            <p className="text-3xl font-bold text-foreground mt-2">{metricValue}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{metricSecondaryLabel}</p>
+            <p className="text-3xl font-bold text-muted-foreground mt-2">{metricSecondary}</p>
           </Card>
           <Card className="p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total de Pontos</p>
             <p className="text-3xl font-bold text-success mt-2">{stats.total_pontos}</p>
           </Card>
           <Card className="p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Masculinos</p>
-            <p className="text-3xl font-bold text-foreground mt-2">{stats.por_sexo.masculino}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Femininas</p>
-            <p className="text-3xl font-bold text-foreground mt-2">{stats.por_sexo.feminino}</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Total de Tags</p>
+            <p className="text-3xl font-bold text-foreground mt-2">{stats.total_tags_validadas}</p>
           </Card>
         </div>
       )}
@@ -246,10 +251,25 @@ export default function AdminDashboardPage() {
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">Filtros</h2>
-          <Button variant="ghost" size="sm" onClick={handleApplyFilters}>
-            Aplicar
-          </Button>
+          <h2 className="text-lg font-semibold text-foreground">Filtros por Metricas</h2>
+          <div className="flex gap-2">
+            <Button
+              variant={metricView === "tags" ? "default" : "secondary"}
+              size="sm"
+              onClick={() => setMetricView("tags")}
+              className={metricView === "tags" ? "bg-success text-success-foreground" : ""}
+            >
+              Tags Validadas
+            </Button>
+            <Button
+              variant={metricView === "users" ? "default" : "secondary"}
+              size="sm"
+              onClick={() => setMetricView("users")}
+              className={metricView === "users" ? "bg-success text-success-foreground" : ""}
+            >
+              Usuarios
+            </Button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col gap-2">
@@ -289,6 +309,9 @@ export default function AdminDashboardPage() {
               className="rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
+          <Button variant="ghost" size="sm" onClick={handleApplyFilters}>
+            Aplicar
+          </Button>
         </div>
       </Card>
 
@@ -317,6 +340,9 @@ export default function AdminDashboardPage() {
                   </th>
                   <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider py-3 px-4">
                     Idade
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider py-3 px-4">
+                    Tags Validadas
                   </th>
                   <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider py-3 px-4">
                     Pontos
@@ -362,6 +388,9 @@ export default function AdminDashboardPage() {
                       {user.idade ?? "-"}
                     </td>
                     <td className="py-3 px-4 text-sm text-success font-medium">
+                      {user.tags_validadas ?? 0}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-success font-medium">
                       {user.pontos}
                     </td>
                     <td className="py-3 px-4 text-sm text-muted-foreground">
@@ -373,7 +402,7 @@ export default function AdminDashboardPage() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-muted-foreground text-sm">
+                    <td colSpan={7} className="py-8 text-center text-muted-foreground text-sm">
                       Nenhum usuario encontrado
                     </td>
                   </tr>
