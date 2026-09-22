@@ -32,7 +32,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             "inline-flex items-center justify-center px-4 py-2",
             "text-sm font-bold uppercase tracking-wide transition-all duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            "disabled:opacity-40 disabled:pointer-events-none",
+"disabled:bg-muted disabled:text-muted-foreground disabled:border-muted disabled:pointer-events-none disabled:cursor-not-allowed",
             "squircle",
             "retro-radius",
             variantStyles[variant],

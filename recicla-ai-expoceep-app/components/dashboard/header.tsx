@@ -25,9 +25,9 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="max-w-md mx-auto px-3 md:px-6">
-        <div className="flex items-center justify-between h-10">
-          <div className="flex items-center gap-1.5">
+      <div className="max-w-md mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between h-12">
+          <div className="flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-success">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -35,7 +35,7 @@ function Header() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 pb-2">
+        <nav className="flex items-center gap-2 pb-2">
           {tabs.map((tab) => {
             const isActive = pathname === tab.id;
             const Icon = tab.icon;
@@ -44,7 +44,7 @@ function Header() {
               <button
                 key={tab.id}
                 onClick={() => router.push(tab.id)}
-                className="group relative rounded-full px-2.5 py-1.5 outline-none sm:px-3 sm:py-2"
+                className="group relative rounded-lg px-2 py-1 outline-none sm:px-3 sm:py-2"
               >
                 {isActive && (
                   <motion.div
@@ -55,7 +55,7 @@ function Header() {
                       damping: 25,
                       mass: 0.8,
                     }}
-                    className="absolute inset-0 rounded-full border border-border bg-card shadow-xs"
+                    className="absolute inset-0 rounded-lg border border-border bg-card"
                   />
                 )}
 
@@ -67,7 +67,7 @@ function Header() {
                       : "blur(0px)",
                   }}
                   className={cn(
-                    "relative z-10 flex items-center gap-1.5 transition-colors duration-200 sm:gap-2",
+                    "relative z-10 flex items-center gap-2 text-xs tracking-tight whitespace-nowrap",
                     isActive
                       ? "font-bold text-foreground"
                       : "font-semibold text-muted-foreground group-hover:text-foreground"
@@ -80,7 +80,7 @@ function Header() {
                     }}
                     className="flex shrink-0 items-center justify-center"
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="h-4 w-4" />
                   </motion.div>
                   <span className="text-xs tracking-tight whitespace-nowrap">
                     {tab.label}
