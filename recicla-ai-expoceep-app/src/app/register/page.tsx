@@ -15,6 +15,8 @@ export default function RegisterPage() {
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [sexo, setSexo] = useState("");
+  const [idade, setIdade] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -37,7 +39,7 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    const result = await register(nome, email, password, cpf || undefined);
+    const result = await register(nome, email, password, cpf || undefined, sexo || undefined, idade ? parseInt(idade) : undefined);
 
     if (result.error) {
       setError(result.error);
@@ -79,6 +81,34 @@ export default function RegisterPage() {
               value={cpf}
               onChange={(e) => setCpf(e.target.value)}
               placeholder="000.000.000-00"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="sexo">Sexo</Label>
+            <select
+              id="sexo"
+              value={sexo}
+              onChange={(e) => setSexo(e.target.value)}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+            >
+              <option value="">Nao informar</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+
+          <div>
+            <Label htmlFor="idade">Idade</Label>
+            <Input
+              id="idade"
+              type="number"
+              value={idade}
+              onChange={(e) => setIdade(e.target.value)}
+              placeholder="Sua idade"
+              min="1"
+              max="120"
             />
           </div>
 

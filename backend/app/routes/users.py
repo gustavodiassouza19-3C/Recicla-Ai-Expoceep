@@ -30,6 +30,8 @@ async def create_user(
         "nome": data.nome,
         "email": data.email,
         "cpf": data.cpf,
+        "sexo": data.sexo,
+        "idade": data.idade,
         "senha": "",
         "tipo": data.tipo or "cidadao",
     }
