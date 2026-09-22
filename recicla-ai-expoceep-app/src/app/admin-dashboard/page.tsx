@@ -57,6 +57,9 @@ export default function AdminDashboardPage() {
   const [filtroIdadeMax, setFiltroIdadeMax] = useState("");
   const [metricView, setMetricView] = useState<"users" | "tags">("tags");
   const [chartType, setChartType] = useState<"sexo" | "idade">("sexo");
+  const [codigoTag, setCodigoTag] = useState("");
+  const [tagResult, setTagResult] = useState<{ valid: boolean; tag?: any; message?: string } | null>(null);
+  const [validating, setValidating] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -175,6 +178,25 @@ export default function AdminDashboardPage() {
 
   const handleApplyFilters = () => {
     fetchData();
+  };
+
+  const handleValidateTag = async () => {
+    if (!codigoTag.trim()) return;
+    setValidating(true);
+    setTagResult(null);
+    try {
+      const res = await fetch("/api/admin/validate-tag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo_nfc: codigoTag.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      setTagResult(data);
+    } catch (e) {
+      setTagResult({ valid: false, message: "Erro ao validar tag" });
+    } finally {
+      setValidating(false);
+    }
   };
 
   return (
@@ -313,6 +335,52 @@ export default function AdminDashboardPage() {
             Aplicar
           </Button>
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Validar Tag</h2>
+          <Badge variant="success">NFC</Badge>
+        </div>
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-muted-foreground font-medium">Codigo NFC</label>
+            <input
+              type="text"
+              value={codigoTag}
+              onChange={(e) => setCodigoTag(e.target.value)}
+              placeholder="Ex: A1B2C"
+              className="rounded-xl border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ width: "200px" }}
+            />
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleValidateTag}
+            disabled={validating || !codigoTag.trim()}
+            className="bg-success text-success-foreground"
+          >
+            {validating ? "Validando..." : "Validar"}
+          </Button>
+        </div>
+        {tagResult && (
+          <div className="mt-4">
+            {tagResult.valid ? (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-success/10 border border-success/20">
+                <span className="text-success font-bold text-sm">Tag Validada</span>
+                <Badge variant="success">{tagResult.tag?.codigo_nfc}</Badge>
+                <span className="text-xs text-muted-foreground">
+                  Status: {tagResult.tag?.status}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                <span className="text-destructive font-bold text-sm">{tagResult.message || "Tag invalida"}</span>
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       <Card className="p-6">

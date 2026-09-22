@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from supabase import Client
 from app.database import get_supabase
 from app.models.user import UserCreate, UserResponse
@@ -153,3 +153,26 @@ async def get_users_tags(
         "page": page,
         "limit": limit,
     }
+
+
+@router.post("/validate-tag")
+async def validate_tag(
+    payload: dict,
+    supabase: Client = Depends(get_supabase),
+):
+    codigo = payload.get("codigo_nfc", "").strip().upper()
+    if not codigo:
+        raise HTTPException(status_code=400, detail="codigo_nfc e obrigatorio")
+
+    result = (
+        supabase.table("tags")
+        .select("*")
+        .eq("codigo_nfc", codigo)
+        .eq("status", "ativa")
+        .execute()
+    )
+
+    if not result.data:
+        return {"valid": False, "message": "Tag nao encontrada ou inativa"}
+
+    return {"valid": True, "tag": result.data[0]}
