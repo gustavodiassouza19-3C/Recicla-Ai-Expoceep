@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SquiCircleFilter } from "@/components/ui/squi-circle-filter";
 import { Header } from "@/components/dashboard/header";
+import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/contexts/auth-context";
 import { PointsProvider } from "@/contexts/points-context";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
             <main className="flex-1 pt-2">
               {children}
             </main>
+            <Footer />
           </PointsProvider>
         </AuthProvider>
       </body>

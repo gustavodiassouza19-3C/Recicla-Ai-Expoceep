@@ -7,7 +7,7 @@ import { Leaf, Recycle, Heart } from "lucide-react";
 function Footer() {
   const pathname = usePathname();
 
-  if (pathname === "/login" || pathname === "/register") return null;
+  if (pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
 
   return (
     <footer className="border-t border-border bg-background/80 backdrop-blur-md">
@@ -23,14 +23,14 @@ function Footer() {
 
           {/* Links */}
           <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-            <Link href="/como-funciona" className="hover:text-foreground transition-colors">
-              Como funciona
-            </Link>
-            <Link href="/achievements" className="hover:text-foreground transition-colors">
-              Conquistas
+            <Link href="/missions" className="hover:text-foreground transition-colors">
+              Missoes
             </Link>
             <Link href="/rewards" className="hover:text-foreground transition-colors">
               Recompensas
+            </Link>
+            <Link href="/eco-points" className="hover:text-foreground transition-colors">
+              EcoPoints
             </Link>
             <Link href="/profile" className="hover:text-foreground transition-colors">
               Perfil
