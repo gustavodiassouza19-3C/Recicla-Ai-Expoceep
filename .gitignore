@@ -3,6 +3,7 @@ apple-design-skill/
 .impeccable/
 .claude/*.local.json
 claude-cookbooks/
+.opencode/
 
 # dependencies
 node_modules/
@@ -36,3 +37,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test / tooling artifacts
+test-results/
+recicla-ai-expoceep-app/prisma/
+recicla-ai-expoceep-app/supabase/
+.playwright-mcp/
+*.local.json
+*.png
+!recicla-ai-expoceep-app/public/**/*.png
+!apple-design-skill/**/*.png
+

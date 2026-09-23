@@ -17,21 +17,6 @@ interface DataPoint {
   score: number;
 }
 
-const mockData: DataPoint[] = [
-  { month: "Jan", score: 120 },
-  { month: "Fev", score: 180 },
-  { month: "Mar", score: 150 },
-  { month: "Abr", score: 220 },
-  { month: "Mai", score: 280 },
-  { month: "Jun", score: 250 },
-  { month: "Jul", score: 310 },
-  { month: "Ago", score: 290 },
-  { month: "Set", score: 350 },
-  { month: "Out", score: 320 },
-  { month: "Nov", score: 380 },
-  { month: "Dez", score: 420 },
-];
-
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
@@ -66,15 +51,46 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export interface ScoreChartProps extends React.HTMLAttributes<HTMLDivElement> {
   data?: DataPoint[];
+  loading?: boolean;
 }
 
 const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
-  ({ className, data = mockData, ...props }, ref) => {
+  ({ className, data, loading = false, ...props }, ref) => {
+    const chartData = data ?? [];
+
+    if (loading) {
+      return (
+        <div
+          ref={ref}
+          className={cn("h-[280px] w-full flex items-center justify-center", className)}
+          {...props}
+        >
+          <p className="text-sm text-muted-foreground animate-pulse">
+            Carregando pontuacao...
+          </p>
+        </div>
+      );
+    }
+
+    if (chartData.length === 0) {
+      return (
+        <div
+          ref={ref}
+          className={cn("h-[280px] w-full flex items-center justify-center", className)}
+          {...props}
+        >
+          <p className="text-sm text-muted-foreground">
+            Nenhuma reciclagem registrada ainda
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div ref={ref} className={cn("h-[280px] w-full", className)} {...props}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={data}
+            data={chartData}
             margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
           >
             <defs>

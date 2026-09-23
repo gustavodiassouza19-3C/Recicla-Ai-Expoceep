@@ -5,6 +5,7 @@ import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/contexts/auth-context";
 import { PointsProvider } from "@/contexts/points-context";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,6 +21,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Recicla Ai",
   description: "Sistema digital para incentivar a reciclagem urbana",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -49,6 +55,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <Toaster position="bottom-right" richColors closeButton />
           </PointsProvider>
         </AuthProvider>
       </body>

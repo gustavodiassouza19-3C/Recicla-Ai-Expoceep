@@ -3,11 +3,16 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, X } from "lucide-react";
+import { toast } from "sonner";
 import { AchievementBadge } from "@/components/dashboard/achievement-badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { fetchAchievementsProgress } from "@/lib/api-achievements";
+import {
+  fetchAchievementsProgress,
+  claimAchievement,
+} from "@/lib/api-achievements";
 import type { AchievementProgressItem } from "@/lib/api-achievements";
+import { usePoints } from "@/contexts/points-context";
 
 const CATEGORIES = [
   { key: "all", label: "Todas" },
@@ -23,9 +28,16 @@ const CATEGORIES = [
 interface AchievementDetailProps {
   achievement: AchievementProgressItem;
   onClose: () => void;
+  onClaimed: (codigo: string) => void;
 }
 
-function AchievementDetail({ achievement, onClose }: AchievementDetailProps) {
+function AchievementDetail({
+  achievement,
+  onClose,
+  onClaimed,
+}: AchievementDetailProps) {
+  const [claiming, setClaiming] = useState(false);
+  const { refetchPoints } = usePoints();
   const progressPercent =
     achievement.condicao_valor > 0
       ? Math.min(
@@ -33,6 +45,25 @@ function AchievementDetail({ achievement, onClose }: AchievementDetailProps) {
           100
         )
       : 0;
+
+  const handleClaim = async () => {
+    setClaiming(true);
+    try {
+      const result = await claimAchievement(achievement.conquista_codigo);
+      await refetchPoints();
+      toast.success(`+${result.claimed.pontos} pontos resgatados!`, {
+        description: `Total: ${result.claimed.pontos_totais} pts`,
+      });
+      onClaimed(achievement.conquista_codigo);
+      onClose();
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Erro ao resgatar prêmio"
+      );
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   return (
     <motion.div
@@ -59,6 +90,7 @@ function AchievementDetail({ achievement, onClose }: AchievementDetailProps) {
             </div>
             <button
               onClick={onClose}
+              aria-label="Fechar"
               className="p-1 rounded-lg hover:bg-muted transition-colors"
             >
               <X className="h-4 w-4" />
@@ -109,10 +141,20 @@ function AchievementDetail({ achievement, onClose }: AchievementDetailProps) {
               </p>
             )}
 
-            {achievement.desbloqueada && (
+            {achievement.pendente_resgate && (
+              <Button
+                className="w-full"
+                disabled={claiming}
+                onClick={handleClaim}
+              >
+                {claiming ? "Resgatando..." : `Pegar prêmio (+${achievement.conquista_pontos})`}
+              </Button>
+            )}
+
+            {achievement.desbloqueada && achievement.resgatada && (
               <div className="flex items-center justify-center gap-1.5 text-success text-sm font-medium">
                 <span>✓</span>
-                <span>Conquistada!</span>
+                <span>Prêmio resgatado!</span>
               </div>
             )}
           </div>
@@ -142,7 +184,23 @@ function AchievementsList() {
       : progress.filter((p) => p.conquista_categoria === activeCategory);
 
   const unlocked = progress.filter((p) => p.desbloqueada).length;
+  const pending = progress.filter((p) => p.pendente_resgate).length;
   const total = progress.length;
+
+  const handleClaimed = (codigo: string) => {
+    setProgress((prev) =>
+      prev.map((item) =>
+        item.conquista_codigo === codigo
+          ? { ...item, resgatada: true, pendente_resgate: false }
+          : item
+      )
+    );
+    setSelectedAchievement((prev) =>
+      prev && prev.conquista_codigo === codigo
+        ? { ...prev, resgatada: true, pendente_resgate: false }
+        : prev
+    );
+  };
 
   if (loading) {
     return (
@@ -162,6 +220,11 @@ function AchievementsList() {
         <span className="text-xs text-muted-foreground">
           {unlocked}/{total}
         </span>
+        {pending > 0 && (
+          <span className="ml-auto rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">
+            {pending} para resgatar
+          </span>
+        )}
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-minimal">
@@ -196,6 +259,7 @@ function AchievementsList() {
                 nome={item.conquista_nome}
                 pontos={item.conquista_pontos}
                 desbloqueada={item.desbloqueada}
+                pendenteResgate={item.pendente_resgate}
                 progresso={item.progresso_atual}
                 total={item.condicao_valor}
                 onClick={() => setSelectedAchievement(item)}
@@ -216,6 +280,7 @@ function AchievementsList() {
           <AchievementDetail
             achievement={selectedAchievement}
             onClose={() => setSelectedAchievement(null)}
+            onClaimed={handleClaimed}
           />
         )}
       </AnimatePresence>

@@ -22,7 +22,10 @@ function Footer() {
           </div>
 
           {/* Links */}
-          <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
+          <nav className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-muted-foreground">
+            <Link href="/about" className="hover:text-foreground transition-colors">
+              Sobre
+            </Link>
             <Link href="/missions" className="hover:text-foreground transition-colors">
               Missoes
             </Link>

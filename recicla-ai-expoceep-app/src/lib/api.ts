@@ -79,6 +79,17 @@ export function fetchScoreHistory(): Promise<ScoreDataPoint[]> {
   return apiFetch("/api/recycle/score-history");
 }
 
+export interface MeProfile {
+  id: number;
+  nome: string;
+  email: string;
+  pontos: number;
+}
+
+export function fetchMe(): Promise<MeProfile> {
+  return apiFetch("/api/users/me");
+}
+
 export function fetchHistory(): Promise<HistoryEntry[]> {
   return apiFetch("/api/recycle/history");
 }

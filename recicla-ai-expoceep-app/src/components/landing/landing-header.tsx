@@ -45,16 +45,24 @@ function LandingHeader() {
               { label: "Como funciona", href: "#como-funciona" },
               { label: "Funcionalidades", href: "#features" },
               { label: "Perguntas", href: "#faq" },
+              { label: "Sobre", href: "/about" },
             ].map((link) => (
-              <a
+              <button
                 key={link.href}
-                href={link.href}
+                type="button"
+                onClick={() => {
+                  if (link.href.startsWith("/")) {
+                    router.push(link.href);
+                  } else {
+                    document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
                 className={`text-sm transition-colors ${
                   scrolled ? "text-muted-foreground hover:text-foreground" : "text-white/70 hover:text-white"
                 }`}
               >
                 {link.label}
-              </a>
+              </button>
             ))}
             <button
               onClick={() => router.push("/login")}
@@ -132,6 +140,16 @@ function LandingHeader() {
                 >
                   Perguntas
                 </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/about");
+                  }}
+                  className="text-base text-foreground hover:text-success transition-colors text-left"
+                >
+                  Sobre
+                </button>
                 <hr className="border-border" />
                 <button
                   onClick={() => { setMenuOpen(false); router.push("/login"); }}

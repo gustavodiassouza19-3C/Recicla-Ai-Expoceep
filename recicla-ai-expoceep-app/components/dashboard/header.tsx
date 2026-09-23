@@ -2,9 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Target, MapPin, Gift, User } from "lucide-react";
+import { Home, Target, MapPin, Gift, User, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { AchievementNotifications } from "@/components/dashboard/achievement-notifications";
 
 const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
@@ -12,6 +13,7 @@ const tabs = [
   { id: "/rewards", label: "Recompensas", icon: Gift },
   { id: "/eco-points", label: "EcoPoints", icon: MapPin },
   { id: "/profile", label: "Perfil", icon: User },
+  { id: "/about", label: "Sobre", icon: Info },
 ];
 
 function Header() {
@@ -21,7 +23,13 @@ function Header() {
 
   if (loading) return null;
   if (!user) return null;
-  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
+  if (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/admin-dashboard"
+  )
+    return null;
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -33,6 +41,7 @@ function Header() {
             </svg>
             <span className="text-sm font-bold text-foreground">Recicla Ai</span>
           </div>
+          <AchievementNotifications />
         </div>
 
         <nav className="flex items-center gap-2 pb-2">

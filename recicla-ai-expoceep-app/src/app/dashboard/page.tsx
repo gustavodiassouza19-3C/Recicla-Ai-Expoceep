@@ -17,7 +17,6 @@ import {
   fetchMyTags,
   fetchImpact,
   fetchMyMissions,
-  addTag,
   type ScoreDataPoint,
   type HistoryEntry,
   type UserTag,
@@ -31,9 +30,10 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const cardsRef = useRef<HTMLDivElement[]>([]);
-  const { points, refetchPoints } = usePoints();
+  const { points, loading: pointsLoading, refetchPoints } = usePoints();
 
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
+  const [scoreLoading, setScoreLoading] = useState(true);
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
   const [tagsData, setTagsData] = useState<UserTag[]>([]);
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
@@ -47,7 +47,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    fetchScoreHistory().then(setScoreData).catch(() => {});
+    setScoreLoading(true);
+    fetchScoreHistory()
+      .then(setScoreData)
+      .catch((e) => console.error("Erro ao carregar score:", e))
+      .finally(() => setScoreLoading(false));
     fetchHistory().then(setHistoryData).catch(() => {});
     fetchMyTags().then(setTagsData).catch(() => {});
     fetchImpact().then(setImpactData).catch(() => {});
@@ -99,9 +103,9 @@ export default function Dashboard() {
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pontuacao Mensal
                 </h2>
-                <ScoreDisplay score={points} />
+                <ScoreDisplay score={points} loading={pointsLoading} />
               </div>
-              <ScoreChart data={scoreData.length > 0 ? scoreData : undefined} />
+              <ScoreChart data={scoreData} loading={scoreLoading} />
             </Card>
           </div>
           <div className="md:col-span-2">
@@ -137,7 +141,7 @@ export default function Dashboard() {
                 Impacto Ambiental
               </h2>
               <ImpactCard
-                validatedTags={impactData?.validated_count ?? 12}
+                validatedTags={impactData?.validated_count ?? 0}
               />
             </Card>
           </div>

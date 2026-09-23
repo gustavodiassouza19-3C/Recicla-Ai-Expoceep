@@ -338,6 +338,48 @@ def get_total_earned_achievements(supabase: Client, usuario_id: int) -> int:
     return result.count or 0
 
 
+def get_pending_achievements(supabase: Client, usuario_id: int) -> list[dict]:
+    result = (
+        supabase.table("usuario_conquistas")
+        .select("*")
+        .eq("usuario_id", usuario_id)
+        .is_("resgatada_em", "null")
+        .order("concedida_em", desc=True)
+        .execute()
+    )
+    rows = result.data or []
+    if not rows:
+        return []
+
+    codes = [r["conquista_codigo"] for r in rows]
+    catalog = (
+        supabase.table("conquistas")
+        .select("*")
+        .in_("codigo", codes)
+        .execute()
+    )
+    by_code = {c["codigo"]: c for c in (catalog.data or [])}
+
+    pending = []
+    for row in rows:
+        meta = by_code.get(row["conquista_codigo"])
+        if not meta:
+            continue
+        pending.append(
+            {
+                "usuario_conquista_id": row["id"],
+                "codigo": row["conquista_codigo"],
+                "nome": meta["nome"],
+                "descricao": meta["descricao"],
+                "icone": meta["icone"],
+                "pontos": int(row.get("pontos_ganhos") or meta.get("pontos") or 0),
+                "categoria": meta.get("categoria"),
+                "concedida_em": row.get("concedida_em"),
+            }
+        )
+    return pending
+
+
 def check_achievements(supabase: Client, usuario_id: int) -> dict:
     all_achievements = get_all_achievements(supabase)
     user_achievements = get_user_achievements(supabase, usuario_id)
@@ -501,6 +543,8 @@ def get_user_achievement_progress(supabase: Client, usuario_id: int) -> list[dic
                 "progresso_atual": min(current, condition_value),
                 "desbloqueada": earned,
                 "data_concessao": earned_map[code]["concedida_em"] if earned else None,
+                "resgatada": bool(earned_map[code].get("resgatada_em")) if earned else False,
+                "pendente_resgate": earned and not bool(earned_map[code].get("resgatada_em")),
             }
         )
 

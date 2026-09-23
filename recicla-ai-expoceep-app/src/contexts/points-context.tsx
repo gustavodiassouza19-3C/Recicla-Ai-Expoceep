@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { fetchMe } from "@/lib/api";
 
 interface PointsContextType {
   points: number;
+  loading: boolean;
+  error: string | null;
   setPoints: (points: number) => void;
   refetchPoints: () => Promise<void>;
 }
@@ -12,26 +15,35 @@ const PointsContext = createContext<PointsContextType | undefined>(undefined);
 
 export function PointsProvider({ children }: { children: ReactNode }) {
   const [points, setPoints] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetchPoints = useCallback(async () => {
-    const token = localStorage.getItem("supabase_token");
-    if (!token) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("supabase_token") : null;
+    if (!token) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/users/me`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data.pontos !== undefined) {
-          setPoints(data.pontos);
-        }
+      const data = await fetchMe();
+      if (typeof data.pontos === "number") {
+        setPoints(data.pontos);
       }
-    } catch {}
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar pontos");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   return (
-    <PointsContext.Provider value={{ points, setPoints, refetchPoints }}>
+    <PointsContext.Provider
+      value={{ points, loading, error, setPoints, refetchPoints }}
+    >
       {children}
     </PointsContext.Provider>
   );

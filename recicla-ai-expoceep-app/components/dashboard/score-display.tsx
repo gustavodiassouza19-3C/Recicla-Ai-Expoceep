@@ -7,6 +7,7 @@ import { animate } from "animejs";
 
 interface ScoreDisplayProps extends React.HTMLAttributes<HTMLDivElement> {
   score?: number;
+  loading?: boolean;
 }
 
 function CoinPlantIcon({ className }: { className?: string }) {
@@ -62,19 +63,33 @@ function CoinPlantIcon({ className }: { className?: string }) {
 }
 
 const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
-  ({ className, score = 0, ...props }, ref) => {
+  ({ className, score = 0, loading = false, ...props }, ref) => {
     const scoreRef = useRef<HTMLSpanElement>(null);
-    const animated = useRef(false);
+    const lastAnimated = useRef(0);
 
     useEffect(() => {
-      if (!scoreRef.current || score === 0) return;
-      if (animated.current) {
+      if (!scoreRef.current) return;
+
+      if (loading) {
+        scoreRef.current.textContent = "…";
+        return;
+      }
+
+      if (score === lastAnimated.current) {
         scoreRef.current.textContent = score.toLocaleString("pt-BR");
         return;
       }
-      animated.current = true;
+
+      const from = lastAnimated.current;
+      lastAnimated.current = score;
       const el = scoreRef.current;
-      const obj = { val: 0 };
+      const obj = { val: from };
+
+      if (from === score) {
+        el.textContent = score.toLocaleString("pt-BR");
+        return;
+      }
+
       animate(obj, {
         val: score,
         duration: 1500,
@@ -82,8 +97,11 @@ const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
         onUpdate: () => {
           if (el) el.textContent = Math.round(obj.val).toLocaleString("pt-BR");
         },
+        onComplete: () => {
+          if (el) el.textContent = score.toLocaleString("pt-BR");
+        },
       });
-    }, [score]);
+    }, [score, loading]);
 
     return (
       <div
@@ -96,8 +114,11 @@ const ScoreDisplay = React.forwardRef<HTMLDivElement, ScoreDisplayProps>(
           <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
             Pontuacao total
           </span>
-          <span ref={scoreRef} className="text-3xl font-bold text-success font-mono tabular-nums leading-none mt-1">
-            0
+          <span
+            ref={scoreRef}
+            className="text-3xl font-bold text-success font-mono tabular-nums leading-none mt-1"
+          >
+            {loading ? "…" : score.toLocaleString("pt-BR")}
           </span>
           <span className="text-[11px] text-muted-foreground mt-1">
             pontos acumulados
