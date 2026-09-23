@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 interface User {
   id: number;
   nome: string;
@@ -58,7 +60,12 @@ export default function AdminDashboardPage() {
   const [metricView, setMetricView] = useState<"users" | "tags">("tags");
   const [chartType, setChartType] = useState<"sexo" | "idade">("sexo");
   const [codigoTag, setCodigoTag] = useState("");
-  const [tagResult, setTagResult] = useState<{ valid: boolean; tag?: any; message?: string } | null>(null);
+  const [tagResult, setTagResult] = useState<{
+    valid: boolean;
+    tag?: { codigo_nfc?: string; status?: string };
+    message?: string;
+    reciclagens_validadas?: number;
+  } | null>(null);
   const [validating, setValidating] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -69,8 +76,8 @@ export default function AdminDashboardPage() {
       if (filtroIdadeMax) params.set("idade_max", filtroIdadeMax);
 
       const [usersRes, statsRes] = await Promise.all([
-        fetch(`/api/admin/users/tags?${params}`),
-        fetch("/api/admin/stats"),
+        fetch(`${API_URL}/api/admin/users/tags?${params}`),
+        fetch(`${API_URL}/api/admin/stats`),
       ]);
       const usersData = await usersRes.json();
       const statsData = await statsRes.json();
@@ -185,13 +192,17 @@ export default function AdminDashboardPage() {
     setValidating(true);
     setTagResult(null);
     try {
-      const res = await fetch("/api/admin/validate-tag", {
+      const res = await fetch(`${API_URL}/api/admin/validate-tag`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ codigo_nfc: codigoTag.trim().toUpperCase() }),
       });
       const data = await res.json();
       setTagResult(data);
+      if (data.valid) {
+        setCodigoTag("");
+        fetchData();
+      }
     } catch (e) {
       setTagResult({ valid: false, message: "Erro ao validar tag" });
     } finally {
@@ -338,14 +349,20 @@ export default function AdminDashboardPage() {
       </Card>
 
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-semibold text-foreground">Validar Tag</h2>
           <Badge variant="success">NFC</Badge>
         </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Confirma a reciclagem e devolve a tag ao usuario — ela volta a ficar livre (ativa).
+        </p>
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex flex-col gap-2">
-            <label className="text-xs text-muted-foreground font-medium">Codigo NFC</label>
+            <label className="text-xs text-muted-foreground font-medium" htmlFor="codigo-tag">
+              Codigo NFC
+            </label>
             <input
+              id="codigo-tag"
               type="text"
               value={codigoTag}
               onChange={(e) => setCodigoTag(e.target.value)}
@@ -361,18 +378,25 @@ export default function AdminDashboardPage() {
             disabled={validating || !codigoTag.trim()}
             className="bg-success text-success-foreground"
           >
-            {validating ? "Validando..." : "Validar"}
+            {validating ? "Validando..." : "Validar e Liberar"}
           </Button>
         </div>
         {tagResult && (
           <div className="mt-4">
             {tagResult.valid ? (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-success/10 border border-success/20">
-                <span className="text-success font-bold text-sm">Tag Validada</span>
+              <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-success/10 border border-success/20">
+                <span className="text-success font-bold text-sm">
+                  {tagResult.message || "Tag validada e liberada"}
+                </span>
                 <Badge variant="success">{tagResult.tag?.codigo_nfc}</Badge>
                 <span className="text-xs text-muted-foreground">
                   Status: {tagResult.tag?.status}
                 </span>
+                {typeof tagResult.reciclagens_validadas === "number" && (
+                  <span className="text-xs text-muted-foreground">
+                    Reciclagens confirmadas: {tagResult.reciclagens_validadas}
+                  </span>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -26,10 +27,17 @@ async def get_users(
     if idade_max is not None:
         query = query.lte("idade", idade_max)
 
+    count_query = supabase.table("usuarios").select("*", count="exact")
+    if sexo:
+        count_query = count_query.eq("sexo", sexo)
+    if idade_min is not None:
+        count_query = count_query.gte("idade", idade_min)
+    if idade_max is not None:
+        count_query = count_query.lte("idade", idade_max)
+
     query = query.range((page - 1) * limit, page * limit - 1)
     result = query.execute()
-
-    total_result = supabase.table("usuarios").select("*", count="exact").execute()
+    total_result = count_query.execute()
 
     return {
         "data": result.data,
@@ -50,53 +58,44 @@ async def get_stats(
 
     reciclagens_result = (
         supabase.table("reciclagens")
-        .select("usuario_id, status")
+        .select("usuario_id")
         .eq("status", "validada")
         .execute()
     )
     validadas = reciclagens_result.data
     total_tags_validadas = len(validadas)
 
-    usuarios_ids = set(u["id"] for u in users)
-    for u in users:
-        u["_tags_validadas"] = 0
-
+    tags_by_user: dict = {}
     for r in validadas:
         uid = r.get("usuario_id")
-        if uid in usuarios_ids:
-            for u in users:
-                if u["id"] == uid:
-                    u["_tags_validadas"] += 1
-                    break
+        tags_by_user[uid] = tags_by_user.get(uid, 0) + 1
 
     sexo_count = {"masculino": 0, "feminino": 0, "outro": 0, "nao_informado": 0}
-    for u in users:
-        s = (u.get("sexo") or "").lower()
-        if s == "masculino":
-            sexo_count["masculino"] += u["_tags_validadas"]
-        elif s == "feminino":
-            sexo_count["feminino"] += u["_tags_validadas"]
-        elif s == "outro":
-            sexo_count["outro"] += u["_tags_validadas"]
-        else:
-            sexo_count["nao_informado"] += u["_tags_validadas"]
-
     age_ranges = {"18-25": 0, "26-35": 0, "36-45": 0, "46-55": 0, "56+": 0}
+    total_pontos = 0
+
     for u in users:
+        n = tags_by_user.get(u["id"], 0)
+        s = (u.get("sexo") or "").lower()
+        if s in ("masculino", "feminino", "outro"):
+            sexo_count[s] += n
+        else:
+            sexo_count["nao_informado"] += n
+
         idade = u.get("idade")
         if idade:
             if 18 <= idade <= 25:
-                age_ranges["18-25"] += u["_tags_validadas"]
+                age_ranges["18-25"] += n
             elif 26 <= idade <= 35:
-                age_ranges["26-35"] += u["_tags_validadas"]
+                age_ranges["26-35"] += n
             elif 36 <= idade <= 45:
-                age_ranges["36-45"] += u["_tags_validadas"]
+                age_ranges["36-45"] += n
             elif 46 <= idade <= 55:
-                age_ranges["46-55"] += u["_tags_validadas"]
+                age_ranges["46-55"] += n
             elif idade >= 56:
-                age_ranges["56+"] += u["_tags_validadas"]
+                age_ranges["56+"] += n
 
-    total_pontos = sum(u.get("pontos", 0) for u in users)
+        total_pontos += u.get("pontos", 0)
 
     return {
         "total_usuarios": total_usuarios,
@@ -126,9 +125,17 @@ async def get_users_tags(
         query = query.lte("idade", idade_max)
 
     query = query.range((page - 1) * limit, page * limit - 1)
-    result = query.execute()
 
-    total_result = supabase.table("usuarios").select("*", count="exact").execute()
+    count_query = supabase.table("usuarios").select("*", count="exact")
+    if sexo:
+        count_query = count_query.eq("sexo", sexo)
+    if idade_min is not None:
+        count_query = count_query.gte("idade", idade_min)
+    if idade_max is not None:
+        count_query = count_query.lte("idade", idade_max)
+
+    result = query.execute()
+    total_result = count_query.execute()
 
     usuarios_ids = set(u["id"] for u in (result.data or []))
     reciclagens_result = (
@@ -160,6 +167,7 @@ async def validate_tag(
     payload: dict,
     supabase: Client = Depends(get_supabase),
 ):
+    """Valida a tag: confirma reciclagens em aberto e devolve a tag ao usuario (status ativa)."""
     codigo = payload.get("codigo_nfc", "").strip().upper()
     if not codigo:
         raise HTTPException(status_code=400, detail="codigo_nfc e obrigatorio")
@@ -168,11 +176,37 @@ async def validate_tag(
         supabase.table("tags")
         .select("*")
         .eq("codigo_nfc", codigo)
-        .eq("status", "ativa")
         .execute()
     )
 
     if not result.data:
-        return {"valid": False, "message": "Tag nao encontrada ou inativa"}
+        return {"valid": False, "message": "Tag nao encontrada"}
 
-    return {"valid": True, "tag": result.data[0]}
+    tag = result.data[0]
+
+    reciclagens = (
+        supabase.table("reciclagens")
+        .select("id, status")
+        .eq("tag_id", tag["id"])
+        .neq("status", "validada")
+        .execute()
+    )
+    now = datetime.now(timezone.utc).isoformat()
+    for r in reciclagens.data or []:
+        supabase.table("reciclagens").update(
+            {
+                "status": "validada",
+                "data_confirmacao": now,
+            }
+        ).eq("id", r["id"]).execute()
+
+    if tag.get("status") != "ativa":
+        supabase.table("tags").update({"status": "ativa"}).eq("id", tag["id"]).execute()
+        tag["status"] = "ativa"
+
+    return {
+        "valid": True,
+        "tag": tag,
+        "message": "Tag validada e liberada do usuario",
+        "reciclagens_validadas": len(reciclagens.data or []),
+    }
