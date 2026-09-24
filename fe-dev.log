@@ -1,0 +1,15 @@
+
+> recicla-ai-expoceep-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.18.160.1:3000
+- Environments: .env.local
+✓ Ready in 6.4s
+✓ Running next.config.ts took 991ms
+
+○ Compiling / ...
+ GET / 200 in 5.6s (next.js: 5.3s, application-code: 389ms)
+ GET /login 200 in 121ms (next.js: 43ms, application-code: 77ms)
+^C^C

@@ -11,6 +11,7 @@ import { HistoryList } from "@/components/dashboard/history-list";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { MissionsCard } from "@/components/dashboard/missions-card";
+import { AchievementsList } from "@/components/dashboard/achievements-list";
 import {
   fetchScoreHistory,
   fetchHistory,
@@ -184,6 +185,15 @@ export default function Dashboard() {
                     : undefined
                 }
               />
+            </Card>
+          </div>
+        </div>
+
+        {/* Row 3 — Conquistas */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
+          <div className="md:col-span-6">
+            <Card ref={(el) => { if (el) cardsRef.current[5] = el; }} className="p-4 opacity-0 retro-border-card retro-shadow-md retro-radius">
+              <AchievementsList />
             </Card>
           </div>
         </div>
