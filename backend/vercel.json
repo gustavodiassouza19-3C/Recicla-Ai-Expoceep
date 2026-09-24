@@ -10,5 +10,11 @@
       "src": "/api/(.*)",
       "dest": "api/index.py"
     }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "x-vercel-sso-auth", "value": "false" }]
+    }
   ]
 }

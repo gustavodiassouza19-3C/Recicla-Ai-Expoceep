@@ -42,6 +42,7 @@ next-env.d.ts
 test-results/
 recicla-ai-expoceep-app/prisma/
 recicla-ai-expoceep-app/supabase/
+supabase/.temp/
 .playwright-mcp/
 recicla-ai-expoceep-app/.playwright-mcp/
 *.local.json
