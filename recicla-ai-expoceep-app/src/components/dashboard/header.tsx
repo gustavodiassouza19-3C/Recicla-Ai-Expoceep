@@ -6,13 +6,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Home, Trophy, Gift, MapPin, User, Menu, X, LogOut, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { AchievementNotifications } from "@/components/dashboard/achievement-notifications";
 
 const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
+  { id: "/missions", label: "Missoes", icon: Trophy },
   { id: "/achievements", label: "Conquistas", icon: Trophy },
   { id: "/rewards", label: "Recompensas", icon: Gift },
   { id: "/eco-points", label: "EcoPoints", icon: MapPin },
-  { id: "/como-funciona", label: "Info", icon: HelpCircle },
+  { id: "/about", label: "Sobre", icon: HelpCircle },
   { id: "/profile", label: "Perfil", icon: User },
 ];
 
@@ -24,7 +26,7 @@ function Header() {
 
   if (loading) return null;
   if (!user) return null;
-  if (pathname === "/" || pathname === "/login" || pathname === "/register") return null;
+  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
 
   const activeTab = tabs.find((t) => t.id === pathname);
   const ActiveIcon = activeTab?.icon ?? Home;
@@ -44,13 +46,16 @@ function Header() {
               <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors"
-            >
-              <Menu className="h-5 w-5 text-foreground" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <AchievementNotifications />
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors"
+              >
+                <Menu className="h-5 w-5 text-foreground" />
+              </button>
+            </div>
           </div>
 
           {/* Desktop nav */}

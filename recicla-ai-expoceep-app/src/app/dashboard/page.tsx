@@ -10,6 +10,7 @@ import { ScoreDisplay } from "@/components/dashboard/score-display";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { DashboardHistory } from "@/components/dashboard/dashboard-history";
+import { AchievementsList } from "@/components/dashboard/achievements-list";
 import { stagger, animate } from "animejs";
 import { dashboardService } from "@/lib/dashboard-service";
 import { Leaf, Recycle, TrendingUp } from "lucide-react";
@@ -99,7 +100,7 @@ export default function Dashboard() {
         {/* Row 2 - Impact + Tags + History */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 md:p-5 opacity-0">
+            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="p-4 md:p-5 opacity-0">
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
                   <Leaf className="h-3 w-3 text-success" />
@@ -108,13 +109,11 @@ export default function Dashboard() {
                   Impacto Estimado
                 </h2>
               </div>
-              <ImpactCard
-                householdSize={user?.household_size ?? 1}
-              />
+              <ImpactCard householdSize={user?.household_size ?? 1} />
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-4 md:p-5 opacity-0">
+            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 md:p-5 opacity-0">
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
                   <Recycle className="h-3 w-3 text-success" />
@@ -127,8 +126,17 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-3 md:p-4 opacity-0">
+            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-3 md:p-4 opacity-0">
               <DashboardHistory />
+            </Card>
+          </div>
+        </div>
+
+        {/* Row 3 — Conquistas */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
+          <div className="md:col-span-6">
+            <Card ref={(el) => { if (el) cardsRef.current[4] = el; }} className="p-4 opacity-0">
+              <AchievementsList />
             </Card>
           </div>
         </div>

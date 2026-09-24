@@ -10,6 +10,7 @@ interface AchievementBadgeProps {
   nome: string;
   pontos: number;
   desbloqueada: boolean;
+  pendenteResgate?: boolean;
   progresso?: number;
   total?: number;
   onClick?: () => void;
@@ -20,6 +21,7 @@ function AchievementBadge({
   nome,
   pontos,
   desbloqueada,
+  pendenteResgate = false,
   progresso,
   total,
   onClick,
@@ -88,8 +90,16 @@ function AchievementBadge({
       )}
 
       {desbloqueada && (
-        <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-success text-[8px] text-white font-bold">
-          ✓
+        <div
+          className={cn(
+            "absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white",
+            pendenteResgate ? "bg-warning" : "bg-success"
+          )}
+          aria-label={
+            pendenteResgate ? "Prêmio pendente de resgate" : "Conquistada"
+          }
+        >
+          {pendenteResgate ? "!" : "✓"}
         </div>
       )}
     </motion.button>

@@ -13,8 +13,11 @@ import { Users, Minus, Plus } from "lucide-react";
 
 export default function RegisterPage() {
   const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [sexo, setSexo] = useState("");
+  const [idade, setIdade] = useState("");
   const [householdSize, setHouseholdSize] = useState(1);
   const [showCustom, setShowCustom] = useState(false);
   const [error, setError] = useState("");
@@ -45,7 +48,15 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    const result = await register(nome, email, password, householdSize);
+    const result = await register(
+      nome,
+      email,
+      password,
+      householdSize,
+      cpf || undefined,
+      sexo || undefined,
+      idade ? parseInt(idade) : undefined
+    );
 
     if (result.error) {
       setError(result.error);
@@ -82,6 +93,51 @@ export default function RegisterPage() {
               onChange={(e) => setNome(e.target.value)}
               placeholder="Seu nome"
               required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="cpf" className="text-xs font-semibold uppercase tracking-wider">
+              CPF
+            </Label>
+            <Input
+              id="cpf"
+              type="text"
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
+              placeholder="000.000.000-00"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="sexo" className="text-xs font-semibold uppercase tracking-wider">
+              Sexo
+            </Label>
+            <select
+              id="sexo"
+              value={sexo}
+              onChange={(e) => setSexo(e.target.value)}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+            >
+              <option value="">Nao informar</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="idade" className="text-xs font-semibold uppercase tracking-wider">
+              Idade
+            </Label>
+            <Input
+              id="idade"
+              type="number"
+              value={idade}
+              onChange={(e) => setIdade(e.target.value)}
+              placeholder="Sua idade"
+              min="1"
+              max="120"
             />
           </div>
 

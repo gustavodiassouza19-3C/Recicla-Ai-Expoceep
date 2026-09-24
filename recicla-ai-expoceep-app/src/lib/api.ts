@@ -72,6 +72,17 @@ export function fetchScoreHistory(): Promise<ScoreDataPoint[]> {
   });
 }
 
+export interface MeProfile {
+  id: number;
+  nome: string;
+  email: string;
+  pontos: number;
+}
+
+export function fetchMe(): Promise<MeProfile> {
+  return apiFetch("/api/users/me");
+}
+
 export function fetchHistory(): Promise<HistoryEntry[]> {
   return fetch("/api/recycle/history", {
     headers: {
@@ -114,6 +125,24 @@ export function fetchImpact(): Promise<ImpactData> {
     if (!res.ok) throw new Error("Erro");
     return res.json();
   });
+}
+
+export interface MissionItem {
+  id: number;
+  titulo: string;
+  descricao: string;
+  meta: number;
+  recompensa_pontos: number;
+}
+
+export interface UserMissionItem {
+  mission: MissionItem;
+  progress: number;
+  completed: boolean;
+}
+
+export function fetchMyMissions(): Promise<UserMissionItem[]> {
+  return apiFetch("/api/missions/me");
 }
 
 export function fetchEcoPoints(): Promise<EcoPoint[]> {

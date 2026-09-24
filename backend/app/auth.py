@@ -44,6 +44,8 @@ async def get_current_user(
                     "email": email,
                     "senha": "",
                     "tipo": "cidadao",
+                    "sexo": response.user.user_metadata.get("sexo"),
+                    "idade": response.user.user_metadata.get("idade"),
                 }
             )
             .execute()

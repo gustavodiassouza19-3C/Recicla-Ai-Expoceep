@@ -5,15 +5,6 @@ apple-design-skill/
 claude-cookbooks/
 .opencode/
 
-# playwright / screenshots
-recicla-ai-expoceep-app/.playwright-mcp/
-recicla-ai-expoceep-app/test-results/
-*.png
-
-# prisma / supabase local
-recicla-ai-expoceep-app/prisma/
-recicla-ai-expoceep-app/supabase/
-
 # dependencies
 node_modules/
 recicla-ai-expoceep-app/node_modules/
@@ -46,3 +37,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test / tooling artifacts
+test-results/
+recicla-ai-expoceep-app/prisma/
+recicla-ai-expoceep-app/supabase/
+.playwright-mcp/
+recicla-ai-expoceep-app/.playwright-mcp/
+*.local.json
+*.png
+!recicla-ai-expoceep-app/public/**/*.png
+!apple-design-skill/**/*.png
+fe-dev.log
