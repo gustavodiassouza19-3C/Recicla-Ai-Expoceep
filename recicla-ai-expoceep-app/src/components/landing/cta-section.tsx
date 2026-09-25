@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -11,10 +12,12 @@ function CtaSection() {
     <section className="py-20 md:py-32 relative overflow-hidden">
       {/* Background photo */}
       <div className="absolute inset-0">
-        <img
+        <Image
           src="/images/hero-nature-wide.jpg"
           alt=""
-          className="w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-black/60" />
       </div>
@@ -32,13 +35,14 @@ function CtaSection() {
             <span className="text-success">reciclar?</span>
           </h2>
           <p className="text-lg text-white/60 max-w-md mx-auto mb-8">
-            Crie sua conta em menos de 1 minuto e comecar a acumular pontos hoje.
+            Crie sua conta em menos de 1 minuto e comece a acumular pontos
+            hoje.
           </p>
           <button
             onClick={() => router.push("/register")}
-            className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-success rounded-full hover:bg-success/90 transition-colors"
+            className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold bg-success text-success-foreground rounded-full hover:bg-success/90 transition-colors"
           >
-            Criar Conta Gratis
+            Começar Agora
             <ArrowRight className="h-5 w-5" />
           </button>
         </motion.div>

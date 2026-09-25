@@ -3,27 +3,28 @@
 import { motion } from "framer-motion";
 import { Cloud, Droplets, TreePine } from "lucide-react";
 
+// mock: números de exemplo — substituir por dados reais do banco
 const impacts = [
   {
     icon: Cloud,
     value: "3.400",
     unit: "kg",
     label: "CO2e economizados",
-    description: "Equivalente a tirar 2 carros da rua por um mes",
+    description: "Equivalente a tirar 2 carros da rua por um mês",
   },
   {
     icon: Droplets,
     value: "31.800",
     unit: "L",
-    label: "Agua poupada",
-    description: "Suficiente para abastecer uma familia por 3 meses",
+    label: "Água poupada",
+    description: "Suficiente para abastecer uma família por 3 meses",
   },
   {
     icon: TreePine,
     value: "20",
     unit: "",
-    label: "Arvores salvas",
-    description: "Cada arvore absorve 22kg de CO2 por ano",
+    label: "Árvores salvas",
+    description: "Cada árvore absorve 22kg de CO2 por ano",
   },
 ];
 
@@ -45,9 +46,10 @@ function ImpactSection() {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {impacts.map((impact, i) => {
             const Icon = impact.icon;
+            const wide = i === 0;
             return (
               <motion.div
                 key={impact.label}
@@ -55,25 +57,55 @@ function ImpactSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="p-6 md:p-8 rounded-2xl bg-card border border-border/50"
+                className={`p-6 md:p-8 rounded-2xl bg-card border border-border/50 ${
+                  wide ? "md:col-span-2" : ""
+                }`}
               >
-                <Icon className="h-6 w-6 text-success mb-4" />
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
-                    {impact.value}
-                  </span>
-                  {impact.unit && (
-                    <span className="text-xl font-medium text-muted-foreground">
-                      {impact.unit}
-                    </span>
-                  )}
-                </div>
-                <p className="text-base font-medium text-foreground mb-1">
-                  {impact.label}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {impact.description}
-                </p>
+                {wide ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <div className="flex items-center gap-4">
+                      <Icon className="h-6 w-6 text-success shrink-0" />
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
+                          {impact.value}
+                        </span>
+                        {impact.unit && (
+                          <span className="text-xl font-medium text-muted-foreground">
+                            {impact.unit}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="sm:border-l sm:border-border/60 sm:pl-6">
+                      <p className="text-base font-medium text-foreground mb-1">
+                        {impact.label}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {impact.description}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Icon className="h-6 w-6 text-success mb-4" />
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
+                        {impact.value}
+                      </span>
+                      {impact.unit && (
+                        <span className="text-xl font-medium text-muted-foreground">
+                          {impact.unit}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-base font-medium text-foreground mb-1">
+                      {impact.label}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {impact.description}
+                    </p>
+                  </>
+                )}
               </motion.div>
             );
           })}

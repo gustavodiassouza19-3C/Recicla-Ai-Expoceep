@@ -30,7 +30,7 @@ function Footer() {
               Como funciona
             </Link>
             <Link href="/missions" className="hover:text-foreground transition-colors">
-              Missoes
+              Missões
             </Link>
             <Link href="/achievements" className="hover:text-foreground transition-colors">
               Conquistas

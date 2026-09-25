@@ -5,6 +5,7 @@ import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/contexts/auth-context";
 import { PointsProvider } from "@/contexts/points-context";
+import { MotionProvider } from "@/components/motion-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -48,16 +49,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
         <SquiCircleFilter />
-        <AuthProvider>
-          <PointsProvider>
-            <Header />
-            <main className="flex-1 pt-2">
-              {children}
-            </main>
-            <Footer />
-            <Toaster position="bottom-right" richColors closeButton />
-          </PointsProvider>
-        </AuthProvider>
+        <MotionProvider>
+          <AuthProvider>
+            <PointsProvider>
+              <Header />
+              <main className="flex-1 pt-2">
+                {children}
+              </main>
+              <Footer />
+              <Toaster position="bottom-right" richColors closeButton />
+            </PointsProvider>
+          </AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );

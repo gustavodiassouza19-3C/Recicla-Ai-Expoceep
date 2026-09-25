@@ -8,6 +8,7 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { ImpactSection } from "@/components/landing/impact-section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { CtaSection } from "@/components/landing/cta-section";
+import { EffectBand } from "@/components/landing/effect-band";
 
 export default function Home() {
   return (
@@ -16,8 +17,10 @@ export default function Home() {
       <main>
         <HeroSection />
         <StatsSection />
-        <HowItWorksSection />
-        <FeaturesSection />
+        <EffectBand>
+          <HowItWorksSection />
+          <FeaturesSection />
+        </EffectBand>
         <ImpactSection />
         <FaqSection />
         <CtaSection />
