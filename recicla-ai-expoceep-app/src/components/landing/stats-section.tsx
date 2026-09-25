@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 
+// mock: números de exemplo — substituir por dados reais do banco
 const stats = [
-  { value: "150+", label: "Usuarios ativos reciclando" },
+  { value: "150+", label: "Usuários ativos reciclando" },
   { value: "1.200", label: "Reciclagens validadas" },
   { value: "50", label: "Conquistas para desbloquear" },
 ];
@@ -22,7 +23,7 @@ function StatsSection() {
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[0.95]">
             Junte-se aos
             <br />
-            <span className="text-success">que ja escolheram</span>
+            <span className="text-success">que já escolheram</span>
             <br />
             reciclar.
           </h2>
