@@ -1,20 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+} from "framer-motion";
 
 function LandingHeader() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const next = latest > 50;
+    setScrolled((prev) => (prev === next ? prev : next));
+  });
 
   return (
     <header
@@ -57,7 +62,7 @@ function LandingHeader() {
                     document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
                   }
                 }}
-                className={`text-sm transition-colors ${
+                className={`text-sm py-2 transition-colors ${
                   scrolled ? "text-muted-foreground hover:text-foreground" : "text-white/70 hover:text-white"
                 }`}
               >
@@ -66,7 +71,7 @@ function LandingHeader() {
             ))}
             <button
               onClick={() => router.push("/login")}
-              className={`text-sm transition-colors ${
+              className={`text-sm py-2 transition-colors ${
                 scrolled ? "text-muted-foreground hover:text-foreground" : "text-white/70 hover:text-white"
               }`}
             >
@@ -74,16 +79,16 @@ function LandingHeader() {
             </button>
             <button
               onClick={() => router.push("/register")}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-success rounded-full hover:bg-success/90 transition-colors"
+              className="px-5 py-2.5 text-sm font-medium bg-success text-success-foreground rounded-full hover:bg-success/90 transition-colors"
             >
-              Comecar Agora
+              Começar Agora
             </button>
           </nav>
 
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(true)}
-            className={`md:hidden p-2 rounded-full transition-colors ${
+            className={`md:hidden p-3 rounded-full transition-colors ${
               scrolled ? "hover:bg-muted" : "hover:bg-white/10"
             }`}
           >
@@ -113,7 +118,7 @@ function LandingHeader() {
               <div className="flex justify-end mb-8">
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-muted transition-colors"
+                  className="p-3 rounded-full hover:bg-muted transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -122,21 +127,21 @@ function LandingHeader() {
                 <a
                   href="#como-funciona"
                   onClick={() => setMenuOpen(false)}
-                  className="text-base text-foreground hover:text-success transition-colors"
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors"
                 >
                   Como funciona
                 </a>
                 <a
                   href="#features"
                   onClick={() => setMenuOpen(false)}
-                  className="text-base text-foreground hover:text-success transition-colors"
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors"
                 >
                   Funcionalidades
                 </a>
                 <a
                   href="#faq"
                   onClick={() => setMenuOpen(false)}
-                  className="text-base text-foreground hover:text-success transition-colors"
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors"
                 >
                   Perguntas
                 </a>
@@ -146,22 +151,22 @@ function LandingHeader() {
                     setMenuOpen(false);
                     router.push("/about");
                   }}
-                  className="text-base text-foreground hover:text-success transition-colors text-left"
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors text-left"
                 >
                   Sobre
                 </button>
                 <hr className="border-border" />
                 <button
                   onClick={() => { setMenuOpen(false); router.push("/login"); }}
-                  className="text-base text-foreground hover:text-success transition-colors text-left"
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors text-left"
                 >
                   Entrar
                 </button>
                 <button
                   onClick={() => { setMenuOpen(false); router.push("/register"); }}
-                  className="w-full px-5 py-3 text-base font-medium text-white bg-success rounded-full hover:bg-success/90 transition-colors"
+                  className="w-full px-5 py-3 text-base font-medium bg-success text-success-foreground rounded-full hover:bg-success/90 transition-colors"
                 >
-                  Comecar Agora
+                  Começar Agora
                 </button>
               </nav>
             </motion.div>

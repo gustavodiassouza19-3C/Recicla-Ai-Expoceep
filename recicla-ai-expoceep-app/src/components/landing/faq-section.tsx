@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    question: "O que e o Recicla Ai?",
+    question: "O que é o Recicla Ai?",
     answer:
-      "O Recicla Ai e um sistema digital que transforma reciclagem em pontos e recompensas. Voce vincula uma tag NFC a sua conta, leva seus reciclaveis a um ecoponto e valida a entrega pelo app.",
+      "O Recicla Ai é um sistema digital que transforma reciclagem em pontos e recompensas. Você vincula uma tag NFC à sua conta, leva seus recicláveis a um ecoponto e valida a entrega pelo app.",
   },
   {
     question: "Preciso comprar uma tag NFC?",
     answer:
-      "Nao. As tags sao fornecidas gratuitamente nos ecopontos participantes. Basta criar uma conta e vincular a tag ao seu perfil pelo app.",
+      "Não. As tags são fornecidas gratuitamente nos ecopontos participantes. Basta criar uma conta e vincular a tag ao seu perfil pelo app.",
   },
   {
     question: "Como funcionam os pontos?",
@@ -23,17 +23,18 @@ const faqs = [
   {
     question: "Quais materiais posso reciclar?",
     answer:
-      "O sistema aceita papel, cartao, plastico, vidro e metal. Cada ecoponto pode ter tipos diferentes de materiais aceitos, verifique no app.",
+      "O sistema aceita papel, cartão, plástico, vidro e metal. Cada ecoponto pode aceitar tipos diferentes de materiais, verifique no app.",
   },
   {
-    question: "Meus dados estao seguros?",
+    question: "Meus dados estão seguros?",
     answer:
-      "Sim. Utilizamos Supabase com autenticacao segura e Row Level Security. Seus dados so sao acessiveis por voce. Nao compartilhamos informacoes com terceiros.",
+      "Sim. Seus dados são protegidos por autenticação segura e regras de acesso que garantem que só você consiga vê-los. Não compartilhamos informações com terceiros.",
   },
 ];
 
 function FaqItem({ faq }: { faq: (typeof faqs)[number] }) {
   const [open, setOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   return (
     <div className="border-b border-border/50 last:border-b-0">
@@ -56,7 +57,7 @@ function FaqItem({ faq }: { faq: (typeof faqs)[number] }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
             className="overflow-hidden"
           >
             <p className="text-base text-muted-foreground pb-5 md:pb-6 leading-relaxed">

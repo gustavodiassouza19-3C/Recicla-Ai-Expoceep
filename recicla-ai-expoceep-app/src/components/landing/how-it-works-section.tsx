@@ -1,25 +1,24 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 const steps = [
   {
-    number: "01",
     title: "Crie sua conta",
     description: "Cadastre-se com email e senha. Sem burocracia, sem tarifa.",
     image: "/images/hero-recycling.jpg",
   },
   {
-    number: "02",
     title: "Vincule sua tag NFC",
     description: "Receba uma tag no ecoponto e vincule pelo app em segundos.",
-    image: "/images/nfc-tag.jpg",
+    image: "/images/nfc-scan.webp",
   },
   {
-    number: "03",
     title: "Recicle e ganhe pontos",
-    description: "Leve seus reciclaveis ao ecoponto, valide com a tag e acumule pontos.",
-    image: "/images/community-recycle.jpg",
+    description:
+      "Leve seus recicláveis ao ecoponto, valide com a tag e acumule pontos.",
+    image: "/images/community-recycling.webp",
   },
 ];
 
@@ -35,7 +34,7 @@ function HowItWorksSection() {
           className="mb-16 md:mb-24"
         >
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[0.95]">
-            Tres passos.
+            Três passos.
             <br />
             <span className="text-success">Simples assim.</span>
           </h2>
@@ -44,7 +43,7 @@ function HowItWorksSection() {
         <div className="space-y-16 md:space-y-24">
           {steps.map((step, i) => (
             <motion.div
-              key={step.number}
+              key={step.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
@@ -53,9 +52,6 @@ function HowItWorksSection() {
             >
               {/* Text */}
               <div className={i % 2 === 1 ? "md:order-2" : ""}>
-                <span className="text-success text-base font-semibold mb-3 block">
-                  {step.number}
-                </span>
                 <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-3">
                   {step.title}
                 </h3>
@@ -66,11 +62,13 @@ function HowItWorksSection() {
 
               {/* Photo */}
               <div className={i % 2 === 1 ? "md:order-1" : ""}>
-                <div className="rounded-2xl overflow-hidden aspect-[4/3]">
-                  <img
+                <div className="relative rounded-2xl overflow-hidden aspect-[4/3]">
+                  <Image
                     src={step.image}
                     alt={step.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
                   />
                 </div>
               </div>
