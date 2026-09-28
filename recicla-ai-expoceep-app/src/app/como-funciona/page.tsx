@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { UserPlus, Nfc, Recycle, Trophy, ArrowLeft, Sparkles, CheckCircle, Clock, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { animate } from "animejs";
 import { supabase } from "@/lib/supabase";
+import { registerRecycling } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 
 const steps = [
@@ -34,7 +34,7 @@ const steps = [
   {
     icon: Trophy,
     title: "Ganhe pontos e conquistas",
-    description: "Acumule pontos a cada reciclagem e desbloqueie 50 conquistas.",
+    description: "Acumule pontos a cada reciclagem e desbloqueie 51 conquistas.",
     color: "text-warning",
   },
 ];
@@ -91,35 +91,25 @@ export default function ComoFuncionaPage() {
     if (!selectedTag) return;
     setError("");
 
-    if (!user?.usuario_id) {
-      setError("Voce precisa estar logado para vincular uma tag.");
+    if (!user) {
+      setError("Você precisa estar logado para vincular uma tag.");
       return;
     }
 
-    if (selectedTag.status === "em_uso") {
+    if (selectedTag.status !== "disponivel" && selectedTag.status !== "ativa") {
       setError("Esta tag ja esta em uso.");
       return;
     }
 
     setSubmitting(true);
 
-    const { error: insertError } = await supabase.from("reciclagens").insert({
-      usuario_id: user.usuario_id,
-      tag_id: selectedTag.id,
-      status: "pendente",
-      data_entrega: new Date().toISOString(),
-    });
-
-    if (insertError) {
-      setError("Erro ao vincular tag.");
+    try {
+      await registerRecycling(selectedTag.codigo_nfc);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erro ao vincular tag.");
       setSubmitting(false);
       return;
     }
-
-    await supabase
-      .from("tags")
-      .update({ status: "em_uso" })
-      .eq("id", selectedTag.id);
 
     setSuccess(true);
     fetchTags();
@@ -136,7 +126,7 @@ export default function ComoFuncionaPage() {
       router.push("/register");
       return;
     }
-    if (tag.status === "em_uso") return;
+    if (tag.status !== "disponivel" && tag.status !== "ativa") return;
     setSelectedTag(tag);
   }
 
@@ -229,9 +219,9 @@ export default function ComoFuncionaPage() {
                   <button
                     key={tag.id}
                     onClick={() => handleTagClick(tag)}
-                    disabled={tag.status === "em_uso" || submitting}
+                    disabled={(tag.status !== "disponivel" && tag.status !== "ativa") || submitting}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${
-                      tag.status === "em_uso"
+                      tag.status !== "disponivel" && tag.status !== "ativa"
                         ? "bg-muted/30 border-border/30 opacity-50 cursor-not-allowed"
                         : user
                           ? "bg-muted/30 border-success/30 hover:border-success hover:bg-success/5 cursor-pointer"
@@ -239,7 +229,7 @@ export default function ComoFuncionaPage() {
                     }`}
                   >
                     <span className="text-sm font-mono font-bold text-foreground">{tag.codigo_nfc}</span>
-                    {tag.status === "ativa" ? (
+                    {tag.status === "disponivel" || tag.status === "ativa" ? (
                       <Badge variant="success" className="text-[9px]">
                         <CheckCircle className="h-2.5 w-2.5 mr-0.5" />
                         OK

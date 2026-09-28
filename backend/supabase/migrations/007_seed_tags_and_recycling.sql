@@ -5,16 +5,16 @@
 
 -- Inserir 10 tags NFC ficticias
 INSERT INTO tags (codigo_nfc, status) VALUES
-('A1B2C', 'ativa'),
-('D3E4F', 'ativa'),
+('A1B2C', 'disponivel'),
+('D3E4F', 'disponivel'),
 ('G5H6I', 'em_uso'),
-('J7K8L', 'ativa'),
-('M9N0P', 'ativa'),
-('Q1R2S', 'ativa'),
-('T3U4V', 'ativa'),
-('W5X6Y', 'ativa'),
-('Z7A8B', 'ativa'),
-('C9D0E', 'ativa')
+('J7K8L', 'disponivel'),
+('M9N0P', 'disponivel'),
+('Q1R2S', 'disponivel'),
+('T3U4V', 'disponivel'),
+('W5X6Y', 'disponivel'),
+('Z7A8B', 'disponivel'),
+('C9D0E', 'disponivel')
 ON CONFLICT (codigo_nfc) DO NOTHING;
 
 -- Inserir reciclagens ficticias para o usuario existente

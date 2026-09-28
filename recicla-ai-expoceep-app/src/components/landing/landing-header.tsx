@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import {
   motion,
@@ -33,12 +34,7 @@ function LandingHeader() {
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <button onClick={() => router.push("/")} className="flex items-center gap-2">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-success">
-              <path d="M17 22H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M12 22V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M12 14C12 14 7 11 7 7C7 4 9 2 12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              <path d="M12 11C12 11 17 8 17 4C17 1 15 -1 12 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            </svg>
+            <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-10 md:h-12 w-auto" priority />
             <span className={`text-base font-bold tracking-tight transition-colors ${scrolled ? "text-foreground" : "text-white"}`}>
               Recicla Ai
             </span>

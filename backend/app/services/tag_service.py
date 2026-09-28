@@ -6,7 +6,7 @@ def validate_tag_code(supabase: Client, tag_code: str) -> dict | None:
         supabase.table("tags")
         .select("*")
         .eq("codigo_nfc", tag_code)
-        .eq("status", "ativa")
+        .eq("status", "disponivel")
         .execute()
     )
     if result.data:

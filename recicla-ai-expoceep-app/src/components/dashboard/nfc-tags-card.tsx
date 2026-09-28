@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/auth-context";
+import { registerRecycling } from "@/lib/api";
 import { X, Plus, Wifi } from "lucide-react";
 
 interface NfcTag {
@@ -18,6 +18,7 @@ interface NfcTag {
 }
 
 const statusLabels: Record<string, string> = {
+  disponivel: "disponivel",
   ativa: "disponivel",
   em_uso: "em uso",
   indisponivel: "indisponivel",
@@ -34,7 +35,6 @@ const itemVariants = {
 };
 
 function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLinked?: () => void }) {
-  const { user } = useAuth();
   const [tags, setTags] = useState<NfcTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,7 +48,7 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
       .select("id, codigo_nfc, status")
       .order("id", { ascending: true })
       .then(({ data }) => {
-        if (data) setTags(data);
+        if (data) setTags(data as NfcTag[]);
         setLoading(false);
       });
   }
@@ -67,47 +67,13 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
 
     setSubmitting(true);
 
-    const { data: tag, error: tagError } = await supabase
-      .from("tags")
-      .select("id, status")
-      .eq("codigo_nfc", code)
-      .single();
-
-    if (tagError || !tag) {
-      setError("Tag nao encontrada.");
+    try {
+      await registerRecycling(code);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erro ao vincular tag.");
       setSubmitting(false);
       return;
     }
-
-    if (tag.status === "em_uso") {
-      setError("Esta tag ja esta em uso.");
-      setSubmitting(false);
-      return;
-    }
-
-    if (!user?.usuario_id) {
-      setError("Usuario nao autenticado.");
-      setSubmitting(false);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("reciclagens").insert({
-      usuario_id: user.usuario_id,
-      tag_id: tag.id,
-      status: "pendente",
-      data_entrega: new Date().toISOString(),
-    });
-
-    if (insertError) {
-      setError("Erro ao vincular tag.");
-      setSubmitting(false);
-      return;
-    }
-
-    await supabase
-      .from("tags")
-      .update({ status: "em_uso" })
-      .eq("id", tag.id);
 
     setTagCode("");
     setDialogOpen(false);
@@ -139,7 +105,7 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
               <span className="text-xs font-medium text-foreground flex-1 truncate">
                 {tag.codigo_nfc}
               </span>
-              <Badge variant={tag.status === "ativa" ? "success" : tag.status === "em_uso" ? "warning" : "default"}>
+              <Badge variant={tag.status === "disponivel" || tag.status === "ativa" ? "success" : tag.status === "em_uso" ? "warning" : "default"}>
                 {statusLabels[tag.status] ?? tag.status}
               </Badge>
             </motion.div>

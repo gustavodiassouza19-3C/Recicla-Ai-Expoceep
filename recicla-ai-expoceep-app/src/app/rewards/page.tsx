@@ -21,62 +21,15 @@ interface RewardItem {
   available: boolean;
 }
 
-const REWARDS: RewardItem[] = [
-  {
-    id: "1",
-    title: "Cupom 10% Off",
-    description: "Desconto em lojas parceiras de Cascavel",
-    cost: 100,
-    category: "desconto",
-    icon: "D",
-    available: true,
-  },
-  {
-    id: "2",
-    title: "Plantar 1 Arvore",
-    description: "Doar sua pontuacao para plantio de arvore",
-    cost: 200,
-    category: "doacao",
-    icon: "A",
-    available: true,
-  },
-  {
-    id: "3",
-    title: "Cafe Gratuito",
-    description: "Um cafe gratis no Parque Ecologico",
-    cost: 50,
-    category: "parceiro",
-    icon: "C",
-    available: true,
-  },
-  {
-    id: "4",
-    title: "Kit Reciclavel",
-    description: "Lixeira separadora para sua casa",
-    cost: 300,
-    category: "parceiro",
-    icon: "R",
-    available: true,
-  },
-  {
-    id: "5",
-    title: "Doar 5L Agua",
-    description: "5 litros de agua doados para projecao social",
-    cost: 150,
-    category: "doacao",
-    icon: "5L",
-    available: true,
-  },
-  {
-    id: "6",
-    title: "Cupom 20% Off",
-    description: "Desconto especial em lojas de Cascavel",
-    cost: 250,
-    category: "desconto",
-    icon: "20",
-    available: false,
-  },
-];
+interface CatalogItem {
+  id: number;
+  titulo: string;
+  descricao: string | null;
+  custo_pontos: number;
+  categoria: "desconto" | "parceiro" | "doacao";
+  icone: string | null;
+  ativa: boolean;
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   desconto: "Descontos",
@@ -99,7 +52,45 @@ export default function RewardsPage() {
   const router = useRouter();
   const { points, refetchPoints } = usePoints();
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [loadingRewards, setLoadingRewards] = useState(true);
   const pointsRef = useRef<HTMLSpanElement>(null);
+
+  // Catalogo vem do backend. Antes era um array fixo no arquivo, entao o que o
+  // admin criava no painel nunca aparecia aqui.
+  useEffect(() => {
+    let cancelled = false;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/rewards`, { cache: "no-store" });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { recompensas?: CatalogItem[] };
+
+        if (cancelled) return;
+        setRewards(
+          (data.recompensas ?? []).map((item) => ({
+            id: String(item.id),
+            title: item.titulo,
+            description: item.descricao ?? "",
+            cost: item.custo_pontos,
+            category: item.categoria,
+            icon: item.icone ?? "?",
+            available: item.ativa,
+          }))
+        );
+      } catch {
+        if (!cancelled) setRewards([]);
+      } finally {
+        if (!cancelled) setLoadingRewards(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -137,8 +128,8 @@ export default function RewardsPage() {
   }
 
   const filtered = activeCategory === "all"
-    ? REWARDS
-    : REWARDS.filter((r) => r.category === activeCategory);
+    ? rewards
+    : rewards.filter((r) => r.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -288,7 +279,12 @@ export default function RewardsPage() {
             animate="show"
             className="flex flex-col gap-2"
           >
-            {filtered.map((reward) => (
+            {loadingRewards ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Carregando recompensas...
+              </p>
+            ) : (
+              filtered.map((reward) => (
               <motion.div key={reward.id} variants={item}>
                 <Card className="p-4 retro-border-item retro-shadow-sm retro-radius cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                   <div className="flex items-center gap-3">
@@ -304,18 +300,21 @@ export default function RewardsPage() {
                           {reward.cost} pts
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {reward.description}
-                      </p>
+                      {reward.description ? (
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                          {reward.description}
+                        </p>
+                      ) : null}
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </div>
                 </Card>
               </motion.div>
-            ))}
+              ))
+            )}
           </motion.div>
 
-          {filtered.length === 0 && (
+          {!loadingRewards && filtered.length === 0 && (
             <p className="text-center text-muted-foreground text-sm py-8">
               Nenhuma recompensa nesta categoria.
             </p>

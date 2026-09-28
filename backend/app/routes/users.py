@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from app.database import get_supabase
-from app.auth import get_current_user
-from app.models.user import UserCreate, UserResponse
+from app.auth import get_admin_user, get_current_user
+from app.models.user import UserCreate, UserResponse, UserUpdate
 from app.services.points_service import get_user_points
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -31,6 +31,7 @@ async def get_me(
 @router.post("", response_model=UserResponse)
 async def create_user(
     data: UserCreate,
+    admin=Depends(get_admin_user),
     supabase: Client = Depends(get_supabase),
 ):
     user_data = {
@@ -40,7 +41,7 @@ async def create_user(
         "sexo": data.sexo,
         "idade": data.idade,
         "senha": "",
-        "tipo": data.tipo or "cidadao",
+        "tipo": "cliente",
     }
     result = supabase.table("usuarios").insert(user_data).execute()
     return _to_response(result.data[0], 0)
@@ -48,11 +49,13 @@ async def create_user(
 
 @router.put("/me", response_model=UserResponse)
 async def update_me(
-    data: UserCreate,
+    data: UserUpdate,
     user=Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    update_data = data.model_dump(exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True, exclude_none=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Nenhum campo para atualizar")
     result = (
         supabase.table("usuarios")
         .update(update_data)

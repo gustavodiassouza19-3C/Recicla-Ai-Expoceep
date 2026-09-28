@@ -4,6 +4,6 @@
 ALTER TABLE usuario_conquistas
     ADD COLUMN IF NOT EXISTS resgatada_em TIMESTAMPTZ;
 
-CREATE INDEX IF NOT EXISTS idx_usuario_conquistas_pendentes
+CREATE INDEX IF NOT EXISTS idx_usuario_conquistas_resgatada
     ON usuario_conquistas(usuario_id)
     WHERE resgatada_em IS NULL;

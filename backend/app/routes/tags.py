@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from app.database import get_supabase
-from app.auth import get_current_user
+from app.auth import get_current_user, get_staff_user
 from app.models.tag import TagCreate, TagResponse
 
 router = APIRouter(prefix="/api/tags", tags=["tags"])
@@ -38,7 +38,7 @@ async def my_tags(
 
 
 @router.get("/{codigo}", response_model=TagResponse)
-async def get_tag(codigo: str, supabase: Client = Depends(get_supabase)):
+async def get_tag(codigo: str, user=Depends(get_current_user), supabase: Client = Depends(get_supabase)):
     result = (
         supabase.table("tags")
         .select("*")
@@ -53,12 +53,12 @@ async def get_tag(codigo: str, supabase: Client = Depends(get_supabase)):
 @router.post("", response_model=TagResponse)
 async def create_tag(
     data: TagCreate,
-    user=Depends(get_current_user),
+    staff=Depends(get_staff_user),
     supabase: Client = Depends(get_supabase),
 ):
     tag_data = {
         "codigo_nfc": data.codigo_nfc,
-        "status": data.status or "ativa",
+        "status": data.status or "disponivel",
     }
     result = supabase.table("tags").insert(tag_data).execute()
     return result.data[0]

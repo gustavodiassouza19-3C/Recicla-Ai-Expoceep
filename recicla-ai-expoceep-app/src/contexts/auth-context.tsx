@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -9,71 +9,162 @@ interface User {
   email: string;
   nome: string;
   usuario_id: number | null;
+  tipo: string;
   household_size: number;
   cpf?: string;
   sexo?: string;
   idade?: number;
 }
 
+interface ProfileResponse {
+  id: number;
+  nome: string;
+  email: string;
+  cpf?: string;
+  sexo?: string;
+  idade?: number;
+  tipo?: string;
+  household_size?: number;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ error?: string }>;
+  login: (email: string, password: string) => Promise<{ error?: string; tipo?: string }>;
   register: (
     nome: string,
     email: string,
     password: string,
     householdSize: number,
-    cpf?: string,
     sexo?: string,
     idade?: number
-  ) => Promise<{ error?: string }>;
+  ) => Promise<{ error?: string; emailConfirmationRequired?: boolean }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+async function fetchBackendProfile(jwt: string): Promise<ProfileResponse | null> {
+  if (!API_URL) return null;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch(`${API_URL}/api/users/me`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as ProfileResponse;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function fetchUsuarioData(email: string): Promise<{
+  usuario_id: number | null;
+  household_size: number;
+}> {
+  let usuarioId: number | null = null;
+  let householdSize = 1;
+
+  try {
+    const { data: uid, error } = await supabase.rpc("get_current_usuario_id");
+    if (!error && uid) usuarioId = uid;
+  } catch {}
+
+  if (!usuarioId) {
+    try {
+      const { data: row } = await supabase
+        .from("usuarios")
+        .select("id, household_size")
+        .eq("email", email)
+        .maybeSingle();
+      if (row) {
+        usuarioId = row.id;
+        householdSize = row.household_size || 1;
+      }
+    } catch {}
+  }
+
+  return { usuario_id: usuarioId, household_size: householdSize };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const restoredRef = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
+    let active = true;
     const stored = localStorage.getItem("supabase_token");
     const storedUser = localStorage.getItem("supabase_user");
 
-    if (stored && storedUser) {
-      setToken(stored);
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+    const restore = async () => {
+      if (!stored || !storedUser) {
+        if (active) {
+          restoredRef.current = true;
+          setLoading(false);
+        }
+        return;
+      }
 
-  async function fetchUsuarioData(authUserId: string): Promise<{ usuario_id: number | null; household_size: number }> {
-    let usuarioId: number | null = null;
-    let householdSize = 1;
-
-    try {
-      const { data: uid } = await supabase.rpc("get_current_usuario_id");
-      if (uid) usuarioId = uid;
-    } catch {}
-
-    if (usuarioId) {
       try {
-        const { data: row } = await supabase
-          .from("usuarios")
-          .select("household_size")
-          .eq("id", usuarioId)
-          .single();
-        if (row?.household_size) householdSize = row.household_size;
-      } catch {}
-    }
+        const parsed = JSON.parse(storedUser) as User;
+        const { data } = await supabase.auth.getSession();
+        const restoredToken = data.session?.access_token || stored;
+        const profile = await fetchBackendProfile(restoredToken);
+        const fallback = await fetchUsuarioData(parsed.email);
+        if (!active) return;
+        setToken(restoredToken);
+        setUser({
+          ...parsed,
+          usuario_id: profile?.id ?? fallback.usuario_id,
+          tipo: profile?.tipo || parsed.tipo || "cliente",
+          household_size: profile?.household_size || fallback.household_size,
+        });
+        localStorage.setItem("supabase_token", restoredToken);
+      } catch {
+        localStorage.removeItem("supabase_token");
+        localStorage.removeItem("supabase_user");
+        if (active) {
+          setToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (active) {
+          restoredRef.current = true;
+          setLoading(false);
+        }
+      }
+    };
 
-    return { usuario_id: usuarioId, household_size: householdSize };
-  }
+    void restore();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextToken = session?.access_token || null;
+      if (nextToken) localStorage.setItem("supabase_token", nextToken);
+      else localStorage.removeItem("supabase_token");
+      if (!active || !restoredRef.current) return;
+      setToken(nextToken);
+      setLoading(false);
+      if (!session) setUser(null);
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const refreshUser = async () => {
     if (!user?.usuario_id) return;
@@ -92,35 +183,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return { error: error.message };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.session || !data.user) {
+      return { error: error?.message || "Sessao nao encontrada" };
     }
 
     const jwt = data.session.access_token;
-    const { usuario_id, household_size } = await fetchUsuarioData(data.user.id);
-
+    const profile = await fetchBackendProfile(jwt);
+    const fallback = await fetchUsuarioData(data.user.email || email);
     const userData: User = {
       id: data.user.id,
-      email: data.user.email || "",
-      nome: data.user.user_metadata?.nome || email.split("@")[0],
-      usuario_id,
-      household_size,
-      cpf: data.user.user_metadata?.cpf,
-      sexo: data.user.user_metadata?.sexo,
-      idade: data.user.user_metadata?.idade,
+      email: data.user.email || email,
+      nome: profile?.nome || data.user.user_metadata?.nome || email.split("@")[0],
+      usuario_id: profile?.id ?? fallback.usuario_id,
+      tipo: profile?.tipo || "cliente",
+      household_size: profile?.household_size || fallback.household_size,
+      cpf: profile?.cpf || data.user.user_metadata?.cpf,
+      sexo: profile?.sexo || data.user.user_metadata?.sexo,
+      idade: profile?.idade || data.user.user_metadata?.idade,
     };
 
     localStorage.setItem("supabase_token", jwt);
     localStorage.setItem("supabase_user", JSON.stringify(userData));
     setToken(jwt);
     setUser(userData);
-
-    return {};
+    return { tipo: userData.tipo };
   };
 
   const register = async (
@@ -128,56 +215,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string,
     householdSize: number,
-    cpf?: string,
     sexo?: string,
     idade?: number
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { nome, cpf, sexo, idade },
-      },
+      options: { data: { nome, sexo, idade, household_size: householdSize } },
     });
-
-    if (error) {
-      return { error: error.message };
+    if (error) return { error: error.message };
+    if (!data.user) {
+      return { error: "Não foi possível criar a conta." };
+    }
+    if (!data.session) {
+      return { emailConfirmationRequired: true };
     }
 
-    if (data.session && data.user) {
-      const jwt = data.session.access_token;
-      const { usuario_id, household_size } = await fetchUsuarioData(data.user.id);
+    const jwt = data.session.access_token;
+    const profile = await fetchBackendProfile(jwt);
+    const fallback = await fetchUsuarioData(data.user.email || email);
+    const userData: User = {
+      id: data.user.id,
+      email: data.user.email || email,
+      nome: profile?.nome || nome,
+      usuario_id: profile?.id ?? fallback.usuario_id,
+      tipo: profile?.tipo || "cliente",
+      household_size: profile?.household_size || fallback.household_size || householdSize,
+      cpf: profile?.cpf,
+      sexo: profile?.sexo || sexo,
+      idade: profile?.idade || idade,
+    };
 
-      // Atualiza household_size se não veio do fetch (usuário novo)
-      if (usuario_id && household_size === 1 && householdSize > 1) {
-        await supabase
-          .from("usuarios")
-          .update({ household_size: householdSize })
-          .eq("id", usuario_id);
-      }
-
-      const userData: User = {
-        id: data.user.id,
-        email: data.user.email || "",
-        nome,
-        usuario_id,
-        household_size: householdSize,
-        cpf,
-        sexo,
-        idade,
-      };
-
-      localStorage.setItem("supabase_token", jwt);
-      localStorage.setItem("supabase_user", JSON.stringify(userData));
-      setToken(jwt);
-      setUser(userData);
-    }
-
+    localStorage.setItem("supabase_token", jwt);
+    localStorage.setItem("supabase_user", JSON.stringify(userData));
+    setToken(jwt);
+    setUser(userData);
     return {};
   };
 
   const logout = () => {
-    supabase.auth.signOut();
+    void supabase.auth.signOut();
     localStorage.removeItem("supabase_token");
     localStorage.removeItem("supabase_user");
     setToken(null);
@@ -194,8 +271,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
-  }
+  if (!context) throw new Error("useAuth deve ser usado dentro de um AuthProvider");
   return context;
 }

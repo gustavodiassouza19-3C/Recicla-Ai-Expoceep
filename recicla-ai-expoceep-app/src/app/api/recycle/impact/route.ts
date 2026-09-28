@@ -1,30 +1,20 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export async function GET() {
-  // Try to get impact data from conquistas table (has 'pontos' column)
-  const { data, error } = await supabase
-    .from('conquistas')
-    .select('pontos')
-    .limit(5);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+export async function GET(request: Request) {
+  if (!API_URL) {
+    return NextResponse.json({ detail: "NEXT_PUBLIC_API_URL nao configurada" }, { status: 503 });
   }
 
-  // Calculate impact from conquistas points
-  const totalPoints = (data || []).reduce((sum: number, item: { pontos?: number }) => sum + (item.pontos || 0), 0);
-
-  // Transform for dashboard compatibility
-  const impactData = {
-    validated_count: data?.length || 0,
-    trees: Math.floor(totalPoints / 10), // approximate: 1 tree per 10 points
-    water_liters: Math.floor(totalPoints * 5), // approximate: 5L per point
-  };
-
-  return NextResponse.json({ impactData });
+  const authorization = request.headers.get("authorization");
+  const response = await fetch(`${API_URL}/api/recycle/impact`, {
+    headers: authorization ? { Authorization: authorization } : {},
+    cache: "no-store",
+  });
+  const body = await response.text();
+  return new NextResponse(body, {
+    status: response.status,
+    headers: { "Content-Type": response.headers.get("content-type") || "application/json" },
+  });
 }

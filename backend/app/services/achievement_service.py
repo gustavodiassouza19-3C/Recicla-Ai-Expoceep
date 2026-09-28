@@ -408,6 +408,8 @@ def check_achievements(supabase: Client, usuario_id: int) -> dict:
 
         condition_type = achievement["condicao_tipo"]
         condition_value = achievement["condicao_valor"]
+        if condition_type == "cadastro":
+            continue
         earned = False
 
         if condition_type == "total_tags":
@@ -497,7 +499,10 @@ def get_user_achievement_progress(supabase: Client, usuario_id: int) -> list[dic
         earned = code in earned_map
 
         current = 0
-        if condition_type == "total_tags":
+        if condition_type == "cadastro":
+            current = 1 if earned else 0
+            condition_value = 1
+        elif condition_type == "total_tags":
             current = total_tags
         elif condition_type == "sequencia_dias":
             current = consecutive_days

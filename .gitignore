@@ -49,5 +49,6 @@ recicla-ai-expoceep-app/.playwright-mcp/
 *.png
 !recicla-ai-expoceep-app/public/**/*.png
 !apple-design-skill/**/*.png
+!evidencias-etapa2/**/*.png
 fe-dev.log
 freebuff/

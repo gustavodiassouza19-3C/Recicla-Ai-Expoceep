@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Leaf, Recycle, Heart } from "lucide-react";
+import Image from "next/image";
+import { Heart } from "lucide-react";
 
 function Footer() {
   const pathname = usePathname();
@@ -16,7 +17,7 @@ function Footer() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
-              <Leaf className="h-3 w-3 text-success" />
+              <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-3 w-auto" />
             </div>
             <span className="text-xs font-bold text-foreground tracking-tight">Recicla Ai</span>
           </div>
@@ -28,9 +29,6 @@ function Footer() {
             </Link>
             <Link href="/como-funciona" className="hover:text-foreground transition-colors">
               Como funciona
-            </Link>
-            <Link href="/missions" className="hover:text-foreground transition-colors">
-              Missões
             </Link>
             <Link href="/achievements" className="hover:text-foreground transition-colors">
               Conquistas

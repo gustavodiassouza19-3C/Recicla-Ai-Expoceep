@@ -30,6 +30,7 @@ interface ConquistaComProgresso extends Conquista {
 
 const CATEGORIES = [
   { key: "all", label: "Todas" },
+  { key: "boas_vindas", label: "Boas-vindas" },
   { key: "tags", label: "Tags" },
   { key: "sequencia", label: "Sequencia" },
   { key: "periodo", label: "Periodo" },

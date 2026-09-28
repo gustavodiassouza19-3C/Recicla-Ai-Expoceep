@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, Trophy, Gift, MapPin, User, Menu, X, LogOut, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,6 @@ import { AchievementNotifications } from "@/components/dashboard/achievement-not
 
 const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
-  { id: "/missions", label: "Missoes", icon: Trophy },
   { id: "/achievements", label: "Conquistas", icon: Trophy },
   { id: "/rewards", label: "Recompensas", icon: Gift },
   { id: "/eco-points", label: "EcoPoints", icon: MapPin },
@@ -28,8 +28,6 @@ function Header() {
   if (!user) return null;
   if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
 
-  const activeTab = tabs.find((t) => t.id === pathname);
-  const ActiveIcon = activeTab?.icon ?? Home;
 
   return (
     <>
@@ -37,12 +35,7 @@ function Header() {
         <div className="max-w-md mx-auto px-3 md:px-6">
           <div className="flex items-center justify-between h-10">
             <div className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-success">
-                <path d="M17 22H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 22V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 14C12 14 7 11 7 7C7 4 9 2 12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                <path d="M12 11C12 11 17 8 17 4C17 1 15 -1 12 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              </svg>
+              <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-4 w-auto" />
               <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
             </div>
 
@@ -123,12 +116,7 @@ function Header() {
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 h-14 border-b border-border">
                   <div className="flex items-center gap-1.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-success">
-                      <path d="M17 22H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M12 22V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M12 14C12 14 7 11 7 7C7 4 9 2 12 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                      <path d="M12 11C12 11 17 8 17 4C17 1 15 -1 12 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                    </svg>
+                    <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-4 w-auto" />
                     <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
                   </div>
                   <button

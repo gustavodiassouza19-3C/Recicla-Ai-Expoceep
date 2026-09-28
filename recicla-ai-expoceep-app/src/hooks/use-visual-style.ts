@@ -13,14 +13,14 @@ function applyStyle(style: VisualStyle) {
 }
 
 export function useVisualStyle() {
-  const [style, setStyle] = useState<VisualStyle>("retro");
+  const [style, setStyle] = useState<VisualStyle>(() => {
+    if (typeof window === "undefined") return "retro";
+    return localStorage.getItem("visual-style") === "moderno" ? "moderno" : "retro";
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("visual-style");
-    const initial: VisualStyle = stored === "moderno" ? "moderno" : "retro";
-    setStyle(initial);
-    applyStyle(initial);
-  }, []);
+    applyStyle(style);
+  }, [style]);
 
   const toggleStyle = useCallback(() => {
     setStyle((prev) => {

@@ -142,25 +142,31 @@ export type Database = {
         Row: {
           data_liberacao: string | null
           id: number
-          reciclagem_id: number
+          missao_id: number | null
+          reciclagem_id: number | null
           status: string
           tipo: string
+          usuario_id: number | null
           valor: number
         }
         Insert: {
           data_liberacao?: string | null
           id?: never
-          reciclagem_id: number
+          missao_id?: number | null
+          reciclagem_id?: number | null
           status?: string
           tipo: string
+          usuario_id?: number | null
           valor: number
         }
         Update: {
           data_liberacao?: string | null
           id?: never
-          reciclagem_id?: number
+          missao_id?: number | null
+          reciclagem_id?: number | null
           status?: string
           tipo?: string
+          usuario_id?: number | null
           valor?: number
         }
         Relationships: [
@@ -198,6 +204,7 @@ export type Database = {
           conquista_id: number
           id: number
           pontos_ganhos: number
+          resgatada_em: string | null
           usuario_id: number
         }
         Insert: {
@@ -206,6 +213,7 @@ export type Database = {
           conquista_id: number
           id?: number
           pontos_ganhos?: number
+          resgatada_em?: string | null
           usuario_id: number
         }
         Update: {
@@ -214,6 +222,7 @@ export type Database = {
           conquista_id?: number
           id?: number
           pontos_ganhos?: number
+          resgatada_em?: string | null
           usuario_id?: number
         }
         Relationships: [
@@ -235,32 +244,41 @@ export type Database = {
       }
       usuarios: {
         Row: {
-          cpf: string
+          cpf: string | null
           criado_em: string | null
           email: string
+          household_size: number
+          idade: number | null
           id: number
           nome: string
           pontos: number
+          sexo: string | null
           senha: string
           tipo: string
         }
         Insert: {
-          cpf: string
+          cpf?: string | null
           criado_em?: string | null
           email: string
+          household_size?: number
+          idade?: number | null
           id?: never
           nome: string
           pontos?: number
-          senha: string
+          sexo?: string | null
+          senha?: string
           tipo?: string
         }
         Update: {
-          cpf?: string
+          cpf?: string | null
           criado_em?: string | null
           email?: string
+          household_size?: number
+          idade?: number | null
           id?: never
           nome?: string
           pontos?: number
+          sexo?: string | null
           senha?: string
           tipo?: string
         }

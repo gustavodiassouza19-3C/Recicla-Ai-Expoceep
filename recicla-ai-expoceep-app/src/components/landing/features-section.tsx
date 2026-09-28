@@ -9,7 +9,7 @@ const features = [
     icon: Trophy,
     title: "Gamificação",
     description:
-      "50 conquistas para desbloquear. Cada reciclagem te aproxima do próximo nível.",
+      "51 conquistas para desbloquear. Cada reciclagem te aproxima do próximo nível.",
     image: "/images/hero-recycling.jpg",
   },
   {

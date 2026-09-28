@@ -62,14 +62,7 @@ export interface EcoPointNearby extends EcoPoint {
 }
 
 export function fetchScoreHistory(): Promise<ScoreDataPoint[]> {
-  return fetch("/api/recycle/score-history", {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => {
-    if (!res.ok) throw new Error("Erro");
-    return res.json();
-  });
+  return apiFetch<ScoreDataPoint[]>("/api/recycle/score-history");
 }
 
 export interface MeProfile {
@@ -84,14 +77,7 @@ export function fetchMe(): Promise<MeProfile> {
 }
 
 export function fetchHistory(): Promise<HistoryEntry[]> {
-  return fetch("/api/recycle/history", {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => {
-    if (!res.ok) throw new Error("Erro");
-    return res.json();
-  });
+  return apiFetch<HistoryEntry[]>("/api/recycle/history");
 }
 
 export interface TagInput {
@@ -99,14 +85,7 @@ export interface TagInput {
 }
 
 export function fetchMyTags(): Promise<UserTag[]> {
-  return fetch("/api/tags/me", {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => {
-    if (!res.ok) throw new Error("Erro");
-    return res.json();
-  });
+  return apiFetch<UserTag[]>("/api/tags/me");
 }
 
 export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string; status: string }> {
@@ -117,32 +96,21 @@ export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string
 }
 
 export function fetchImpact(): Promise<ImpactData> {
-  return fetch("/api/recycle/impact", {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then((res) => {
-    if (!res.ok) throw new Error("Erro");
-    return res.json();
+  return apiFetch<ImpactData>("/api/recycle/impact");
+}
+
+export interface RecyclingRegistration {
+  success: boolean;
+  pontos_ganhos: number;
+  novo_total: number;
+  message: string;
+}
+
+export function registerRecycling(tagCode: string): Promise<RecyclingRegistration> {
+  return apiFetch<RecyclingRegistration>("/api/recycle", {
+    method: "POST",
+    body: JSON.stringify({ tag_code: tagCode }),
   });
-}
-
-export interface MissionItem {
-  id: number;
-  titulo: string;
-  descricao: string;
-  meta: number;
-  recompensa_pontos: number;
-}
-
-export interface UserMissionItem {
-  mission: MissionItem;
-  progress: number;
-  completed: boolean;
-}
-
-export function fetchMyMissions(): Promise<UserMissionItem[]> {
-  return apiFetch("/api/missions/me");
 }
 
 export function fetchEcoPoints(): Promise<EcoPoint[]> {

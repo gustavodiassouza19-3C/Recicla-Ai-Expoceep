@@ -28,7 +28,7 @@ A tag tem seu status resetado para "disponível" e volta ao sistema para ser uti
 | Camada | Tecnologia | Função |
 |--------|------------|--------|
 | **Front-End** | Next.js (React) | Interface web para o usuário acompanhar o saldo/histórico e para o funcionário realizar a leitura na triagem |
-| **Back-End** | Python (Flask) | API RESTful responsável por aplicar as regras (limite por CPF, validação de segurança e atualização de status) |
+| **Back-End** | Python (FastAPI) | API RESTful responsável por aplicar as regras (limite por CPF, validação de segurança e atualização de status) |
 | **Banco de Dados** | Supabase (PostgreSQL) | Guarda as tabelas relacionais de usuários, tags, reciclagens e recompensas |
 | **Hardware** | Tags NFC | Etiquetas físicas com código único vinculadas temporariamente a cada entrega |
 

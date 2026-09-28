@@ -126,7 +126,7 @@ export default function PixelCard({ variant = 'default', gap, speed, colors, noF
   const canvasRef = useRef(null);
   const pixelsRef = useRef([]);
   const animationRef = useRef(null);
-  const timePreviousRef = useRef(performance.now());
+  const timePreviousRef = useRef(0);
   const reducedMotion = useRef(
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ).current;
@@ -167,9 +167,8 @@ export default function PixelCard({ variant = 'default', gap, speed, colors, noF
     pixelsRef.current = pxs;
   };
 
-  const doAnimate = fnName => {
-    animationRef.current = requestAnimationFrame(() => doAnimate(fnName));
-    const timeNow = performance.now();
+  const doAnimate = (fnName, timeNow) => {
+    animationRef.current = requestAnimationFrame((nextTime) => doAnimate(fnName, nextTime));
     const timePassed = timeNow - timePreviousRef.current;
     const timeInterval = 1000 / 60;
 
@@ -196,7 +195,7 @@ export default function PixelCard({ variant = 'default', gap, speed, colors, noF
 
   const handleAnimation = name => {
     cancelAnimationFrame(animationRef.current);
-    animationRef.current = requestAnimationFrame(() => doAnimate(name));
+    animationRef.current = requestAnimationFrame((time) => doAnimate(name, time));
   };
 
   const onMouseEnter = () => handleAnimation('appear');

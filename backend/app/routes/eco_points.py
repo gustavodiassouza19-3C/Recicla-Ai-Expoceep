@@ -2,6 +2,7 @@ import math
 from fastapi import APIRouter, Depends, Query
 from supabase import Client
 from app.database import get_supabase
+from app.auth import get_admin_user
 from app.models.eco_point import EcoPointCreate, EcoPointResponse, EcoPointNearby
 
 router = APIRouter(prefix="/api/eco-points", tags=["eco-points"])
@@ -45,14 +46,15 @@ async def nearby_eco_points(
 @router.post("", response_model=EcoPointResponse)
 async def create_eco_point(
     data: EcoPointCreate,
+    admin=Depends(get_admin_user),
     supabase: Client = Depends(get_supabase),
 ):
     result = (
         supabase.table("eco_pontos")
         .insert(
             {
-                "nome": data.name,
-                "endereco": data.address,
+                "nome": data.nome,
+                "endereco": data.endereco,
                 "lat": data.lat,
                 "lng": data.lng,
             }

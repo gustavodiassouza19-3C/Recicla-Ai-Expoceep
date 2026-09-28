@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { animate, stagger } from "animejs";
 
@@ -66,11 +65,6 @@ const mockHistory: HistoryEntry[] = [
     location: "Reciclagem Industrial",
   },
 ];
-
-const statusStyles: Record<HistoryEntry["status"], string> = {
-  validada: "bg-success/10 text-success",
-  pendente: "bg-warning/10 text-warning",
-};
 
 function MapPinIcon() {
   return (

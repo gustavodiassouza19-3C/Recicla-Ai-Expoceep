@@ -4,27 +4,15 @@ from supabase import Client
 
 
 def get_user_points(supabase: Client, usuario_id: int) -> int:
-    recicl = (
-        supabase.table("reciclagens")
-        .select("id")
+    rewards = (
+        supabase.table("recompensas")
+        .select("valor")
         .eq("usuario_id", usuario_id)
+        .in_("tipo", ["pontos", "missao"])
+        .eq("status", "liberada")
         .execute()
     )
-
-    total = 0
-    if recicl.data:
-        recic_ids = [r["id"] for r in recicl.data]
-        for rid in recic_ids:
-            rec = (
-                supabase.table("recompensas")
-                .select("valor")
-                .eq("reciclagem_id", rid)
-                .eq("tipo", "pontos")
-                .eq("status", "liberada")
-                .execute()
-            )
-            for r in rec.data:
-                total += int(r["valor"])
+    total = sum(int(reward.get("valor") or 0) for reward in rewards.data or [])
 
     conquistas = (
         supabase.table("usuario_conquistas")

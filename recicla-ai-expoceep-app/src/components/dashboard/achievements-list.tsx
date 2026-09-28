@@ -16,6 +16,7 @@ import { usePoints } from "@/contexts/points-context";
 
 const CATEGORIES = [
   { key: "all", label: "Todas" },
+  { key: "boas_vindas", label: "Boas-vindas" },
   { key: "tags", label: "TAGs" },
   { key: "tags_casa", label: "Casa" },
   { key: "sequencia", label: "Sequencia" },

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import { SquiCircleFilter } from "@/components/ui/squi-circle-filter";
 import { Header } from "@/components/dashboard/header";
 import { Footer } from "@/components/footer";
@@ -9,14 +9,21 @@ import { MotionProvider } from "@/components/motion-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// A variavel precisa de um nome proprio. Antes era `--font-geist-sans`, mas o
+// globals.css mapeava `--font-sans: var(--font-sans)`, auto-referencia que
+// computava para vazio: os tokens de fonte estavam mortos e editar o CSS nao
+// mudava nada. O mono continua Geist Mono para dado tabular, que e uso legitimo
+// de monospace (codigo, dado, medicao) e nao como figurino.
+const jakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -37,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

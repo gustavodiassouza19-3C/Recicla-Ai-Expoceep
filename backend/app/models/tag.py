@@ -4,7 +4,7 @@ from typing import Optional
 
 class TagCreate(BaseModel):
     codigo_nfc: str
-    status: Optional[str] = "ativa"
+    status: Optional[str] = "disponivel"
 
 
 class TagResponse(BaseModel):

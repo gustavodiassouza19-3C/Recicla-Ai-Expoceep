@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
 import { fetchImpact, fetchMyTags } from "@/lib/api";
+import { formatDate, getEcoProgress, getInitials } from "@/lib/eco-level";
 import { toast } from "sonner";
 import {
   User,
@@ -31,84 +32,15 @@ import {
   Pencil,
   Save,
   X,
-  Check,
   Loader2,
   ArrowLeft,
   CheckCircle2,
   Trees,
-  TrendingUp,
   AlertTriangle,
   Fingerprint,
 } from "lucide-react";
 
 type ThemeOption = "light" | "dark" | "system";
-
-interface EcoLevel {
-  title: string;
-  level: number;
-  icon: string;
-  nextThreshold: number | null;
-  minPoints: number;
-}
-
-function getEcoLevel(points: number): EcoLevel {
-  if (points >= 1000) {
-    return {
-      title: "Mestre da Reciclagem",
-      level: 4,
-      icon: "🌍",
-      nextThreshold: null,
-      minPoints: 1000,
-    };
-  }
-  if (points >= 500) {
-    return {
-      title: "Guardião Verde",
-      level: 3,
-      icon: "🌳",
-      nextThreshold: 1000,
-      minPoints: 500,
-    };
-  }
-  if (points >= 100) {
-    return {
-      title: "Eco Consciente",
-      level: 2,
-      icon: "🌿",
-      nextThreshold: 500,
-      minPoints: 100,
-    };
-  }
-  return {
-    title: "Reciclador Iniciante",
-    level: 1,
-    icon: "🌱",
-    nextThreshold: 100,
-    minPoints: 0,
-  };
-}
-
-function getInitials(name: string): string {
-  if (!name) return "U";
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "U";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return new Intl.DateTimeFormat("pt-BR", {
-      month: "long",
-      year: "numeric",
-    }).format(d);
-  } catch {
-    return dateStr;
-  }
-}
 
 export default function ProfilePage() {
   const { user, token, loading: authLoading, logout, refreshUser } = useAuth();
@@ -119,7 +51,7 @@ export default function ProfilePage() {
   // User Profile State
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [tipo, setTipo] = useState("cidadao");
+  const [tipo, setTipo] = useState("cliente");
   const [criadoEm, setCriadoEm] = useState("");
   const [pontos, setPontos] = useState(0);
   const [usuarioId, setUsuarioId] = useState<number | string>("");
@@ -147,12 +79,15 @@ export default function ProfilePage() {
 
   // Sync theme on initial mount
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as ThemeOption | null;
-    if (stored === "dark" || stored === "light") {
-      setTheme(stored);
-    } else {
-      setTheme("system");
-    }
+    const timer = window.setTimeout(() => {
+      const stored = localStorage.getItem("theme") as ThemeOption | null;
+      if (stored === "dark" || stored === "light") {
+        setTheme(stored);
+      } else {
+        setTheme("system");
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const applyTheme = useCallback((newTheme: ThemeOption) => {
@@ -197,7 +132,8 @@ export default function ProfilePage() {
 
   // Initialize from auth context
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+    const timer = window.setTimeout(() => {
       setNome(user.nome || "");
       setEditNome(user.nome || "");
       setEmail(user.email || "");
@@ -206,7 +142,8 @@ export default function ProfilePage() {
       setInitialHouseholdSize(hSize);
       if (hSize > 5) setShowCustomHousehold(true);
       if (user.usuario_id) setUsuarioId(user.usuario_id);
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [user]);
 
   // Fetch full profile and stats
@@ -229,7 +166,7 @@ export default function ProfilePage() {
             setNome(data.nome || user?.nome || "");
             setEditNome(data.nome || user?.nome || "");
             setEmail(data.email || user?.email || "");
-            setTipo(data.tipo || "cidadao");
+            setTipo(data.tipo || "cliente");
             setCriadoEm(data.criado_em || "");
             setPontos(typeof data.pontos === "number" ? data.pontos : 0);
             if (data.id) setUsuarioId(data.id);
@@ -251,7 +188,7 @@ export default function ProfilePage() {
               setNome(row.nome || user.nome || "");
               setEditNome(row.nome || user.nome || "");
               setEmail(row.email || user.email || "");
-              setTipo(row.tipo || "cidadao");
+              setTipo(row.tipo || "cliente");
               setCriadoEm(row.criado_em || "");
               if (row.household_size) {
                 setHouseholdSize(row.household_size);
@@ -296,26 +233,7 @@ export default function ProfilePage() {
 
   // Points precedence: contextPoints if > 0 or pontos state
   const displayPoints = contextPoints > 0 ? contextPoints : pontos;
-  const ecoLevel = getEcoLevel(displayPoints);
-
-  // Calculate progress to next tier
-  const progressPercent = ecoLevel.nextThreshold
-    ? Math.min(
-        100,
-        Math.max(
-          0,
-          Math.round(
-            ((displayPoints - ecoLevel.minPoints) /
-              (ecoLevel.nextThreshold - ecoLevel.minPoints)) *
-              100
-          )
-        )
-      )
-    : 100;
-
-  const pointsToNext = ecoLevel.nextThreshold
-    ? Math.max(0, ecoLevel.nextThreshold - displayPoints)
-    : 0;
+  const { ecoLevel, progressPercent, pointsToNext } = getEcoProgress(displayPoints);
 
   // Handle Profile Save
   const handleSaveProfile = async (e: React.FormEvent) => {

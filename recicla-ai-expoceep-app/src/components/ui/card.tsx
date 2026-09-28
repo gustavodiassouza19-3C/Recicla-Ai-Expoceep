@@ -4,15 +4,25 @@ import { cn } from "cn"
 function Card({
   className,
   size = "default",
+  shape = "squircle",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  /**
+   * "squircle" aplica url(#SquiCircleFilter), que borra o SourceGraphic
+   * inteiro e, como filtro de ancestral, borra todo o texto dentro do card.
+   * Use "rounded" em containers de formulario e qualquer card com texto
+   * corrido; o canto reto de rounded-xl continua legivel.
+   */
+  shape?: "squircle" | "rounded"
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        "squircle",
+        shape === "squircle" && "squircle",
         className
       )}
       {...props}

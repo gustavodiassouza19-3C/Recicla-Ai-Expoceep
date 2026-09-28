@@ -1,27 +1,20 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export async function GET() {
-  const { data, error } = await supabase
-    .from('tags')
-    .select('codigo_nfc, status, id')
-    .order('id', { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+export async function GET(request: Request) {
+  if (!API_URL) {
+    return NextResponse.json({ detail: "NEXT_PUBLIC_API_URL nao configurada" }, { status: 503 });
   }
 
-  // Transform for dashboard compatibility
-  const tagsData = (data || []).map((item: { id: number; codigo_nfc: string; status: string }) => ({
-    id: item.id,
-    codigo_nfc: item.codigo_nfc,
-    status: item.status,
-    last_used: item.id.toString(),
-  }));
-
-  return NextResponse.json({ tags: tagsData });
+  const authorization = request.headers.get("authorization");
+  const response = await fetch(`${API_URL}/api/tags/me`, {
+    headers: authorization ? { Authorization: authorization } : {},
+    cache: "no-store",
+  });
+  const body = await response.text();
+  return new NextResponse(body, {
+    status: response.status,
+    headers: { "Content-Type": response.headers.get("content-type") || "application/json" },
+  });
 }

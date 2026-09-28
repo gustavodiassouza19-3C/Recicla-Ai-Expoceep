@@ -2,7 +2,7 @@
 name = "recicla-ai-backend"
 version = "0.1.0"
 description = "Backend para o sistema de reciclagem urbana"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
