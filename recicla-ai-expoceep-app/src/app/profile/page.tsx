@@ -309,33 +309,60 @@ export default function ProfilePage() {
 
   // Handle Household Size Save
   const handleSaveHousehold = async (newSize: number) => {
+    const previous = householdSize;
     setHouseholdSize(newSize);
     setSavingHousehold(true);
 
     try {
-      if (user?.usuario_id) {
+      let saved = false;
+
+      // 1. Backend primeiro. PUT /api/users/me aceita household_size e usa a
+      // service key, entao funciona mesmo sem usuario_id resolvido no client --
+      // que e exatamente o caso de quem acabou de logar, quando o perfil ainda
+      // nao veio do backend.
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/api/users/me`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ household_size: newSize }),
+        });
+        saved = res.ok;
+      } catch {
+        // Cai para o update direto no Supabase
+      }
+
+      // 2. Supabase direto, para o caso do backend estar fora do ar.
+      if (!saved && user?.usuario_id) {
         const { error: updateError } = await supabase
           .from("usuarios")
           .update({ household_size: newSize })
           .eq("id", user.usuario_id);
-
-        if (updateError) {
-          toast.error("Erro ao salvar número de moradores.");
-          return;
-        }
-
-        const storedUser = localStorage.getItem("supabase_user");
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          parsed.household_size = newSize;
-          localStorage.setItem("supabase_user", JSON.stringify(parsed));
-        }
-
-        setInitialHouseholdSize(newSize);
-        await refreshUser();
-        toast.success(`Residência atualizada: ${newSize} ${newSize === 1 ? "morador" : "moradores"}`);
+        saved = !updateError;
       }
+
+      if (!saved) {
+        setHouseholdSize(previous);
+        toast.error("Não foi possível salvar. Tente novamente.");
+        return;
+      }
+
+      const storedUser = localStorage.getItem("supabase_user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        parsed.household_size = newSize;
+        localStorage.setItem("supabase_user", JSON.stringify(parsed));
+      }
+
+      setInitialHouseholdSize(newSize);
+      toast.success(
+        `Residência atualizada: ${newSize} ${newSize === 1 ? "morador" : "moradores"}`
+      );
     } catch {
+      setHouseholdSize(previous);
       toast.error("Erro ao conectar com o banco de dados.");
     } finally {
       setSavingHousehold(false);
