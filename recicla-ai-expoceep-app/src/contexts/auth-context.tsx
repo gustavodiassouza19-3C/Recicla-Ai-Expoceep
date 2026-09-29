@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getSitePath } from "@/lib/site-url";
 
 interface User {
   id: string;
@@ -40,12 +41,54 @@ interface AuthContextType {
     sexo?: string,
     idade?: number
   ) => Promise<{ error?: string; emailConfirmationRequired?: boolean }>;
+  requestResetPassword: (email: string) => Promise<{ error?: string }>;
+  updatePassword: (password: string) => Promise<{ error?: string }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+/**
+ * Traduz os erros do Supabase Auth para PT-BR. A tela e em portugues, e exibir
+ * "email rate limit exceeded"cru em um formulario parece defeito. A busca e por
+ * substring do texto original, entao continua valendo se o Supabase ajustar a
+ * pontuacao ou o envelope da mensagem.
+ */
+function friendlyAuthError(message: string, context: "reset" | "update"): string {
+  const m = message.toLowerCase();
+
+  if (m.includes("rate limit") || m.includes("too many") || m.includes("429")) {
+    return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+  }
+  if (m.includes("email not confirmed") || m.includes("not confirmed")) {
+    return "Este email ainda não foi confirmado. Confirme o email primeiro.";
+  }
+  if (m.includes("should exist") || m.includes("not found")) {
+    return context === "reset"
+      ? "Não encontramos uma conta com este email."
+      : "Não foi possível atualizar a senha. Peça um novo link de recuperação.";
+  }
+  if (m.includes("new password should be different")) {
+    return "A nova senha precisa ser diferente da senha atual.";
+  }
+  if (m.includes("password") && m.includes("at least")) {
+    return "A senha é muito curta.";
+  }
+  if (m.includes("session") || m.includes("token") || m.includes("expired")) {
+    return context === "reset"
+      ? "O link de recuperação expirou. Peça um novo."
+      : "Sua sessão expirou. Peça um novo link de recuperação.";
+  }
+  if (m.includes("fetch") || m.includes("network")) {
+    return "Erro de conexão. Verifique sua internet e tente novamente.";
+  }
+
+  return context === "reset"
+    ? "Não foi possível enviar o email de recuperação. Tente novamente."
+    : "Não foi possível atualizar a senha. Tente novamente.";
+}
 
 async function fetchBackendProfile(jwt: string): Promise<ProfileResponse | null> {
   if (!API_URL) return null;
@@ -221,7 +264,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { nome, sexo, idade, household_size: householdSize } },
+      options: {
+        data: { nome, sexo, idade, household_size: householdSize },
+        // Sem isto o Supabase manda o link de confirmacao para a Site URL
+        // configurada no painel, que pode nao ser o dominio deste deploy.
+        emailRedirectTo: getSitePath("/"),
+      },
     });
     if (error) return { error: error.message };
     if (!data.user) {
@@ -253,6 +301,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
+  /**
+   * Envia o email de recuperacao do Supabase Auth. O link cai em /reset-password
+   * e o cliente de browser detecta o token da URL sozinho (detectSessionInUrl),
+   * criando a sessao de recovery que habilita o updateUser.
+   *
+   * A URL vem de getSitePath, e nao de window.location: testando local o
+   * usuario receberia "http://localhost:3000/reset-password", que nao abre no
+   * celular dele. O destino tambem precisa estar na allowlist de Redirect URLs
+   * configurada no projeto do Supabase.
+   *
+   * O Supabase responde em ingles e com texto interno ("email rate limit
+   * exceeded", "User should exist"). A tela e PT-BR, e um erro cru ali parece
+   * defeito, entao traduzimos os casos conhecidos e caimos em uma mensagem
+   * generica, sem vazar detalhe de backend.
+   */
+  const requestResetPassword = async (email: string) => {
+    const redirectTo = getSitePath("/reset-password");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) return { error: friendlyAuthError(error.message, "reset") };
+    return {};
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { error: friendlyAuthError(error.message, "update") };
+    return {};
+  };
+
   const logout = () => {
     void supabase.auth.signOut();
     localStorage.removeItem("supabase_token");
@@ -263,7 +339,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        register,
+        requestResetPassword,
+        updatePassword,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

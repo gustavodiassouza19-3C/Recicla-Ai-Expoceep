@@ -125,7 +125,16 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-4 text-center space-y-0.5">
+          <div className="mt-4 text-center">
+            <Link
+              href="/forgot-password"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-success hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
+
+          <div className="mt-1 text-center space-y-0.5">
             <p className="text-sm text-muted-foreground">
               Nao tem conta?{" "}
               <Link
