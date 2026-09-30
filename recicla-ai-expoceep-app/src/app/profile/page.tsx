@@ -170,6 +170,10 @@ export default function ProfilePage() {
             setCriadoEm(data.criado_em || "");
             setPontos(typeof data.pontos === "number" ? data.pontos : 0);
             if (data.id) setUsuarioId(data.id);
+            if (data.household_size) {
+              setHouseholdSize(data.household_size);
+              setInitialHouseholdSize(data.household_size);
+            }
           }
         } else {
           throw new Error("Fallback to Supabase");
@@ -270,14 +274,17 @@ export default function ProfilePage() {
         // Proceed to Supabase direct update
       }
 
-      // 2. Direct Supabase update if user ID is known
-      if (user?.usuario_id) {
-        const { error: supaError } = await supabase
+      // 2. Direct Supabase update if the backend was unreachable. Same
+      // .select() verification as handleSaveHousehold: PostgREST reports
+      // success even when RLS filtered every row out.
+      if (!saved && user?.usuario_id) {
+        const { data: updatedRows, error: supaError } = await supabase
           .from("usuarios")
           .update({ nome: editNome.trim() })
-          .eq("id", user.usuario_id);
+          .eq("id", user.usuario_id)
+          .select("id");
 
-        if (!supaError) {
+        if (!supaError && (updatedRows?.length ?? 0) > 0) {
           setNome(editNome.trim());
           saved = true;
         }
@@ -335,13 +342,16 @@ export default function ProfilePage() {
         // Cai para o update direto no Supabase
       }
 
-      // 2. Supabase direto, para o caso do backend estar fora do ar.
+      // 2. Supabase direto, para o caso do backend estar fora do ar. O
+      // .select() e obrigatorio: sem ele o PostgREST responde sucesso mesmo
+      // quando a RLS filtrou todas as linhas e nada foi atualizado.
       if (!saved && user?.usuario_id) {
-        const { error: updateError } = await supabase
+        const { data: updatedRows, error: updateError } = await supabase
           .from("usuarios")
           .update({ household_size: newSize })
-          .eq("id", user.usuario_id);
-        saved = !updateError;
+          .eq("id", user.usuario_id)
+          .select("id");
+        saved = !updateError && (updatedRows?.length ?? 0) > 0;
       }
 
       if (!saved) {
@@ -358,6 +368,9 @@ export default function ProfilePage() {
       }
 
       setInitialHouseholdSize(newSize);
+      // Sincroniza o contexto de auth: sem isto o dashboard e o reload da
+      // pagina continuam exibindo o valor antigo.
+      await refreshUser();
       toast.success(
         `Residência atualizada: ${newSize} ${newSize === 1 ? "morador" : "moradores"}`
       );

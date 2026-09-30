@@ -123,7 +123,18 @@ async function fetchUsuarioData(email: string): Promise<{
     if (!error && uid) usuarioId = uid;
   } catch {}
 
-  if (!usuarioId) {
+  if (usuarioId) {
+    // O caminho do RPC resolvia o id mas nunca lia o household_size, deixando
+    // o padrao 1 e fazendo o dashboard e o perfil reiniciarem errados.
+    try {
+      const { data: row } = await supabase
+        .from("usuarios")
+        .select("household_size")
+        .eq("id", usuarioId)
+        .maybeSingle();
+      if (row?.household_size) householdSize = row.household_size;
+    } catch {}
+  } else {
     try {
       const { data: row } = await supabase
         .from("usuarios")
@@ -173,7 +184,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...parsed,
           usuario_id: profile?.id ?? fallback.usuario_id,
           tipo: profile?.tipo || parsed.tipo || "cliente",
-          household_size: profile?.household_size || fallback.household_size,
+          household_size:
+            profile?.household_size || fallback.household_size || parsed.household_size || 1,
         });
         localStorage.setItem("supabase_token", restoredToken);
       } catch {
@@ -210,13 +222,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = async () => {
-    if (!user?.usuario_id) return;
+    if (!user) return;
+
+    // Backend primeiro (service key, leitura confiavel); Supabase direto
+    // apenas como fallback quando o backend nao responde.
+    const fresh = token ? await fetchBackendProfile(token) : null;
+
+    if (fresh) {
+      const updated: User = {
+        ...user,
+        usuario_id: fresh.id ?? user.usuario_id,
+        nome: fresh.nome || user.nome,
+        tipo: fresh.tipo || user.tipo,
+        household_size: fresh.household_size || user.household_size,
+        cpf: fresh.cpf ?? user.cpf,
+        sexo: fresh.sexo ?? user.sexo,
+        idade: fresh.idade ?? user.idade,
+      };
+      setUser(updated);
+      localStorage.setItem("supabase_user", JSON.stringify(updated));
+      return;
+    }
+
+    if (!user.usuario_id) return;
     try {
       const { data: row } = await supabase
         .from("usuarios")
         .select("household_size")
         .eq("id", user.usuario_id)
-        .single();
+        .maybeSingle();
       if (row?.household_size !== undefined) {
         const updated = { ...user, household_size: row.household_size };
         setUser(updated);
