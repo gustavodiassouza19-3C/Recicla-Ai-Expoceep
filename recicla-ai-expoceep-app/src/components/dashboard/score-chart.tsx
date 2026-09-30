@@ -60,6 +60,33 @@ function resolveDomainMax(data: DataPoint[]): number {
   return Math.ceil(dataMax / step) * step;
 }
 
+// Rotulos "60000"/"850000" nao cabiam na calha fixa do eixo e o recharts
+// cortava o comeco do texto (virava "00000"). Em mil/mi o rotulo fica curto
+// mesmo nos casos de pontuacao altissima, e a precisao total continua no
+// tooltip. Abaixo de 1000 mantem o numero puro (serie normal: 0, 150, 300...).
+// O espaco entre numero e unidade e non-breaking: o wrapper de texto do
+// recharts mede o rotulo antes da webfont carregar e, quando a medicao
+// estoura, quebra no espaco (virava "500" / "mil" em duas linhas). Sem
+// espaco cortavel o rotulo sempre sai em uma linha so.
+function formatAxisTick(value: number): string {
+  const NBSP = "\u00A0";
+  if (value >= 1_000_000) {
+    const valueInMillions = value / 1_000_000;
+    const formatted = Number.isInteger(valueInMillions)
+      ? String(valueInMillions)
+      : valueInMillions.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    return `${formatted}${NBSP}mi`;
+  }
+  if (value >= 1_000) {
+    const valueInThousands = value / 1_000;
+    const formatted = Number.isInteger(valueInThousands)
+      ? String(valueInThousands)
+      : valueInThousands.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+    return `${formatted}${NBSP}mil`;
+  }
+  return String(value);
+}
+
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
 
@@ -132,11 +159,12 @@ const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
             <YAxis
               domain={[0, domainMax]}
               allowDecimals={false}
+              tickFormatter={formatAxisTick}
               tickLine={false}
               axisLine={false}
               tickMargin={4}
               tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-              width={44}
+              width={56}
             />
             <Tooltip content={<CustomTooltip />} cursor={false} />
             <Area
