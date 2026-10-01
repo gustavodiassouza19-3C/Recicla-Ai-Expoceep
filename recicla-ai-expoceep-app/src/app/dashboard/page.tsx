@@ -6,12 +6,14 @@ import { useAuth } from "@/contexts/auth-context";
 import { usePoints } from "@/contexts/points-context";
 import { Card } from "@/components/ui";
 import { ScoreChart } from "@/components/dashboard/score-chart";
+import { ChartVariantPicker } from "@/components/dashboard/chart-variant-picker";
+import { useChartVariant } from "@/hooks/use-chart-variant";
 import { ScoreDisplay } from "@/components/dashboard/score-display";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { DashboardHistory } from "@/components/dashboard/dashboard-history";
 import { stagger, animate } from "animejs";
-import { dashboardService } from "@/lib/dashboard-service";
+import { dashboardService, type ScoreDataPoint } from "@/lib/dashboard-service";
 import { Leaf, Recycle, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
@@ -20,8 +22,9 @@ export default function Dashboard() {
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const { points, refetchPoints } = usePoints();
 
-  const [scoreData, setScoreData] = useState<Array<{ month: string; score: number }>>([]);
+  const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { variant, setVariant } = useChartVariant();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -82,16 +85,21 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="md:col-span-6">
             <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 md:p-6 opacity-0 border-success/10 bg-gradient-to-br from-success/[0.02] to-transparent">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-success" />
                   <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Pontuacao Mensal
+                    Pontuacao Acumulada
                   </h2>
                 </div>
                 <ScoreDisplay score={points} />
               </div>
-              <ScoreChart data={scoreData} />
+              {/* Linha propria do seletor: junto do titulo, o trio de formatos
+                  e o ScoreDisplay nao cabem em 375px sem apertar o titulo. */}
+              <div className="mb-3 flex justify-end">
+                <ChartVariantPicker value={variant} onChange={setVariant} />
+              </div>
+              <ScoreChart data={scoreData} variant={variant} />
             </Card>
           </div>
         </div>

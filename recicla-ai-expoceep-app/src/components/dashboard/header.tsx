@@ -13,7 +13,7 @@ const tabs = [
   { id: "/dashboard", label: "Inicio", icon: Home },
   { id: "/achievements", label: "Conquistas", icon: Trophy },
   { id: "/rewards", label: "Recompensas", icon: Gift },
-  { id: "/eco-points", label: "EcoPoints", icon: MapPin },
+  { id: "/eco-points", label: "Ecopontos", icon: MapPin },
   { id: "/about", label: "Sobre", icon: HelpCircle },
   { id: "/profile", label: "Perfil", icon: User },
 ];

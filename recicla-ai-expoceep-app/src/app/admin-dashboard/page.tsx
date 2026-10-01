@@ -1183,7 +1183,7 @@ export default function AdminDashboardPage() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   {
-                    label: "EcoPoints",
+                    label: "Ecopontos",
                     value: usuarioDetalhe.pontos,
                     caption: "Saldo acumulado",
                     icon: Leaf,

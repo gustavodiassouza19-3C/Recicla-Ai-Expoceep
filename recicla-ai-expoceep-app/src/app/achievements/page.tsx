@@ -3,30 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { supabase } from "@/lib/supabase";
+import {
+  fetchAchievementsProgress,
+  type AchievementProgressItem,
+} from "@/lib/api-achievements";
 import { AchievementBadge } from "@/components/dashboard/achievement-badge";
 import { Card } from "@/components/ui/card";
 import { Trophy, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { animate } from "animejs";
 
-interface Conquista {
-  id: number;
-  codigo: string;
-  nome: string;
-  descricao: string;
-  icone: string;
-  pontos: number;
-  condicao_tipo: string;
-  condicao_valor: number;
-  categoria: string;
-}
-
-interface ConquistaComProgresso extends Conquista {
-  desbloqueada: boolean;
-  progresso_atual: number;
-  data_concessao: string | null;
-}
+type ConquistaComProgresso = AchievementProgressItem;
 
 const CATEGORIES = [
   { key: "all", label: "Todas" },
@@ -96,12 +83,12 @@ function ConquistaDetail({
                 conquista.desbloqueada ? "bg-success/15" : "bg-muted grayscale"
               }`}
             >
-              {conquista.icone}
+              {conquista.conquista_icone}
             </div>
-            <h2 className="text-lg font-bold text-foreground">{conquista.nome}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{conquista.descricao}</p>
+            <h2 className="text-lg font-bold text-foreground">{conquista.conquista_nome}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{conquista.conquista_descricao}</p>
             <p className="text-sm font-semibold text-success mt-2">
-              +{conquista.pontos} pontos
+              +{conquista.conquista_pontos} pontos
             </p>
           </div>
 
@@ -132,8 +119,12 @@ function ConquistaDetail({
 
             {conquista.desbloqueada && (
               <div className="flex items-center justify-center gap-1.5 text-success text-sm font-medium">
-                <span>✓</span>
-                <span>Conquistada!</span>
+                <span>{conquista.resgatada ? "✓" : "!"}</span>
+                <span>
+                  {conquista.resgatada
+                    ? "Conquistada e resgatada!"
+                    : "Conquistada! Resgate os pontos."}
+                </span>
               </div>
             )}
           </div>
@@ -162,47 +153,19 @@ export default function AchievementsPage() {
     if (!user) return;
 
     async function fetchData() {
-      const [
-        { data: allConquistas, error: cError },
-        { data: userConquistas, error: ucError },
-      ] = await Promise.all([
-        supabase
-          .from("conquistas")
-          .select("id, codigo, nome, descricao, icone, pontos, condicao_tipo, condicao_valor, categoria")
-          .order("id", { ascending: true }),
-        supabase
-          .from("usuario_conquistas")
-          .select("conquista_id, pontos_ganhos, concedida_em"),
-      ]);
-
-      if (cError) {
-        console.error("Erro ao buscar conquistas:", cError);
+      // A serie vem do FastAPI, nao de uma query direta no Supabase. A RLS
+      // bloqueia `usuario_conquistas` para a anon key, entao a versao anterior
+      // recebia zero linhas e nenhuma conquista aparecia como concluida --
+      // mesmo com o usuario tendo conquistado e resgatado os pontos, que o
+      // backend credita com service key. E o `progresso_atual` tambem vinha
+      // travado em 0, entao nada aparecia parcialmente feito.
+      try {
+        setConquistas(await fetchAchievementsProgress());
+      } catch (err) {
+        console.error("Erro ao buscar conquistas:", err);
+      } finally {
         setLoadingData(false);
-        return;
       }
-
-      const unlockedMap = new Map<number, { pontos_ganhos: number; concedida_em: string | null }>();
-      if (!ucError && userConquistas) {
-        userConquistas.forEach((uc: { conquista_id: number; pontos_ganhos: number; concedida_em: string | null }) => {
-          unlockedMap.set(uc.conquista_id, {
-            pontos_ganhos: uc.pontos_ganhos,
-            concedida_em: uc.concedida_em,
-          });
-        });
-      }
-
-      const enriched: ConquistaComProgresso[] = (allConquistas || []).map((c) => {
-        const unlocked = unlockedMap.has(c.id);
-        return {
-          ...c,
-          desbloqueada: unlocked,
-          progresso_atual: unlocked ? c.condicao_valor : 0,
-          data_concessao: unlocked ? unlockedMap.get(c.id)?.concedida_em ?? null : null,
-        };
-      });
-
-      setConquistas(enriched);
-      setLoadingData(false);
     }
 
     fetchData();
@@ -230,7 +193,7 @@ export default function AchievementsPage() {
   const filtered =
     activeCategory === "all"
       ? conquistas
-      : conquistas.filter((c) => c.categoria === activeCategory);
+      : conquistas.filter((c) => c.conquista_categoria === activeCategory);
 
   const unlocked = conquistas.filter((c) => c.desbloqueada).length;
   const total = conquistas.length;
@@ -276,12 +239,13 @@ export default function AchievementsPage() {
               animate="show"
             >
               {filtered.map((c) => (
-                <motion.div key={c.id} variants={item}>
+                <motion.div key={c.conquista_codigo} variants={item}>
                   <AchievementBadge
-                    icone={c.icone}
-                    nome={c.nome}
-                    pontos={c.pontos}
+                    icone={c.conquista_icone}
+                    nome={c.conquista_nome}
+                    pontos={c.conquista_pontos}
                     desbloqueada={c.desbloqueada}
+                    pendenteResgate={c.pendente_resgate}
                     progresso={c.progresso_atual}
                     total={c.condicao_valor}
                     onClick={() => setSelected(c)}

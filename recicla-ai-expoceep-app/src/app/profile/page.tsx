@@ -531,9 +531,9 @@ export default function ProfilePage() {
         >
           <div className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-success/30">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                EcoPoints
-              </span>
+<span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Ecopontos
+                </span>
               <div className="p-1.5 rounded-lg bg-success/10 text-success">
                 <Leaf className="h-4 w-4" />
               </div>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { type ChartVariant } from "@/hooks/use-chart-variant";
 import {
   AreaChart,
   Area,
@@ -37,6 +38,21 @@ interface CustomTooltipProps {
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
 }
+
+// Três formas para o usuario escolher (o pedido foi poder alternar entre
+// elas, ja que a curva suave criava uma "montanha russa" onde um reto
+// deixava a serie mais legivel):
+//   - suave   -> monotone, curva interpolada (padrao)
+//   - reto    -> segmentos retos ligando os pontos, com os pontos visiveis
+//   - degraus -> stepAfter: o saldo se mantem ate o proximo mes, que e como o
+//                acumulado se comporta (nao muda ate haver um credito novo)
+// `step` e `stepAfter` sao CurveType do recharts; stepAfter avanca o salto no
+// fim de cada mes, que e o ponto em que o saldo muda.
+const VARIANT_RENDER = {
+  suave: { type: "monotone", dot: false },
+  reto: { type: "linear", dot: true },
+  degraus: { type: "stepAfter", dot: true },
+} as const;
 
 // O eixo tem que acompanhar a maior pontuacao do usuario. Um teto fixo achata a
 // curva de quem tem muito ponto e corta o topo de quem tem pouco. Aqui o
@@ -115,11 +131,13 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export interface ScoreChartProps extends React.HTMLAttributes<HTMLDivElement> {
   data?: DataPoint[];
+  variant?: ChartVariant;
 }
 
 const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
-  ({ className, data = emptyData, ...props }, ref) => {
+  ({ className, data = emptyData, variant = "suave", ...props }, ref) => {
     const domainMax = resolveDomainMax(data);
+    const render = VARIANT_RENDER[variant];
 
     return (
       <div ref={ref} className={cn("h-[180px] md:h-[280px] w-full", className)} {...props}>
@@ -168,13 +186,17 @@ const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
             />
             <Tooltip content={<CustomTooltip />} cursor={false} />
             <Area
-              type="monotone"
+              type={render.type}
               dataKey="score"
               name="Pontuacao"
               stroke="var(--success)"
               fill="url(#fillScore)"
               strokeWidth={2}
-              dot={false}
+              dot={
+                render.dot
+                  ? { r: 3, fill: "var(--success)", strokeWidth: 0 }
+                  : false
+              }
               activeDot={{
                 r: 4,
                 strokeWidth: 2,

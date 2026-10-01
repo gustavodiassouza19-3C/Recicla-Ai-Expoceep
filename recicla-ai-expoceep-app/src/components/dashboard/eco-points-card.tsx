@@ -34,9 +34,9 @@ function EcoPointsCard() {
         <div className="flex items-center justify-center w-8 h-8 border-2 border-success bg-success/10 retro-radius">
           <MapPin className="h-4 w-4 text-success" />
         </div>
-        <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
-          EcoPoints em Cascavel
-        </h2>
+<h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                  Ecopontos em Cascavel
+                </h2>
       </div>
 
       <div className="flex flex-col gap-3">

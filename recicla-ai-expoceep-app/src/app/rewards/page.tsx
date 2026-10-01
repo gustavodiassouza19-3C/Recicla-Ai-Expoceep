@@ -45,7 +45,7 @@ const container = {
 const item = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 25 } },
-};
+} as const;
 
 export default function RewardsPage() {
   const { user, loading } = useAuth();
@@ -57,7 +57,7 @@ export default function RewardsPage() {
   const pointsRef = useRef<HTMLSpanElement>(null);
 
   // Catalogo vem do backend. Antes era um array fixo no arquivo, entao o que o
-  // admin criava no painel nunca aparecia aqui.
+  // admin cria no painel nunca aparecia aqui.
   useEffect(() => {
     let cancelled = false;
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -130,6 +130,28 @@ export default function RewardsPage() {
   const filtered = activeCategory === "all"
     ? rewards
     : rewards.filter((r) => r.category === activeCategory);
+
+const handleResgate = async (rewardId: string) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  try {
+    const res = await fetch(`${API_URL}/api/rewards/${rewardId}/resgate-svc`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Erro ao resgatar");
+    }
+    const data = await res.json();
+    // Refresca pontos após resgate bem-sucedido
+    refetchPoints();
+  } catch (e) {
+    console.error("Erro ao resgatar:", e);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background">
@@ -235,41 +257,43 @@ export default function RewardsPage() {
               </span>
             </Card>
           </motion.div>
+        </div>
+      </div>
 
-          {/* Catalogo de Recompensas */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-success" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                Catalogo
-              </h2>
-            </div>
+      {/* Catalogo de Recompensas */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="h-4 w-4 text-success" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Catalogo
+          </h2>
+        </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-minimal mb-4">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-minimal mb-4">
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={`whitespace-nowrap px-3 py-1.5 text-xs font-semibold transition-colors retro-radius ${
+                activeCategory === "all"
+                  ? "bg-success text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              Todos
+            </button>
+            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
               <button
-                onClick={() => setActiveCategory("all")}
+                key={key}
+                onClick={() => setActiveCategory(key)}
                 className={`whitespace-nowrap px-3 py-1.5 text-xs font-semibold transition-colors retro-radius ${
-                  activeCategory === "all"
+                  activeCategory === key
                     ? "bg-success text-white"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                Todos
+                {label}
               </button>
-              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveCategory(key)}
-                  className={`whitespace-nowrap px-3 py-1.5 text-xs font-semibold transition-colors retro-radius ${
-                    activeCategory === key
-                      ? "bg-success text-white"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
 
           {/* Lista de Recompensas */}
@@ -285,40 +309,53 @@ export default function RewardsPage() {
               </p>
             ) : (
               filtered.map((reward) => (
-              <motion.div key={reward.id} variants={item}>
-                <Card className="p-4 retro-border-item retro-shadow-sm retro-radius cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 bg-success/10 text-success font-bold text-sm retro-radius shrink-0">
-                      {reward.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-foreground truncate">
-                          {reward.title}
-                        </span>
-                        <Badge variant={reward.available ? "success" : "warning"}>
-                          {reward.cost} pts
-                        </Badge>
+                <motion.div key={reward.id} variants={item}>
+                  <Card className="p-4 retro-border-item retro-shadow-sm retro-radius w-full cursor-pointer hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 bg-success/10 text-success font-bold text-sm retro-radius shrink-0">
+                        {reward.icon}
                       </div>
-                      {reward.description ? (
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-                          {reward.description}
-                        </p>
-                      ) : null}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-foreground truncate">
+                            {reward.title}
+                          </span>
+                          <Badge variant={reward.available ? "success" : "warning"}>
+                            {reward.cost} pts
+                          </Badge>
+                        </div>
+                        {reward.description ? (
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                            {reward.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                  </div>
-                </Card>
-              </motion.div>
+                    {reward.available && (
+                      <div className="p-3 mt-2 retro-border-item retro-shadow-sm retro-radius border border-success/20 w-full">
+                        <p className="text-xs text-success font-medium uppercase tracking-wider">
+                          Resgatar por {reward.cost} pts
+                        </p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => handleResgate(reward.id)}
+                        >
+                          Resgatar
+                        </Button>
+                      </div>
+                    )}
+                  </Card>
+                </motion.div>
               ))
             )}
+            {!loadingRewards && filtered.length === 0 && (
+              <p className="text-center text-muted-foreground text-sm py-8">
+                Nenhuma recompensa nesta categoria.
+              </p>
+            )}
           </motion.div>
-
-          {!loadingRewards && filtered.length === 0 && (
-            <p className="text-center text-muted-foreground text-sm py-8">
-              Nenhuma recompensa nesta categoria.
-            </p>
-          )}
         </div>
       </div>
     </div>

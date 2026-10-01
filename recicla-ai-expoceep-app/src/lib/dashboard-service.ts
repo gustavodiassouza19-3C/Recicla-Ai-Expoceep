@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { fetchScoreHistory } from "./api";
 
 export interface ScoreDataPoint {
   month: string;
@@ -219,48 +220,19 @@ export class DashboardService {
   }
 
   /**
-   * Busca o histórico de pontuação mensal.
-   * Derivado das atividade do usuário no banco.
+   * Histórico de pontuação acumulada.
+   *
+   * Delegado para o FastAPI (`/api/recycle/score-history`), que monta a série
+   * a partir do ledger real de pontos. A versão anterior calculava aqui mesmo,
+   * com `reciclagens × 50` e mês-calendário: ignorava conquistas — a maior
+   * parte do saldo — e o gráfico terminava muito abaixo do total da tela.
    */
   async getScoreHistory(): Promise<ScoreDataPoint[]> {
-    const months = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-    ];
-    const empty: ScoreDataPoint[] = months.map((month) => ({
-      month,
-      score: 0,
-    }));
-
     try {
-      const { data: recyclages, error: recyclagesError } = await supabase
-        .from('reciclagens')
-        .select('id, data_entrega, status')
-        .order('data_entrega', { ascending: false });
-
-      if (recyclagesError || !recyclages || recyclages.length === 0) {
-        return empty;
-      }
-
-      const monthlyScores: Record<number, number> = {};
-
-      (recyclages || []).forEach((item: { data_entrega: string }) => {
-        const date = new Date(item.data_entrega);
-        if (!isNaN(date.getTime())) {
-          const monthIndex = date.getUTCMonth();
-          monthlyScores[monthIndex] = (monthlyScores[monthIndex] || 0) + 50;
-        }
-      });
-
-      const scoreData: ScoreDataPoint[] = months.map((month, index) => ({
-        month,
-        score: monthlyScores[index] || 0,
-      }));
-
-      return scoreData;
+      return await fetchScoreHistory();
     } catch (err) {
       console.error("Exceção ao buscar histórico de pontuação:", err);
-      return empty;
+      return [];
     }
   }
 }
