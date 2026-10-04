@@ -1,7 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Nfc, Recycle, Gift, Leaf, Database, Server, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/auth-context";
+import { fetchTagCatalog, type TagCatalogItem } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+
+// Mesmo lexico do card de tags do dashboard: cor do badge segue o status,
+// nunca o texto sozinho, para o contraste nao depender da string.
+const TAG_STATUS: Record<
+  string,
+  { label: string; variant: "default" | "success" | "warning" | "destructive" }
+> = {
+  disponivel: { label: "disponivel", variant: "success" },
+  ativa: { label: "disponivel", variant: "success" },
+  em_uso: { label: "em uso", variant: "warning" },
+  indisponivel: { label: "indisponivel", variant: "default" },
+};
 
 const flow = [
   {
@@ -66,6 +82,40 @@ const fadeUp = {
 };
 
 export default function AboutPage() {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const [tags, setTags] = useState<TagCatalogItem[]>([]);
+  const [carregado, setCarregado] = useState(false);
+  const [erro, setErro] = useState("");
+
+  // Só quem está logado vê o inventário: o endpoint exige token. Enquanto o
+  // auth-context ainda não resolveu, a seção nem monta. O estado de carregando
+  // é derivado (userId + carregado) para não setar estado de forma síncrona
+  // dentro do effect.
+  const loading = userId !== null && !carregado;
+
+  useEffect(() => {
+    if (!userId) return;
+    let alive = true;
+    fetchTagCatalog()
+      .then((data) => {
+        if (!alive) return;
+        setTags(data);
+        setErro("");
+        setCarregado(true);
+      })
+      .catch(() => {
+        // Erro próprio, não vazio: fingir lista vazia esconderia um 401 ou o
+        // backend fora do ar como se não houvesse tag nenhuma.
+        if (!alive) return;
+        setErro("Não foi possível carregar as tags.");
+        setCarregado(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Intro */}
@@ -158,6 +208,70 @@ export default function AboutPage() {
           </ol>
         </div>
       </section>
+
+      {/* Inventário de tags */}
+      {userId && (
+        <section aria-labelledby="tags-heading" className="py-16 md:py-24 border-t border-border/50">
+          <div className="max-w-6xl mx-auto px-4 md:px-8">
+            <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-2xl">
+              <h2
+                id="tags-heading"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
+              >
+                Todas as
+                <br />
+                <span className="text-success">tags.</span>
+              </h2>
+              <p className="text-base text-muted-foreground leading-relaxed">
+                Inventário completo das tags NFC em circulação e o status atual de cada uma.
+              </p>
+            </motion.div>
+
+            {loading ? (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" aria-hidden="true">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <li
+                    key={i}
+                    className="h-[68px] animate-pulse rounded-xl border border-border/40 bg-muted/30"
+                  />
+                ))}
+              </ul>
+            ) : erro ? (
+              <p role="alert" className="text-sm text-destructive">
+                {erro}
+              </p>
+            ) : tags.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma tag cadastrada ainda.</p>
+            ) : (
+              <motion.ul
+                {...fadeUp}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+              >
+                {tags.map((tag) => {
+                  const status = TAG_STATUS[tag.status] ?? {
+                    label: tag.status,
+                    variant: "default" as const,
+                  };
+                  return (
+                    <li
+                      key={tag.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-4 py-3"
+                    >
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <Nfc className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+                        <span className="truncate font-mono text-sm font-bold text-foreground">
+                          {tag.codigo_nfc}
+                        </span>
+                      </span>
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </li>
+                  );
+                })}
+              </motion.ul>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Arquitetura */}
       <section

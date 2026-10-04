@@ -7,6 +7,24 @@ from app.models.tag import TagCreate, TagResponse
 router = APIRouter(prefix="/api/tags", tags=["tags"])
 
 
+@router.get("")
+async def list_tags_catalog(
+    user=Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+):
+    # Inventario completo das tags, para a pagina Sobre. Precisa da service key:
+    # a RLS tags_select_available esconde tudo que nao for 'disponivel', que e
+    # justamente o que a lista precisa mostrar. Devolve so codigo e status --
+    # nenhum dado de usuario.
+    result = (
+        supabase.table("tags")
+        .select("id,codigo_nfc,status")
+        .order("codigo_nfc")
+        .execute()
+    )
+    return result.data or []
+
+
 @router.get("/me")
 async def my_tags(
     user=Depends(get_current_user),

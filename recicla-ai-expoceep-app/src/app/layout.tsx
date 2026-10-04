@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/contexts/auth-context";
 import { PointsProvider } from "@/contexts/points-context";
 import { MotionProvider } from "@/components/motion-provider";
+import { AuthGuard } from "@/components/auth-guard";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -59,11 +60,13 @@ export default function RootLayout({
         <MotionProvider>
           <AuthProvider>
             <PointsProvider>
-              <Header />
-              <main className="flex-1 pt-2">
-                {children}
-              </main>
-              <Footer />
+              <AuthGuard>
+                <Header />
+                <main className="flex-1 pt-2">
+                  {children}
+                </main>
+                <Footer />
+              </AuthGuard>
               <Toaster position="bottom-right" richColors closeButton />
             </PointsProvider>
           </AuthProvider>

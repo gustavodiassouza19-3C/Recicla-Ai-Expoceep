@@ -148,6 +148,21 @@ export function fetchMyTags(): Promise<UserTag[]> {
   return apiFetch<UserTag[]>("/api/tags/me");
 }
 
+export interface TagCatalogItem {
+  id: number;
+  codigo_nfc: string;
+  status: string;
+}
+
+/**
+ * Inventario completo das tags (codigo + status), lido na pagina Sobre.
+ * Exige login: o backend devolve a lista inteira pela service key, algo que a
+ * RLS nao faria via Supabase direto.
+ */
+export function fetchTagCatalog(): Promise<TagCatalogItem[]> {
+  return apiFetch<TagCatalogItem[]>("/api/tags");
+}
+
 export function addTag(data: TagInput): Promise<{ id: number; codigo_nfc: string; status: string }> {
   return apiFetch("/api/tags", {
     method: "POST",
