@@ -10,4 +10,14 @@ export { Grainient } from "./grainient";
 export { Select } from "./select";
 export { PasswordInput } from "./password-input";
 export { PasswordStrength } from "./password-strength";
+export {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "./alert-dialog";
 export { cn } from "@/lib/utils";
