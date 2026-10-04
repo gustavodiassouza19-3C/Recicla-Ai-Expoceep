@@ -22,22 +22,33 @@ def _parse_datetime(value) -> datetime | None:
 
 
 def get_user_points_ledger(supabase: Client, usuario_id: int) -> list[tuple[datetime, int]]:
-    """Creditos de pontos do usuario, em ordem cronologica.
+    """Historico de movimentacao de pontos do usuario, em ordem cronologica.
 
     Fonte unica da verdade: tanto o saldo (`get_user_points`) quanto a serie do
-    grafico (`score-history`) saem daqui. Com os filtros duplicados em dois
-    lugares, o grafico podia terminar exibindo um saldo diferente do numero
-    mostrado na tela -- foi o que aconteceu quando `score-history` somava
-    recompensa liberada sem o filtro de `tipo` que o saldo aplica.
+    grafico (`score-history`) saem desta funcao. Eventos positivos sao creditos
+    (recompensas de tipo 'pontos'/'missao' com status 'liberada' ou conquistas
+    resgatadas); eventos negativos sao debitos (resgate de recompensa do catalogo).
+
+    Todos os filtros estao num unico lugar: antes estavam duplicados entre o
+    calculo do saldo e o do grafico, o que podia fazer o grafico mostrar um
+    saldo diferente do numero na tela.
     """
+    # Credito e debito sao da mesma tabela, entao sao uma unica ida ao
+    # Postgrest: creditos (tipo 'pontos'/'missao' liberada) ou debitos
+    # (tipo 'catalogo' resgatada). Antes eram duas queries em serie e o saldo
+    # so ficava pronto depois das duas.
     rewards = (
         supabase.table("recompensas")
-        .select("valor,data_liberacao")
+        .select("valor,data_liberacao,tipo")
         .eq("usuario_id", usuario_id)
-        .in_("tipo", ["pontos", "missao"])
-        .eq("status", "liberada")
+        .or_(
+            "and(tipo.in.(pontos,missao),status.eq.liberada),"
+            "and(tipo.eq.catalogo,status.eq.resgatada)"
+        )
         .execute()
     )
+
+    # Conquistas resgatadas
     conquistas = (
         supabase.table("usuario_conquistas")
         .select("pontos_ganhos,resgatada_em")
@@ -50,11 +61,14 @@ def get_user_points_ledger(supabase: Client, usuario_id: int) -> list[tuple[date
 
     for reward in rewards.data or []:
         quando = _parse_datetime(reward.get("data_liberacao"))
-        if quando is not None:
-            eventos.append((quando, int(reward.get("valor") or 0)))
+        if quando is None:
+            continue
+        valor = int(reward.get("valor") or 0)
+        # Tipo 'catalogo' e resgate do catalogo: sai do saldo.
+        if reward.get("tipo") == "catalogo":
+            valor = -valor
+        eventos.append((quando, valor))
 
-    # Usa a data de resgate porque e ela que credita o saldo: e a mesma
-    # condicao que o filtro acima aplica sobre a conquista.
     for c in conquistas.data or []:
         quando = _parse_datetime(c.get("resgatada_em"))
         if quando is not None:

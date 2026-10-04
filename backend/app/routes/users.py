@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from app.database import get_supabase
-from app.auth import get_admin_user, get_current_user
+from app.auth import clear_token_cache, get_admin_user, get_current_user
 from app.models.user import UserCreate, UserResponse, UserUpdate
 from app.services.points_service import get_user_points
 
@@ -20,10 +20,14 @@ async def get_me(
     user=Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    result = supabase.table("usuarios").select("*").eq("id", user["id"]).execute()
-    if not result.data:
-        raise HTTPException(status_code=404, detail="Usuario nao encontrado")
-    data = result.data[0]
+    # O get_current_user ja leu a linha; consultar de novo era uma ida a rede
+    # a mais no caminho mais quente do app.
+    data = user.get("profile")
+    if not data:
+        result = supabase.table("usuarios").select("*").eq("id", user["id"]).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Usuario nao encontrado")
+        data = result.data[0]
     pontos = get_user_points(supabase, data["id"])
     return _to_response(data, pontos)
 
@@ -64,5 +68,7 @@ async def update_me(
     )
     if not result.data:
         raise HTTPException(status_code=404, detail="Usuario nao encontrado")
+    # Perfil mudou: o cache de token passaria a devolver os dados antigos.
+    clear_token_cache()
     pontos = get_user_points(supabase, user["id"])
     return _to_response(result.data[0], pontos)

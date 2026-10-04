@@ -5,26 +5,28 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { usePoints } from "@/contexts/points-context";
 import { Card } from "@/components/ui";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreChart } from "@/components/dashboard/score-chart";
-import { ChartVariantPicker } from "@/components/dashboard/chart-variant-picker";
-import { useChartVariant } from "@/hooks/use-chart-variant";
 import { ScoreDisplay } from "@/components/dashboard/score-display";
 import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { DashboardHistory } from "@/components/dashboard/dashboard-history";
 import { stagger, animate } from "animejs";
-import { dashboardService, type ScoreDataPoint } from "@/lib/dashboard-service";
+import { fetchScoreHistory, type ScoreDataPoint } from "@/lib/api";
 import { Leaf, Recycle, TrendingUp } from "lucide-react";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const cardsRef = useRef<HTMLDivElement[]>([]);
-  const { points, refetchPoints } = usePoints();
+  const { points, loading: loadingPoints, refetchPoints } = usePoints();
 
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const { variant, setVariant } = useChartVariant();
+
+  // A pagina monta na hora. Só o que depende do token (saldo, impacto e
+  // histórico) espera o auth — o restante já fica na tela.
+  const authPending = loading || !user;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -34,13 +36,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    dashboardService.getDashboardSummary().then(({ scoreData: sd }) => {
-      setScoreData(sd || []);
-    });
+    // Só a série do gráfico. O summary antigo pedia 5 coisas a mais
+    // (2 queries de pontos, histórico, tags e métricas de CO₂) e jogava
+    // todas fora.
+    fetchScoreHistory()
+      .then(setScoreData)
+      .catch(() => setScoreData([]));
     refetchPoints();
   }, [user, refreshKey, refetchPoints]);
 
   useEffect(() => {
+    // Sempre depois do auth: os cards são renderizados desde o primeiro
+    // paint e entrariam animando duas vezes se o efeito disparasse em
+    // user === null.
+    if (loading) return;
     const cards = cardsRef.current.filter(Boolean);
     if (cards.length === 0) return;
     animate(cards, {
@@ -50,15 +59,7 @@ export default function Dashboard() {
       delay: stagger(100),
       ease: "outExpo",
     });
-  }, [user]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
+  }, [loading]);
 
   return (
     <div className="p-4 md:p-8">
@@ -73,9 +74,13 @@ export default function Dashboard() {
               Eco Points
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Ola, {user?.nome || "--"}
-          </h1>
+          {authPending ? (
+            <Skeleton className="h-8 w-48" />
+          ) : (
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+              Ola, {user?.nome || ""}
+            </h1>
+          )}
           <p className="text-sm text-muted-foreground mt-1">
             Seu impacto ambiental em tempo real
           </p>
@@ -84,7 +89,7 @@ export default function Dashboard() {
         {/* Row 1 - Score */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="md:col-span-6">
-            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 md:p-6 opacity-0 border-success/10 bg-gradient-to-br from-success/[0.02] to-transparent">
+            <Card ref={(el) => { if (el) cardsRef.current[0] = el; }} className="p-4 md:p-6 border-success/10 bg-gradient-to-br from-success/[0.02] to-transparent">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-success" />
@@ -92,14 +97,17 @@ export default function Dashboard() {
                     Pontuacao Acumulada
                   </h2>
                 </div>
-                <ScoreDisplay score={points} />
+                {authPending || loadingPoints ? (
+                  <Skeleton className="h-12 w-32" />
+                ) : (
+                  <ScoreDisplay score={points} />
+                )}
               </div>
-              {/* Linha propria do seletor: junto do titulo, o trio de formatos
-                  e o ScoreDisplay nao cabem em 375px sem apertar o titulo. */}
-              <div className="mb-3 flex justify-end">
-                <ChartVariantPicker value={variant} onChange={setVariant} />
-              </div>
-              <ScoreChart data={scoreData} variant={variant} />
+              {authPending ? (
+                <Skeleton className="h-[180px] md:h-[280px] w-full" />
+              ) : (
+                <ScoreChart data={scoreData} />
+              )}
             </Card>
           </div>
         </div>
@@ -107,7 +115,7 @@ export default function Dashboard() {
         {/* Row 2 - Impact + Tags + History */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="p-4 md:p-5 opacity-0">
+            <Card ref={(el) => { if (el) cardsRef.current[1] = el; }} className="p-4 md:p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
                   <Leaf className="h-3 w-3 text-success" />
@@ -116,11 +124,25 @@ export default function Dashboard() {
                   Impacto Estimado
                 </h2>
               </div>
-              <ImpactCard householdSize={user?.household_size ?? 1} />
+              {authPending ? (
+                <div className="flex flex-col gap-4">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-xl" />
+                      <div className="flex flex-col gap-1.5">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ImpactCard householdSize={user?.household_size ?? 1} />
+              )}
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 md:p-5 opacity-0">
+            <Card ref={(el) => { if (el) cardsRef.current[2] = el; }} className="p-4 md:p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
                   <Recycle className="h-3 w-3 text-success" />
@@ -133,8 +155,8 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="md:col-span-2">
-            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-3 md:p-4 opacity-0">
-              <DashboardHistory />
+            <Card ref={(el) => { if (el) cardsRef.current[3] = el; }} className="p-3 md:p-4">
+              <DashboardHistory refreshKey={refreshKey} />
             </Card>
           </div>
         </div>

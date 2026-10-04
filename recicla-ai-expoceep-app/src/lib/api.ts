@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+// Mesmo fallback do auth-context e da pagina de rewards: se a env nao estiver
+// definida, todos os pontos do app apontam pro mesmo lugar.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 function getAuthHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {};
@@ -6,20 +8,77 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...getAuthHeaders(),
-      ...options?.headers,
-    },
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Erro ${res.status}`);
+/**
+ * Toda pagina autenticada pede /api/users/me duas vezes: o auth-context para
+ * montar o usuario e o points-context para o saldo. Guardamos GET por 2s e
+ * compartilhamos a promessa em voo, entao a segunda chamada nao vai a rede.
+ *
+ * Qualquer POST/PUT/DELETE limpa o cache (o estado mudou), e um refetch
+ * explicito depois de um resgate ja cai no caminho invalidado.
+ */
+const GET_CACHE_TTL_MS = 2000;
+const getCache = new Map<string, { exp: number; value: unknown }>();
+const inflight = new Map<string, Promise<unknown>>();
+
+export function invalidateApiCache(): void {
+  getCache.clear();
+}
+
+function readCache(path: string): { value: unknown } | null {
+  const hit = getCache.get(path);
+  if (!hit) return null;
+  if (Date.now() > hit.exp) {
+    getCache.delete(path);
+    return null;
   }
-  return res.json();
+  return { value: hit.value };
+}
+
+export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const method = (options?.method ?? "GET").toUpperCase();
+  const isGet = method === "GET";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...getAuthHeaders(),
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  // A chave inclui o token: sem isso, quem troca de conta em menos de 2s li o
+  // /me do usuario anterior guardado.
+  const key = `${path}::${headers.Authorization ?? ""}`;
+
+  if (isGet) {
+    const cached = readCache(key);
+    if (cached) return cached.value as T;
+    const pending = inflight.get(key);
+    if (pending) return pending as Promise<T>;
+  }
+
+  const request = (async () => {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `Erro ${res.status}`);
+    }
+    return res.json();
+  })();
+
+  if (isGet) {
+    inflight.set(key, request);
+    request
+      .then((value) => getCache.set(key, { exp: Date.now() + GET_CACHE_TTL_MS, value }))
+      .catch(() => undefined)
+      .finally(() => {
+        if (inflight.get(key) === request) inflight.delete(key);
+      });
+  } else {
+    // Endpoint mudou de estado: o que estava guardado nao vale mais.
+    invalidateApiCache();
+  }
+
+  return request as Promise<T>;
 }
 
 export interface ScoreDataPoint {
@@ -32,7 +91,8 @@ export interface HistoryEntry {
   tag_id: number;
   data_entrega: string;
   status: string;
-  tags?: { codigo_nfc: string; status: string };
+  // O PostgREST devolve o embed como lista, mesmo quando há um só.
+  tags?: Array<{ codigo_nfc: string; status: string }>;
 }
 
 export interface UserTag {

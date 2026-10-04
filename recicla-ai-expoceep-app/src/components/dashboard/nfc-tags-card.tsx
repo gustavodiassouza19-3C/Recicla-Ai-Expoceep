@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabase";
-import { registerRecycling } from "@/lib/api";
+import { fetchMyTags, registerRecycling } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 import { X, Plus, Wifi } from "lucide-react";
 
 interface NfcTag {
@@ -43,14 +43,12 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
   const [submitting, setSubmitting] = useState(false);
 
   function fetchTags() {
-    supabase
-      .from("tags")
-      .select("id, codigo_nfc, status")
-      .order("id", { ascending: true })
-      .then(({ data }) => {
-        if (data) setTags(data as NfcTag[]);
-        setLoading(false);
-      });
+    // GET /api/tags/me: só as tags que o usuário já vinculou, com a última
+    // data de uso. Antes ia direto na tabela `tags` e listava tudo.
+    fetchMyTags()
+      .then((data) => setTags(data))
+      .catch(() => setTags([]))
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
@@ -91,9 +89,13 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
         animate="visible"
       >
         {loading ? (
-          <p className="text-muted-foreground text-xs py-2">Carregando...</p>
+          <div className="flex flex-col gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-11 w-full" />
+            ))}
+          </div>
         ) : tags.length === 0 ? (
-          <p className="text-muted-foreground text-xs py-2">Nenhuma tag encontrada.</p>
+          <p className="text-muted-foreground text-xs py-2">Nenhuma tag vinculada ainda.</p>
         ) : (
           tags.map((tag) => (
             <motion.div

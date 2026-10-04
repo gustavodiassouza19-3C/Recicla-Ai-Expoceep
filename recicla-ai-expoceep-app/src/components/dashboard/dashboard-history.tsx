@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Clock, Recycle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/skeleton";
+import { fetchHistory } from "@/lib/api";
 
 interface HistoryEntry {
   id: number;
@@ -23,30 +24,41 @@ const item = {
   show: { opacity: 1, x: 0, transition: { type: "spring" as const, stiffness: 300, damping: 25 } },
 };
 
-function DashboardHistory() {
+interface DashboardHistoryProps {
+  /** Muda quando uma tag e vinculada: recarrega sem precisar de F5. */
+  refreshKey?: number;
+}
+
+function DashboardHistory({ refreshKey = 0 }: DashboardHistoryProps) {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("reciclagens")
-      .select("id, data_entrega, status, tag_id, tags(id, codigo_nfc)")
-      .order("data_entrega", { ascending: false })
-      .limit(5)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setHistory(
-            data.map((item) => ({
-              id: item.id,
-              tag_codigo: item.tags?.[0]?.codigo_nfc ?? "---",
-              data_entrega: item.data_entrega,
-              status: item.status,
-            }))
-          );
-        }
+    let cancelled = false;
+
+    fetchHistory()
+      .then((rows) => {
+        if (cancelled) return;
+        setHistory(
+          rows.slice(0, 5).map((entry) => ({
+            id: entry.id,
+            tag_codigo: entry.tags?.[0]?.codigo_nfc ?? "---",
+            data_entrega: entry.data_entrega,
+            status: entry.status,
+          }))
+        );
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHistory([]);
         setLoading(false);
       });
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   return (
     <div>
@@ -60,8 +72,10 @@ function DashboardHistory() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-4">
-          <p className="text-muted-foreground text-[11px]">Carregando...</p>
+        <div className="flex flex-col gap-1">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-9 w-full" />
+          ))}
         </div>
       ) : history.length === 0 ? (
         <div className="flex items-center gap-3 py-4">

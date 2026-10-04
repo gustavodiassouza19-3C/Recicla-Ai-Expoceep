@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import time
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -7,6 +8,25 @@ from app.database import get_supabase
 from app.services.points_service import get_user_points
 
 security = HTTPBearer()
+
+# Supabase.auth.get_user e uma ida a rede, e toda pagina autenticada bate no
+# /api/users/me pelo menos duas vezes (auth + pontos). Guardamos o resultado ja
+# validado por 60s: em vez de 2 validacoes por carga de pagina, vira uma.
+# O custo e atrasar em ate 60s a propagacao de um token revogado.
+_TOKEN_TTL_SECONDS = 60.0
+_TOKEN_CACHE_LIMIT = 512
+_token_cache: dict[str, tuple[float, dict]] = {}
+
+
+def clear_token_cache() -> None:
+    """Invalida tudo. Chamado quando o perfil muda, para nao servir dado velho."""
+    _token_cache.clear()
+
+
+def _remember_token(token: str, payload: dict) -> None:
+    if len(_token_cache) >= _TOKEN_CACHE_LIMIT:
+        _token_cache.clear()
+    _token_cache[token] = (time.monotonic(), payload)
 
 
 def grant_welcome_achievement(supabase: Client, usuario_id: int) -> None:
@@ -35,7 +55,6 @@ def grant_welcome_achievement(supabase: Client, usuario_id: int) -> None:
         ).execute()
 
         total = get_user_points(supabase, usuario_id)
-        supabase.table("usuarios").update({"pontos": total}).eq("id", usuario_id).execute()
     except Exception:
         return
 
@@ -45,6 +64,12 @@ async def get_current_user(
     supabase: Client = Depends(get_supabase),
 ) -> dict:
     token = credentials.credentials
+
+    agora = time.monotonic()
+    hit = _token_cache.get(token)
+    if hit and agora - hit[0] < _TOKEN_TTL_SECONDS:
+        return hit[1]
+
     try:
         response = supabase.auth.get_user(token)
         if response.user is None:
@@ -96,13 +121,18 @@ async def get_current_user(
             profile = insert.data[0]
             grant_welcome_achievement(supabase, profile["id"])
 
-        return {
+        payload = {
             "id": profile["id"],
             "email": email,
             "nome": profile["nome"],
             "tipo": profile.get("tipo", "cliente"),
             "household_size": profile.get("household_size", 1),
+            # Linha completa em memoria: /api/users/me reusava em vez de
+            # consultar a tabela de novo.
+            "profile": profile,
         }
+        _remember_token(token, payload)
+        return payload
 
     except HTTPException:
         raise

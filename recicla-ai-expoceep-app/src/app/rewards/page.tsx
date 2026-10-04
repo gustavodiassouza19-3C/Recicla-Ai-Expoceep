@@ -4,12 +4,15 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { usePoints } from "@/contexts/points-context";
+import { apiFetch } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Gift, TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Gift, TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { animate } from "animejs";
+import { toast } from "sonner";
 
 interface RewardItem {
   id: string;
@@ -50,10 +53,12 @@ const item = {
 export default function RewardsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { points, refetchPoints } = usePoints();
+  const { points, loading: loadingPoints, refetchPoints } = usePoints();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [rewards, setRewards] = useState<RewardItem[]>([]);
   const [loadingRewards, setLoadingRewards] = useState(true);
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const [redeemedIds, setRedeemedIds] = useState<Set<string>>(new Set());
   const pointsRef = useRef<HTMLSpanElement>(null);
 
   // Catalogo vem do backend. Antes era um array fixo no arquivo, entao o que o
@@ -119,37 +124,53 @@ export default function RewardsPage() {
     }
   }, [points]);
 
-  if (loading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
+  // Enquanto a sessao resolve, o catalogo ja esta na tela — o saldo e a parte
+  // que ainda nao pode ser montada, entao so ele vira skeleton.
+  const authPending = loading || !user;
 
   const filtered = activeCategory === "all"
     ? rewards
     : rewards.filter((r) => r.category === activeCategory);
 
-const handleResgate = async (rewardId: string) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  try {
-    const res = await fetch(`${API_URL}/api/rewards/${rewardId}/resgate-svc`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
+const handleResgate = async (reward: RewardItem) => {
+  if (redeemingId) return;
+
+  // Feedback imediato sem esperar a rede (so quando o saldo ja carregou)
+  if (!loadingPoints && points < reward.cost) {
+    toast.error("Pontos insuficientes", {
+      description: `Voce tem ${points} pts e precisa de ${reward.cost} pts.`,
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Erro ao resgatar");
-    }
-    const data = await res.json();
+    return;
+  }
+
+  setRedeemingId(reward.id);
+  const tid = toast.loading(`Resgatando ${reward.title}...`);
+
+  try {
+    const data = await apiFetch<{ novo_total?: number }>(
+      `/api/rewards/${reward.id}/resgate`,
+      { method: "POST" }
+    );
+
+    setRedeemedIds((prev) => new Set(prev).add(reward.id));
+
+    toast.success("Recompensa resgatada!", {
+      id: tid,
+      description: `${reward.title} · -${reward.cost} pts · Saldo: ${
+        data.novo_total ?? "—"
+      } pts`,
+      duration: 5000,
+    });
+
     // Refresca pontos após resgate bem-sucedido
     refetchPoints();
   } catch (e) {
-    console.error("Erro ao resgatar:", e);
+    toast.error("Nao foi possivel resgatar", {
+      id: tid,
+      description: e instanceof Error ? e.message : "Erro ao resgatar",
+    });
+  } finally {
+    setRedeemingId(null);
   }
 };
 
@@ -168,33 +189,43 @@ const handleResgate = async (rewardId: string) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                Seu saldo
-              </p>
-
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-5xl font-bold text-foreground font-mono tabular-nums" ref={pointsRef}>
-                  0
-                </span>
-                <span className="text-lg font-semibold text-success">
-                  pontos
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5 text-success" />
-                  <span className="text-xs text-muted-foreground">
-                    +{Math.floor(points * 0.12)} este mes
-                  </span>
+              {authPending ? (
+                <div className="mb-6 space-y-3">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-11 w-44" />
+                  <Skeleton className="h-4 w-40" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    Nunca expira
-                  </span>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    Seu saldo
+                  </p>
+
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-5xl font-bold text-foreground font-mono tabular-nums" ref={pointsRef}>
+                      0
+                    </span>
+                    <span className="text-lg font-semibold text-success">
+                      pontos
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5 text-success" />
+                      <span className="text-xs text-muted-foreground">
+                        +{Math.floor(points * 0.12)} este mes
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        Nunca expira
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Acoes rapidas */}
               <div className="grid grid-cols-2 gap-3">
@@ -202,6 +233,7 @@ const handleResgate = async (rewardId: string) => {
                   variant="default"
                   className="w-full justify-center gap-2"
                   onClick={() => {}}
+                  disabled={authPending}
                 >
                   <Gift className="h-4 w-4" />
                   Resgatar
@@ -210,6 +242,7 @@ const handleResgate = async (rewardId: string) => {
                   variant="ghost"
                   className="w-full justify-center gap-2"
                   onClick={() => {}}
+                  disabled={authPending}
                 >
                   <TrendingUp className="h-4 w-4" />
                   Historico
@@ -232,7 +265,7 @@ const handleResgate = async (rewardId: string) => {
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
               <TreePine className="h-5 w-5 text-success mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {Math.floor(points * 0.004)}
+                {authPending ? "—" : Math.floor(points * 0.004)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Arvores
@@ -241,7 +274,7 @@ const handleResgate = async (rewardId: string) => {
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
               <Droplets className="h-5 w-5 text-primary mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {Math.floor(points * 8)}
+                {authPending ? "—" : Math.floor(points * 8)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Litros
@@ -250,7 +283,7 @@ const handleResgate = async (rewardId: string) => {
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
               <Recycle className="h-5 w-5 text-accent mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {Math.floor(points * 0.5)}
+                {authPending ? "—" : Math.floor(points * 0.5)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Kg recic.
@@ -262,7 +295,7 @@ const handleResgate = async (rewardId: string) => {
 
       {/* Catalogo de Recompensas */}
       <div className="mb-4">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center justify-center gap-2 mb-3">
           <Sparkles className="h-4 w-4 text-success" />
           <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
             Catalogo
@@ -333,18 +366,48 @@ const handleResgate = async (rewardId: string) => {
                       <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
                     {reward.available && (
-                      <div className="p-3 mt-2 retro-border-item retro-shadow-sm retro-radius border border-success/20 w-full">
-                        <p className="text-xs text-success font-medium uppercase tracking-wider">
-                          Resgatar por {reward.cost} pts
-                        </p>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => handleResgate(reward.id)}
-                        >
-                          Resgatar
-                        </Button>
-                      </div>
+                      <motion.div
+                        initial={false}
+                        animate={
+                          redeemedIds.has(reward.id)
+                            ? { scale: [1, 1.03, 1] }
+                            : { scale: 1 }
+                        }
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className={`p-3 mt-2 retro-border-item retro-shadow-sm retro-radius w-full border ${
+                          redeemedIds.has(reward.id)
+                            ? "border-success/50 bg-success/5"
+                            : "border-success/20"
+                        }`}
+                      >
+                        {redeemedIds.has(reward.id) ? (
+                          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-success">
+                            <CheckCircle2 className="h-4 w-4" aria-hidden />
+                            Resgatado
+                          </p>
+                        ) : (
+                          <>
+                            <p className="text-xs text-success font-medium uppercase tracking-wider">
+                              Resgatar por {reward.cost} pts
+                            </p>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              disabled={redeemingId !== null}
+                              onClick={() => handleResgate(reward)}
+                            >
+                              {redeemingId === reward.id ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                                  Resgatando...
+                                </span>
+                              ) : (
+                                "Resgatar"
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </motion.div>
                     )}
                   </Card>
                 </motion.div>

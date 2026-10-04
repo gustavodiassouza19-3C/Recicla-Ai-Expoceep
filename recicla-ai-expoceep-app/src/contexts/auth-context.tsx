@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { apiFetch, invalidateApiCache } from "@/lib/api";
 import { getSitePath } from "@/lib/site-url";
 
 interface User {
@@ -97,13 +98,12 @@ async function fetchBackendProfile(jwt: string): Promise<ProfileResponse | null>
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const response = await fetch(`${API_URL}/api/users/me`, {
+    // apiFetch compartilha o cache de GET com o points-context: o saldo pedido
+    // logo em seguida sai da memoria em vez de repetir a chamada.
+    return await apiFetch<ProfileResponse>("/api/users/me", {
       headers: { Authorization: `Bearer ${jwt}` },
-      cache: "no-store",
       signal: controller.signal,
     });
-    if (!response.ok) return null;
-    return (await response.json()) as ProfileResponse;
   } catch {
     return null;
   } finally {
@@ -177,15 +177,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data } = await supabase.auth.getSession();
         const restoredToken = data.session?.access_token || stored;
         const profile = await fetchBackendProfile(restoredToken);
-        const fallback = await fetchUsuarioData(parsed.email);
+        // O backend ja devolve id e household_size. O fallback ia direto ao
+        // Supabase com mais 2 chamadas e so compensava quando o backend nao
+        // respondia, entao agora so roda nesse caso.
+        const fallback = profile ? null : await fetchUsuarioData(parsed.email);
         if (!active) return;
         setToken(restoredToken);
         setUser({
           ...parsed,
-          usuario_id: profile?.id ?? fallback.usuario_id,
+          usuario_id: profile?.id ?? fallback?.usuario_id ?? null,
           tipo: profile?.tipo || parsed.tipo || "cliente",
           household_size:
-            profile?.household_size || fallback.household_size || parsed.household_size || 1,
+            profile?.household_size || fallback?.household_size || parsed.household_size || 1,
         });
         localStorage.setItem("supabase_token", restoredToken);
       } catch {
@@ -267,14 +270,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const jwt = data.session.access_token;
     const profile = await fetchBackendProfile(jwt);
-    const fallback = await fetchUsuarioData(data.user.email || email);
+    const fallback = profile ? null : await fetchUsuarioData(data.user.email || email);
     const userData: User = {
       id: data.user.id,
       email: data.user.email || email,
       nome: profile?.nome || data.user.user_metadata?.nome || email.split("@")[0],
-      usuario_id: profile?.id ?? fallback.usuario_id,
+      usuario_id: profile?.id ?? fallback?.usuario_id ?? null,
       tipo: profile?.tipo || "cliente",
-      household_size: profile?.household_size || fallback.household_size,
+      household_size: profile?.household_size || fallback?.household_size || 1,
       cpf: profile?.cpf || data.user.user_metadata?.cpf,
       sexo: profile?.sexo || data.user.user_metadata?.sexo,
       idade: profile?.idade || data.user.user_metadata?.idade,
@@ -365,6 +368,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     void supabase.auth.signOut();
+    invalidateApiCache();
     localStorage.removeItem("supabase_token");
     localStorage.removeItem("supabase_user");
     setToken(null);
