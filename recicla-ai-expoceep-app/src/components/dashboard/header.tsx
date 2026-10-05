@@ -32,12 +32,53 @@ function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-md mx-auto px-3 md:px-6">
-          <div className="flex items-center justify-between h-10">
-            <div className="flex items-center gap-1.5">
+        <div className="px-4 md:px-8">
+          <div className="mx-auto flex min-h-11 max-w-6xl items-center gap-2 lg:min-h-14">
+            <div className="flex shrink-0 items-center gap-1.5">
               <Image src="/images/logo.webp" alt="Recicla Ai" width={640} height={982} className="h-4 w-auto" />
               <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
             </div>
+
+            {/* Desktop nav - na mesma linha da logo */}
+            <nav className="hidden min-w-0 flex-1 items-center gap-1 lg:flex">
+              {tabs.map((tab) => {
+                const isActive = pathname === tab.id;
+                const Icon = tab.icon;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => router.push(tab.id)}
+                    className="group relative flex min-h-11 items-center rounded-full px-2.5 py-1.5 outline-none sm:px-3 sm:py-2"
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="active-tab"
+                        transition={{ type: "spring", stiffness: 280, damping: 25, mass: 0.8 }}
+                        className="absolute inset-0 rounded-full border border-border bg-card shadow-xs"
+                      />
+                    )}
+                    <motion.div
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      animate={{ filter: isActive ? ["blur(0px)", "blur(4px)", "blur(0px)"] : "blur(0px)" }}
+                      className={cn(
+                        "relative z-10 flex items-center gap-1.5 transition-colors duration-200 sm:gap-2",
+                        isActive ? "font-bold text-foreground" : "font-semibold text-muted-foreground group-hover:text-foreground"
+                      )}
+                    >
+                      <motion.div
+                        animate={{ scale: isActive ? 1.03 : 1 }}
+                        transition={{ scale: { type: "spring", stiffness: 300, damping: 15 } }}
+                        className="flex shrink-0 items-center justify-center"
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                      </motion.div>
+                      <span className="text-xs tracking-tight whitespace-nowrap">{tab.label}</span>
+                    </motion.div>
+                  </button>
+                );
+              })}
+            </nav>
 
             <div className="flex items-center gap-1.5">
               <AchievementNotifications />
@@ -50,47 +91,6 @@ function Header() {
               </button>
             </div>
           </div>
-
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1 pb-2">
-            {tabs.map((tab) => {
-              const isActive = pathname === tab.id;
-              const Icon = tab.icon;
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => router.push(tab.id)}
-                  className="group relative flex min-h-11 items-center rounded-full px-2.5 py-1.5 outline-none sm:px-3 sm:py-2"
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="active-tab"
-                      transition={{ type: "spring", stiffness: 280, damping: 25, mass: 0.8 }}
-                      className="absolute inset-0 rounded-full border border-border bg-card shadow-xs"
-                    />
-                  )}
-                  <motion.div
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    animate={{ filter: isActive ? ["blur(0px)", "blur(4px)", "blur(0px)"] : "blur(0px)" }}
-                    className={cn(
-                      "relative z-10 flex items-center gap-1.5 transition-colors duration-200 sm:gap-2",
-                      isActive ? "font-bold text-foreground" : "font-semibold text-muted-foreground group-hover:text-foreground"
-                    )}
-                  >
-                    <motion.div
-                      animate={{ scale: isActive ? 1.03 : 1 }}
-                      transition={{ scale: { type: "spring", stiffness: 300, damping: 15 } }}
-                      className="flex shrink-0 items-center justify-center"
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                    </motion.div>
-                    <span className="text-xs tracking-tight whitespace-nowrap">{tab.label}</span>
-                  </motion.div>
-                </button>
-              );
-            })}
-          </nav>
         </div>
       </header>
 
