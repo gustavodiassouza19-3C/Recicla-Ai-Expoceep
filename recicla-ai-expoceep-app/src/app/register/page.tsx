@@ -329,7 +329,10 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Ja tem conta?{" "}
-          <Link href="/login" className="text-foreground hover:underline font-semibold">
+          <Link
+            href="/login"
+            className="inline-flex min-h-11 items-center align-middle text-foreground hover:underline font-semibold"
+          >
             Entre
           </Link>
         </p>

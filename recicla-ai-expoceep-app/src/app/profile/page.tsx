@@ -430,7 +430,7 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 rounded-full bg-success/5 blur-3xl pointer-events-none" />
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-4">
               {/* Avatar with status and squircle styling */}
               <div className="relative shrink-0">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl squircle bg-gradient-to-br from-success/20 via-success/10 to-transparent border-2 border-success/30 flex items-center justify-center text-success shadow-inner">
@@ -447,27 +447,27 @@ export default function ProfilePage() {
               </div>
 
               {/* Name & Details */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              <div className="space-y-1 min-w-0">
+                <div className="flex min-w-0 items-center gap-2 flex-wrap">
+                  <h1 className="min-w-0 truncate text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                     {nome || user.nome || "Usuário"}
                   </h1>
-                  <Badge variant="success" className="text-[10px] tracking-wide py-0.5">
+                  <Badge variant="success" className="shrink-0 text-[10px] tracking-wide py-0.5">
                     {tipo === "admin" ? "Administrador" : "Cidadão"}
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                   <Mail className="h-3.5 w-3.5 text-muted-foreground/70" />
-                  <span className="truncate max-w-[220px] sm:max-w-xs">{email || user.email}</span>
-                  <span title="E-mail verificado" className="inline-flex items-center">
+                  <span className="min-w-0 truncate">{email || user.email}</span>
+                  <span title="E-mail verificado" className="inline-flex shrink-0 items-center">
                     <CheckCircle2 className="h-3.5 w-3.5 text-success inline-block shrink-0" />
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
+                <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
                   <Calendar className="h-3.5 w-3.5 text-muted-foreground/70" />
-                  <span>{criadoEm ? `Membro desde ${formatDate(criadoEm)}` : "Membro ativo recente"}</span>
+                  <span className="min-w-0 truncate">{criadoEm ? `Membro desde ${formatDate(criadoEm)}` : "Membro ativo recente"}</span>
                 </div>
               </div>
             </div>

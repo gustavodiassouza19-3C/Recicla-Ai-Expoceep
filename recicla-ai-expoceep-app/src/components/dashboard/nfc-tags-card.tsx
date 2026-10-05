@@ -82,8 +82,16 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
 
   return (
     <div className={cn("flex flex-col", className)}>
+      <Button
+        className="w-full h-11 gap-2 text-sm font-semibold"
+        onClick={() => setDialogOpen(true)}
+      >
+        <Plus className="h-4 w-4" />
+        Vincular Nova Tag
+      </Button>
+
       <motion.div
-        className="flex flex-col gap-1.5 max-h-[240px] overflow-y-auto scrollbar-minimal"
+        className="mt-3 flex flex-col gap-1.5 max-h-[240px] overflow-y-auto scrollbar-minimal"
         variants={listVariants}
         initial="hidden"
         animate="visible"
@@ -115,16 +123,6 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
         )}
       </motion.div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full mt-2 text-xs gap-1.5"
-        onClick={() => setDialogOpen(true)}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Vincular Nova Tag
-      </Button>
-
       <AnimatePresence>
         {dialogOpen && (
           <>
@@ -146,7 +144,7 @@ function NfcTagsCard({ className, onTagLinked }: { className?: string; onTagLink
                   <h3 className="text-sm font-semibold text-foreground">Vincular Tag</h3>
                   <button
                     onClick={() => { setDialogOpen(false); setError(""); setTagCode(""); }}
-                    className="p-1 rounded-lg hover:bg-muted transition-colors"
+                    className="-my-2 -mr-2 p-3.5 rounded-lg hover:bg-muted transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>

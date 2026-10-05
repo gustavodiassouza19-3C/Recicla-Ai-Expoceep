@@ -33,7 +33,7 @@ function LandingHeader() {
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
-          <button onClick={() => router.push("/")} className="flex items-center gap-2">
+          <button onClick={() => router.push("/")} className="flex min-h-11 items-center gap-2">
             <Image src="/images/logo.webp" alt="Recicla Ai" width={640} height={982} className="h-10 md:h-12 w-auto" priority />
             <span className={`text-base font-bold tracking-tight transition-colors ${scrolled ? "text-foreground" : "text-white"}`}>
               Recicla Ai
@@ -58,7 +58,7 @@ function LandingHeader() {
                     document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
                   }
                 }}
-                className={`text-sm py-2 transition-colors ${
+                className={`text-sm py-3 transition-colors ${
                   scrolled ? "text-muted-foreground hover:text-foreground" : "text-white/70 hover:text-white"
                 }`}
               >
@@ -67,7 +67,7 @@ function LandingHeader() {
             ))}
             <button
               onClick={() => router.push("/login")}
-              className={`text-sm py-2 transition-colors ${
+              className={`text-sm py-3 transition-colors ${
                 scrolled ? "text-muted-foreground hover:text-foreground" : "text-white/70 hover:text-white"
               }`}
             >
@@ -75,7 +75,7 @@ function LandingHeader() {
             </button>
             <button
               onClick={() => router.push("/register")}
-              className="px-5 py-2.5 text-sm font-medium bg-success text-success-foreground rounded-full hover:bg-success/90 transition-colors"
+              className="px-5 py-3 text-sm font-medium bg-success text-success-foreground rounded-full hover:bg-success/90 transition-colors"
             >
               Começar Agora
             </button>

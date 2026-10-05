@@ -44,7 +44,7 @@ function Header() {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMenuOpen(true)}
-                className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors"
+                className="lg:hidden p-3 rounded-lg hover:bg-muted transition-colors"
               >
                 <Menu className="h-5 w-5 text-foreground" />
               </button>
@@ -52,7 +52,7 @@ function Header() {
           </div>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 pb-2">
+          <nav className="hidden lg:flex items-center gap-1 pb-2">
             {tabs.map((tab) => {
               const isActive = pathname === tab.id;
               const Icon = tab.icon;
@@ -61,7 +61,7 @@ function Header() {
                 <button
                   key={tab.id}
                   onClick={() => router.push(tab.id)}
-                  className="group relative rounded-full px-2.5 py-1.5 outline-none sm:px-3 sm:py-2"
+                  className="group relative flex min-h-11 items-center rounded-full px-2.5 py-1.5 outline-none sm:px-3 sm:py-2"
                 >
                   {isActive && (
                     <motion.div
@@ -102,7 +102,7 @@ function Header() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] bg-black/50 md:hidden"
+              className="fixed inset-0 z-[60] bg-black/50 lg:hidden"
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
@@ -110,7 +110,7 @@ function Header() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 left-0 z-[70] w-72 bg-background border-r border-border md:hidden"
+              className="fixed inset-y-0 left-0 z-[70] w-72 bg-background border-r border-border lg:hidden"
             >
               <div className="flex flex-col h-full">
                 {/* Header */}
@@ -121,7 +121,7 @@ function Header() {
                   </div>
                   <button
                     onClick={() => setMenuOpen(false)}
-                    className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    className="p-3 rounded-lg hover:bg-muted transition-colors"
                   >
                     <X className="h-5 w-5 text-foreground" />
                   </button>
@@ -147,7 +147,7 @@ function Header() {
                           setMenuOpen(false);
                         }}
                         className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                          "w-full flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                           isActive
                             ? "bg-success/10 text-success"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -167,7 +167,7 @@ function Header() {
                       logout();
                       setMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                    className="w-full flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Sair</span>
