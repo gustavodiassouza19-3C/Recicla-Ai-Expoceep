@@ -118,13 +118,10 @@ async def get_history(
 # pt-BR abaixo: o filtro posterior descartava o mes e o grafico voltava vazio.
 MESES_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
-# Enquadramento do eixo X. Sao 12 pontos: 3 meses de historico, o mes atual e 8
-# meses a frente. Antes a janela terminava no mes atual, entao "agora" ficava
-# colado na borda direita e a curva parecia cortada ali. Estendendo para a
-# frente, o mes corrente cai para dentro da area util e a direita passa a
-# mostrar quanto ainda tem de ano pela frente.
-MESES_ANTES = 3
-MESES_DEPOIS = 8
+# Enquadramento do eixo X: MESES_ANTES meses atras + o mes corrente = 6 pontos.
+# A serie so cobre meses ja vividos. Mes futuro nao tem pontuacao para mostrar,
+# entao o eixo termina no mes atual em vez de seguir em branco por 8 posicoes.
+MESES_ANTES = 5
 
 
 @router.get("/score-history")
@@ -132,67 +129,48 @@ async def get_score_history(
     user=Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    """Saldo acumulado de pontos mes a mes, enquadrado em MESES_ANTES/DEPOIS.
+    """Pontos arrecadados em cada um dos ultimos 6 meses (5 + o corrente).
 
-    A serie e ACUMULADA, nao a pontos-por-mes. Com pontos-por-mes o grafico
-    mostrava o maior credito de um mes (1810) enquanto a tela mostrava o saldo
-    total (2960): o mesmo usuario, dois numeros, e o grafico parecia errado.
-    Sendo acumulado, o ponto do mes corrente e por definicao o saldo real.
+    Cada barra e o total DO MES, nao o saldo acumulado: o grafico responde
+    "quanto eu ganhei neste mes", que e a pergunta do card. O saldo total
+    continua em `/users/me` e no `ScoreDisplay` ao lado do grafico.
+
+    Antes a serie era acumulada e ainda ia 8 meses alem de hoje, repetindo o
+    saldo corrente como uma faixa plana - mes futuro nao tem o que arrecadar.
 
     A fonte e o ledger (recompensas + conquistas resgatadas), e nao
     `quantidade de reciclagens x constante`: multiplicar por constante ignora
     os pontos de conquista, que sao a maior parte do saldo.
 
-    O primeiro ponto ja nasce com o saldo anterior a janela, senao a curva
-    comecaria em zero e perderia tudo que o usuario acumulou antes dela.
-
-    Os meses a frente do atual repetem o saldo corrente. A curva nao volta a
-    zero nem para no meio: a linha segue reta na altura do total ate o fim do
-    eixo, entao o grafico continua legivel como "onde eu estou".
+    Evento com data futura (horario mal gravado, por exemplo) cai fora da
+    janela e nao infla nenhuma barra.
     """
     # Fonte unica do ledger: recompensa (tipo pontos/missao liberada) +
-    # conquistas resgatadas. Assim grafico e saldo nunca divergem.
+    # conquistas resgatadas.
     eventos = get_user_points_ledger(supabase, user["id"])
 
     hoje = datetime.now(timezone.utc)
-    # Chave (ano, mes) do primeiro mes da janela, MESES_ANTES meses atras.
-    total_mes_inicial = hoje.month - MESES_ANTES
-    ano_inicial = hoje.year + (total_mes_inicial - 1) // 12
-    mes_inicial = (total_mes_inicial - 1) % 12 + 1
-    inicio_janela = (ano_inicial, mes_inicial)
 
     por_mes: dict[tuple[int, int], int] = {}
-    saldo_anterior = 0
     for quando, valor in eventos:
         chave = (quando.year, quando.month)
         por_mes[chave] = por_mes.get(chave, 0) + valor
-        if chave < inicio_janela:
-            saldo_anterior += valor
 
     serie = []
-    saldo = saldo_anterior
-    for deslocamento in range(MESES_ANTES, -MESES_DEPOIS - 1, -1):
-        # O indice do mes e derivado do MES que este no calendario, nao da
-        # posicao na serie. Misturar os dois da duas series invertidas:
-        # usar `hoje.month + deslocamento` com deslocamento negativo jogava
-        # todo mes futuro para o MES anterior (Set caia em Out), e rotular pelo
-        # offset invertia a ordem inteira do eixo X. So o calendario local
-        # (11 -> Out, 10 -> Set) respeita a sequencia que o grafico mostra.
+    # deslocamento >= 0 sempre: 5 e o mes 5 atras, 0 e o corrente. A janela
+    # nunca passa de "hoje", entao nao existe mes futuro na serie.
+    for deslocamento in range(MESES_ANTES, -1, -1):
+        # O indice do mes vem do CALENDARIO, nao da posicao na serie. A divisao
+        # e o modulo com (total_mes - 1) fazem a virada de ano sozinhos:
+        # deslocamento 5 em janeiro da total_mes = -4 -> Dez do ano anterior.
         total_mes = hoje.month - deslocamento
         ano = hoje.year + (total_mes - 1) // 12
         mes = (total_mes - 1) % 12 + 1
 
-        # Meses a frente do atual mantem o saldo como esta: nao ha nada a
-        # somar, entao a curva continua reta na altura do total ate o fim do
-        # eixo. So os meses ja vividos somam -- assim um evento com data
-        # futura (horario mal gravado, por exemplo) nao inflaria a curva.
-        if deslocamento >= 0:
-            saldo += por_mes.get((ano, mes), 0)
-
         serie.append(
             {
                 "month": MESES_PT[mes - 1],
-                "score": saldo,
+                "score": por_mes.get((ano, mes), 0),
             }
         )
     return serie

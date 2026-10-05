@@ -94,7 +94,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-success" />
                   <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Pontuacao Acumulada
+                    Pontos por Mes
                   </h2>
                 </div>
                 {authPending || loadingPoints ? (
