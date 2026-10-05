@@ -88,13 +88,36 @@ function formatAxisTick(value: number): string {
   return String(value);
 }
 
+// Em 375px a faixa de plotagem tem ~240px. Com 12 meses a barra sai com
+// ~14px de largura e os rotulos de mes ficam colados (minTickGap=4). A
+// serie e cortada para os ultimos 6 meses no breakpoint md: mesma
+// informacao recente, barra ~2x mais grossa e mes legivel.
+// O snapshot de servidor e false: a hidratacao comeca com 12 barras (igual
+// ao HTML estatico) e o cliente troca depois, sem mismatch.
+const MOBILE_QUERY = "(max-width: 767px)";
+const MOBILE_POINTS = 6;
+
+function useIsMobile(): boolean {
+  return React.useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia(MOBILE_QUERY);
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(MOBILE_QUERY).matches,
+    () => false
+  );
+}
+
 export interface ScoreChartProps extends React.HTMLAttributes<HTMLDivElement> {
   data?: DataPoint[];
 }
 
 const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
   ({ className, data = emptyData, ...props }, ref) => {
-    const domainMax = resolveDomainMax(data);
+    const isMobile = useIsMobile();
+    const visibleData = isMobile ? data.slice(-MOBILE_POINTS) : data;
+    const domainMax = resolveDomainMax(visibleData);
 
     return (
       <div
@@ -108,7 +131,7 @@ const ScoreChart = React.forwardRef<HTMLDivElement, ScoreChartProps>(
         >
           <BarChart
             accessibilityLayer
-            data={data}
+            data={visibleData}
             margin={{ top: 4, right: 4, left: -4, bottom: 0 }}
           >
             <CartesianGrid vertical={false} />
