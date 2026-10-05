@@ -34,7 +34,7 @@ function LandingHeader() {
         <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <button onClick={() => router.push("/")} className="flex items-center gap-2">
-            <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-10 md:h-12 w-auto" priority />
+            <Image src="/images/logo.webp" alt="Recicla Ai" width={640} height={982} className="h-10 md:h-12 w-auto" priority />
             <span className={`text-base font-bold tracking-tight transition-colors ${scrolled ? "text-foreground" : "text-white"}`}>
               Recicla Ai
             </span>

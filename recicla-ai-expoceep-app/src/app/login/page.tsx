@@ -81,10 +81,10 @@ export default function LoginPage() {
         <div className="p-6 sm:p-10">
           <div className="text-center">
             <Image
-              src="/images/logo.jpeg"
+              src="/images/logo.webp"
               alt="Recicla Ai"
-              width={1024}
-              height={1536}
+              width={640}
+              height={982}
               className="mx-auto mb-4 h-12 w-auto"
             />
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
@@ -186,10 +186,10 @@ export default function LoginPage() {
           <AuthGradientBackground />
           <div className="relative z-10 flex flex-col items-center gap-6 text-center">
             <Image
-              src="/images/logo-transparent.png"
+              src="/images/logo.webp"
               alt=""
-              width={1024}
-              height={1536}
+              width={640}
+              height={982}
               className="h-40 w-auto"
             />
             <p className="max-w-[22ch] text-balance text-lg font-medium leading-snug tracking-tight text-auth-panel-foreground">

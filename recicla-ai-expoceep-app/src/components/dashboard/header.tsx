@@ -35,7 +35,7 @@ function Header() {
         <div className="max-w-md mx-auto px-3 md:px-6">
           <div className="flex items-center justify-between h-10">
             <div className="flex items-center gap-1.5">
-              <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-4 w-auto" />
+              <Image src="/images/logo.webp" alt="Recicla Ai" width={640} height={982} className="h-4 w-auto" />
               <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
             </div>
 
@@ -116,7 +116,7 @@ function Header() {
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 h-14 border-b border-border">
                   <div className="flex items-center gap-1.5">
-                    <Image src="/images/logo.jpeg" alt="Recicla Ai" width={1024} height={1536} className="h-4 w-auto" />
+                    <Image src="/images/logo.webp" alt="Recicla Ai" width={640} height={982} className="h-4 w-auto" />
                     <span className="text-sm font-bold text-foreground tracking-tight">Recicla Ai</span>
                   </div>
                   <button

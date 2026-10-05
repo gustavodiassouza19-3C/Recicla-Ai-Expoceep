@@ -89,10 +89,10 @@ export default function ForgotPasswordPage() {
       <Card ref={cardRef} shape="rounded" className="w-full max-w-sm p-8 opacity-0">
         <div className="text-center mb-6">
           <Image
-            src="/images/logo.jpeg"
+            src="/images/logo.webp"
             alt="Recicla Ai"
-            width={1024}
-            height={1536}
+            width={640}
+            height={982}
             className="mx-auto mb-4 h-12 w-auto"
           />
           <h1 className="text-2xl font-bold text-foreground tracking-tight">
