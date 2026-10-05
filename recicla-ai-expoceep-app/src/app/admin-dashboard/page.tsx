@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { isAdminTipo } from "@/lib/roles";
 import { ChartsCard } from "@/components/admin/charts-card";
+import { ProfileMenu } from "@/components/admin/profile-menu";
 import { fetchAdminTags, fetchStatsAndUsers } from "@/components/admin/api";
 import { TABS } from "@/components/admin/constants";
 import { RecompensasPanel } from "@/components/admin/recompensas-panel";
@@ -106,12 +107,16 @@ export default function AdminDashboardPage() {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="flex flex-col gap-6 p-6"
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Visao geral do sistema</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
+            <p className="text-sm text-muted-foreground mt-1">Visao geral do sistema</p>
+          </div>
+          <ProfileMenu />
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div
             role="tablist"
             aria-label="Secoes do painel"

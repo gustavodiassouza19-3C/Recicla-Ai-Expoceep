@@ -968,7 +968,7 @@ export default function ProfilePage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={logout}
+                    onClick={() => logout()}
                     className="flex-1 min-h-[44px] rounded-xl font-medium"
                   >
                     Sim, encerrar sessão
