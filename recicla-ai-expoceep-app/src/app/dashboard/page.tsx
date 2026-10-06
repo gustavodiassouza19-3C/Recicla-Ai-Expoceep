@@ -12,7 +12,14 @@ import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { DashboardHistory } from "@/components/dashboard/dashboard-history";
 import { stagger, animate } from "animejs";
-import { fetchScoreHistory, fetchSiteConfig, type ScoreDataPoint } from "@/lib/api";
+import {
+  fetchImpact,
+  fetchScoreHistory,
+  fetchSiteConfig,
+  IMPACTO_ZERO,
+  type ImpactData,
+  type ScoreDataPoint,
+} from "@/lib/api";
 import { ExternalLink, Leaf, Recycle, TrendingUp, Vote } from "lucide-react";
 
 export default function Dashboard() {
@@ -24,6 +31,7 @@ export default function Dashboard() {
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [linkVotacao, setLinkVotacao] = useState("");
+  const [impacto, setImpacto] = useState<ImpactData | null>(null);
 
   // A pagina monta na hora. Só o que depende do token (saldo, impacto e
   // histórico) espera o auth — o restante já fica na tela.
@@ -44,6 +52,12 @@ export default function Dashboard() {
       .then(setScoreData)
       .catch(() => setScoreData([]));
     refetchPoints();
+    // Mesma fonte do perfil e de Recompensas (impact_service no backend),
+    // senao o card mostrava o potencial da residencia e nao o que a pessoa
+    // realmente evitou reciclando.
+    fetchImpact()
+      .then(setImpacto)
+      .catch(() => setImpacto(IMPACTO_ZERO));
   }, [user, refreshKey, refetchPoints]);
 
   // Publica pelo painel admin; so renderiza se houver link. O catch deixa o
@@ -162,7 +176,7 @@ export default function Dashboard() {
                   Impacto Estimado
                 </h2>
               </div>
-              {authPending ? (
+              {authPending || impacto === null ? (
                 <div className="flex flex-col gap-4">
                   {[0, 1, 2].map((i) => (
                     <div key={i} className="flex items-center gap-3">
@@ -175,7 +189,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <ImpactCard householdSize={user?.household_size ?? 1} />
+                <ImpactCard impact={impacto} />
               )}
             </Card>
           </div>

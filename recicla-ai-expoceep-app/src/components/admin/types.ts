@@ -39,6 +39,9 @@ export interface UsuarioDetalhe {
   household_size: number;
   entregas: number;
   arvores: number;
+  co2_kg: number;
+  water_liters: number;
+  kg_reciclado: number;
   tags_count: number;
   total_usos: number;
   tags: {

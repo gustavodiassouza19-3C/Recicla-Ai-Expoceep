@@ -8,6 +8,7 @@ from app.auth import get_admin_user, get_staff_user, grant_welcome_achievement
 from app.models.user import AdminCreate
 from app.services.admin_service import AdminCreationError, create_admin_usuario
 from app.services.points_service import get_user_points
+from app.services.impact_service import calculate_impact
 from app.models.recompensa import RecompensaCreate
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -317,6 +318,7 @@ async def get_user_detail(
 
     validadas = [r for r in reciclagens if r.get("status") == "validada"]
     tags_ids = {r["tags"]["id"] for r in reciclagens if r.get("tags")}
+    impact = calculate_impact(len(validadas))
 
     conquistas = (
         supabase.table("usuario_conquistas")
@@ -338,8 +340,11 @@ async def get_user_detail(
         "pontos": pontos,
         "pontos_armazenados": usuario.get("pontos", 0),
         "household_size": usuario.get("household_size", 1),
-        "entregas": len(validadas),
-        "arvores": round(len(validadas) * 0.004, 4),
+        "entregas": impact["validated_count"],
+        "arvores": impact["trees"],
+        "co2_kg": impact["co2_kg"],
+        "water_liters": impact["water_liters"],
+        "kg_reciclado": impact["kg_reciclado"],
         "tags_count": len(tags_ids),
         "total_usos": len(reciclagens),
         "tags": [

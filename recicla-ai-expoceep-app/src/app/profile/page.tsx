@@ -37,6 +37,8 @@ import {
   CheckCircle2,
   Trees,
   AlertTriangle,
+  Cloud,
+  Droplets,
   Fingerprint,
 } from "lucide-react";
 
@@ -71,6 +73,8 @@ export default function ProfilePage() {
   // Statistics state
   const [validatedCount, setValidatedCount] = useState(0);
   const [treesSaved, setTreesSaved] = useState(0);
+  const [co2Kg, setCo2Kg] = useState(0);
+  const [waterLiters, setWaterLiters] = useState(0);
   const [tagsCount, setTagsCount] = useState(0);
 
   // Theme & Logout State
@@ -211,6 +215,8 @@ export default function ProfilePage() {
         if (isMounted && impact) {
           setValidatedCount(impact.validated_count || 0);
           setTreesSaved(impact.trees || 0);
+          setCo2Kg(impact.co2_kg || 0);
+          setWaterLiters(impact.water_liters || 0);
         }
       } catch {
         // Non-critical stat
@@ -527,7 +533,7 @@ export default function ProfilePage() {
           initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
         >
           <div className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-success/30">
             <div className="flex items-center justify-between mb-2">
@@ -574,9 +580,45 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-xl sm:text-2xl font-extrabold text-foreground tabular-nums">
-                {treesSaved}
+                {treesSaved.toFixed(3).replace(".", ",")}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5">Impacto estimado</p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-success/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                CO₂e
+              </span>
+              <div className="p-1.5 rounded-lg bg-muted text-muted-foreground">
+                <Cloud className="h-4 w-4" />
+              </div>
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-extrabold text-foreground tabular-nums">
+                {co2Kg.toFixed(1).replace(".", ",")}
+                <span className="text-sm font-bold"> kg</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Emissao evitada</p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col justify-between transition-colors hover:border-success/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                Água
+              </span>
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <Droplets className="h-4 w-4" />
+              </div>
+            </div>
+            <div>
+              <p className="text-xl sm:text-2xl font-extrabold text-foreground tabular-nums">
+                {Math.round(waterLiters)}
+                <span className="text-sm font-bold"> L</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Agua economizada</p>
             </div>
           </div>
 
@@ -784,7 +826,7 @@ export default function ProfilePage() {
                 </h2>
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                O número de moradores ajusta as metas mensais e permite calcular o impacto ecológico per capita da sua residência.
+                Tamanho da sua residência, informação do cadastro.
               </p>
             </div>
 

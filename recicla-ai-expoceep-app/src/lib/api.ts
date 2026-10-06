@@ -102,11 +102,22 @@ export interface UserTag {
   last_used: string;
 }
 
+/** Impacto do usuario, calculado no backend a partir das entregas validadas. */
 export interface ImpactData {
   validated_count: number;
   trees: number;
   water_liters: number;
+  co2_kg: number;
+  kg_reciclado: number;
 }
+
+export const IMPACTO_ZERO: ImpactData = {
+  validated_count: 0,
+  trees: 0,
+  water_liters: 0,
+  co2_kg: 0,
+  kg_reciclado: 0,
+};
 
 export interface EcoPoint {
   id: number;

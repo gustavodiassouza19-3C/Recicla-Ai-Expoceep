@@ -4,12 +4,19 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { usePoints } from "@/contexts/points-context";
-import { apiFetch } from "@/lib/api";
+import {
+  apiFetch,
+  fetchImpact,
+  fetchScoreHistory,
+  IMPACTO_ZERO,
+  type ImpactData,
+  type ScoreDataPoint,
+} from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle, CheckCircle2, Loader2 } from "lucide-react";
+import { Cloud, TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { animate } from "animejs";
 import { toast } from "sonner";
@@ -50,6 +57,9 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 25 } },
 } as const;
 
+/** Mesma virgula decimal usada nos contadores do dashboard. */
+const fmt = (valor: number, casas: number) => valor.toFixed(casas).replace(".", ",");
+
 export default function RewardsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -59,6 +69,8 @@ export default function RewardsPage() {
   const [loadingRewards, setLoadingRewards] = useState(true);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
   const [redeemedIds, setRedeemedIds] = useState<Set<string>>(new Set());
+  const [impacto, setImpacto] = useState<ImpactData | null>(null);
+  const [pontosMes, setPontosMes] = useState(0);
   const pointsRef = useRef<HTMLSpanElement>(null);
 
   // Catalogo vem do backend. Antes era um array fixo no arquivo, entao o que o
@@ -106,6 +118,22 @@ export default function RewardsPage() {
   useEffect(() => {
     if (!user) return;
     refetchPoints();
+
+    // Mesma fonte do dashboard (impact_service no backend). Os mini cards
+    // antes multiplicavam os pontos por fatores de reciclagem, o que misturava
+    // saldo com impacto e arredondava arvores para sempre 0.
+    let cancelled = false;
+    fetchImpact()
+      .then((valor) => { if (!cancelled) setImpacto(valor); })
+      .catch(() => { if (!cancelled) setImpacto(IMPACTO_ZERO); });
+    fetchScoreHistory()
+      .then((historico: ScoreDataPoint[]) => {
+        if (cancelled || historico.length === 0) return;
+        setPontosMes(historico[historico.length - 1].score);
+      })
+      .catch(() => { if (!cancelled) setPontosMes(0); });
+
+    return () => { cancelled = true; };
   }, [user, refetchPoints]);
 
   useEffect(() => {
@@ -214,7 +242,7 @@ const handleResgate = async (reward: RewardItem) => {
                     <div className="flex items-center gap-1.5">
                       <TrendingUp className="h-3.5 w-3.5 text-success" />
                       <span className="text-xs text-muted-foreground">
-                        +{Math.floor(points * 0.12)} este mes
+                        +{authPending ? "—" : pontosMes} este mes
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -239,33 +267,42 @@ const handleResgate = async (reward: RewardItem) => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-3 gap-2 mb-6"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"
           >
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
-              <TreePine className="h-5 w-5 text-success mx-auto mb-1" />
+              <Cloud className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {authPending ? "—" : Math.floor(points * 0.004)}
+                {impacto === null ? "—" : fmt(impacto.co2_kg, 1)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Arvores
+                Kg CO₂e
               </span>
             </Card>
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
               <Droplets className="h-5 w-5 text-primary mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {authPending ? "—" : Math.floor(points * 8)}
+                {impacto === null ? "—" : fmt(impacto.water_liters, 0)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Litros
               </span>
             </Card>
             <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
-              <Recycle className="h-5 w-5 text-accent mx-auto mb-1" />
+              <TreePine className="h-5 w-5 text-success mx-auto mb-1" />
               <span className="text-lg font-bold text-foreground block font-mono">
-                {authPending ? "—" : Math.floor(points * 0.5)}
+                {impacto === null ? "—" : fmt(impacto.trees, 3)}
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Kg recic.
+                Arvores
+              </span>
+            </Card>
+            <Card className="p-3 text-center retro-border-item retro-shadow-sm retro-radius">
+              <Recycle className="h-5 w-5 text-accent mx-auto mb-1" />
+              <span className="text-lg font-bold text-foreground block font-mono">
+                {impacto === null ? "—" : fmt(impacto.kg_reciclado, 1)}
+              </span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Kg reciclados
               </span>
             </Card>
           </motion.div>

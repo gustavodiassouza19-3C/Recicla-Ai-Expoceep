@@ -4,10 +4,10 @@ import * as React from "react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { animate } from "animejs";
-import { calculateEnvironmentalImpact } from "@/lib/environmental-factors";
+import type { ImpactData } from "@/lib/api";
 
 interface ImpactCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  householdSize?: number;
+  impact: ImpactData;
 }
 
 function TreeIcon() {
@@ -38,8 +38,7 @@ function CloudIcon() {
 }
 
 const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
-  ({ className, householdSize = 1, ...props }, ref) => {
-    const impact = calculateEnvironmentalImpact(householdSize);
+  ({ className, impact, ...props }, ref) => {
     const co2Ref = useRef<HTMLSpanElement>(null);
     const waterRef = useRef<HTMLSpanElement>(null);
     const treesRef = useRef<HTMLSpanElement>(null);
@@ -48,7 +47,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
       if (co2Ref.current) {
         const obj = { val: 0 };
         animate(obj, {
-          val: impact.co2,
+          val: impact.co2_kg,
           duration: 1800,
           ease: "outExpo",
           onUpdate: () => {
@@ -59,7 +58,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
       if (waterRef.current) {
         const obj = { val: 0 };
         animate(obj, {
-          val: impact.water,
+          val: impact.water_liters,
           duration: 1800,
           ease: "outExpo",
           onUpdate: () => {
@@ -78,7 +77,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
           },
         });
       }
-    }, [impact.co2, impact.water, impact.trees]);
+    }, [impact.co2_kg, impact.water_liters, impact.trees]);
 
     return (
       <div ref={ref} className={cn("flex flex-col gap-4", className)} {...props}>
@@ -92,7 +91,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
               0,00 kg
             </span>
             <span className="text-[11px] text-muted-foreground mt-1">
-              CO₂e estimado
+              CO₂e evitado
             </span>
           </div>
         </div>
@@ -128,7 +127,7 @@ const ImpactCard = React.forwardRef<HTMLDivElement, ImpactCardProps>(
         </div>
 
         <p className="text-[9px] text-muted-foreground/60 mt-1">
-          Estimativa calculada com base no número de moradores informado no cadastro.
+          Calculado sobre as suas entregas validadas de reciclagem.
         </p>
       </div>
     );

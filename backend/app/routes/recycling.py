@@ -6,6 +6,7 @@ from app.models.recycling import RecyclingCreate, RecyclingValidate
 from app.services.tag_service import validate_tag_code
 from app.services.points_service import get_user_points, get_user_points_ledger
 from app.services.achievement_service import check_achievements
+from app.services.impact_service import calculate_impact
 from app.config import settings
 from datetime import datetime, timezone
 
@@ -188,7 +189,4 @@ async def get_impact(
         .eq("status", "validada")
         .execute()
     )
-    count = result.count or 0
-    trees = round(count * 0.004, 4)
-    water = count * 8
-    return {"validated_count": count, "trees": trees, "water_liters": water}
+    return calculate_impact(result.count or 0)

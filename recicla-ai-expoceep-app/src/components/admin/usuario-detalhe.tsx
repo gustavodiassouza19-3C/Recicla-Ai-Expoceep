@@ -6,6 +6,8 @@ import {
   ArrowLeft,
   Calendar,
   CheckCircle2,
+  Cloud,
+  Droplets,
   Fingerprint,
   Home,
   Leaf,
@@ -104,10 +106,24 @@ export function UsuarioDetalhe({ usuarioId, token, onFechar }: UsuarioDetalhePro
     },
     {
       label: "Arvores",
-      value: detalhe.arvores,
+      value: (detalhe.arvores ?? 0).toFixed(3).replace(".", ","),
       caption: "Impacto estimado",
       icon: Trees,
       tone: "bg-success/10 text-success",
+    },
+    {
+      label: "CO2e",
+      value: `${(detalhe.co2_kg ?? 0).toFixed(1).replace(".", ",")} kg`,
+      caption: "Emissao evitada",
+      icon: Cloud,
+      tone: "bg-muted text-muted-foreground",
+    },
+    {
+      label: "Agua",
+      value: `${Math.round(detalhe.water_liters ?? 0)} L`,
+      caption: "Agua economizada",
+      icon: Droplets,
+      tone: "bg-primary/10 text-primary",
     },
     {
       label: "Tags NFC",
@@ -223,7 +239,7 @@ export function UsuarioDetalhe({ usuarioId, token, onFechar }: UsuarioDetalhePro
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {resumo.map((s) => (
           <Card key={s.label} className="p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
@@ -276,7 +292,7 @@ export function UsuarioDetalhe({ usuarioId, token, onFechar }: UsuarioDetalhePro
           </h3>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          O numero de moradores ajusta as metas mensais e o impacto per capita.
+          Tamanho da residencia informado no cadastro.
         </p>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">
           <Users className="h-4 w-4 text-success shrink-0" aria-hidden />

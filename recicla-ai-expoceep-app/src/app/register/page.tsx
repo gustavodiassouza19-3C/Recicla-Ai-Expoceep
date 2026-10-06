@@ -308,7 +308,7 @@ export default function RegisterPage() {
             )}
 
             <p className="text-xs text-muted-foreground">
-              Usado para estimar seu impacto ambiental
+              Quantas pessoas moram na sua casa
             </p>
           </div>
 
