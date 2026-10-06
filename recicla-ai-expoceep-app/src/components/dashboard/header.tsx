@@ -80,7 +80,8 @@ function Header() {
               })}
             </nav>
 
-            <div className="flex items-center gap-1.5">
+            {/* ml-auto: sem o nav (hidden ate lg) o grupo fica encostado na logo */}
+            <div className="ml-auto flex items-center gap-1.5">
               <AchievementNotifications />
               {/* Mobile hamburger */}
               <button
