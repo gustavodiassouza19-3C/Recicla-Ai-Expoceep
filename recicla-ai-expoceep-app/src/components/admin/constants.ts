@@ -1,4 +1,4 @@
-import { Gift, LayoutDashboard, Users, type LucideIcon } from "lucide-react";
+import { Gift, LayoutDashboard, Settings, Users, type LucideIcon } from "lucide-react";
 import type { AbaAdmin, RecompensaAdmin, TagAdmin } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -37,6 +37,7 @@ export const TABS: { key: AbaAdmin; label: string; icon: LucideIcon }[] = [
   { key: "visao", label: "Visao geral", icon: LayoutDashboard },
   { key: "usuarios", label: "Usuarios", icon: Users },
   { key: "recompensas", label: "Recompensas", icon: Gift },
+  { key: "configuracoes", label: "Configuracoes", icon: Settings },
 ];
 
 export const OPCOES_FILTRO_TAG = [

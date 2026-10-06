@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { isAdminTipo } from "@/lib/roles";
 import { ChartsCard } from "@/components/admin/charts-card";
+import { ConfiguracoesPanel } from "@/components/admin/configuracoes-panel";
 import { ProfileMenu } from "@/components/admin/profile-menu";
 import { fetchAdminTags, fetchStatsAndUsers } from "@/components/admin/api";
 import { TABS } from "@/components/admin/constants";
@@ -120,7 +121,7 @@ export default function AdminDashboardPage() {
           <div
             role="tablist"
             aria-label="Secoes do painel"
-            className="flex gap-1 rounded-xl border border-border bg-muted/40 p-1"
+            className="flex flex-wrap gap-1 rounded-xl border border-border bg-muted/40 p-1"
           >
             {TABS.map((t) => (
               <button
@@ -198,6 +199,8 @@ export default function AdminDashboardPage() {
       )}
 
       {aba === "recompensas" && <RecompensasPanel token={token} />}
+
+      {aba === "configuracoes" && <ConfiguracoesPanel token={token} />}
     </motion.div>
   );
 }

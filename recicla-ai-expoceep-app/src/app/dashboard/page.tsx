@@ -12,8 +12,8 @@ import { ImpactCard } from "@/components/dashboard/impact-card";
 import { NfcTagsCard } from "@/components/dashboard/nfc-tags-card";
 import { DashboardHistory } from "@/components/dashboard/dashboard-history";
 import { stagger, animate } from "animejs";
-import { fetchScoreHistory, type ScoreDataPoint } from "@/lib/api";
-import { Leaf, Recycle, TrendingUp } from "lucide-react";
+import { fetchScoreHistory, fetchSiteConfig, type ScoreDataPoint } from "@/lib/api";
+import { ExternalLink, Leaf, Recycle, TrendingUp, Vote } from "lucide-react";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -23,6 +23,7 @@ export default function Dashboard() {
 
   const [scoreData, setScoreData] = useState<ScoreDataPoint[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [linkVotacao, setLinkVotacao] = useState("");
 
   // A pagina monta na hora. Só o que depende do token (saldo, impacto e
   // histórico) espera o auth — o restante já fica na tela.
@@ -44,6 +45,14 @@ export default function Dashboard() {
       .catch(() => setScoreData([]));
     refetchPoints();
   }, [user, refreshKey, refetchPoints]);
+
+  // Publica pelo painel admin; so renderiza se houver link. O catch deixa o
+  // dashboard no ar mesmo se o endpoint cair -- o banner e opcional.
+  useEffect(() => {
+    fetchSiteConfig()
+      .then((config) => setLinkVotacao(config.link_votacao))
+      .catch(() => setLinkVotacao(""));
+  }, []);
 
   useEffect(() => {
     // Sempre depois do auth: os cards são renderizados desde o primeiro
@@ -85,6 +94,35 @@ export default function Dashboard() {
             Seu impacto ambiental em tempo real
           </p>
         </div>
+
+        {/* Banner de votacao - so aparece com link salvo no painel admin */}
+        {linkVotacao && (
+          <a
+            href={linkVotacao}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mb-6 flex min-h-11 items-center gap-3 rounded-xl border border-success/25 bg-success/[0.06] p-4 transition-colors hover:bg-success/10"
+          >
+            <span
+              aria-hidden
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/15"
+            >
+              <Vote className="h-4 w-4 text-success" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold text-foreground">
+                Vote no melhor projeto da feira
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                Abra o formulario e escolha o seu favorito.
+              </span>
+            </span>
+            <ExternalLink
+              aria-hidden
+              className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            />
+          </a>
+        )}
 
         {/* Row 1 - Score */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">

@@ -68,7 +68,12 @@ export interface RecompensaAdmin {
   criado_em?: string;
 }
 
-export type AbaAdmin = "visao" | "usuarios" | "recompensas";
+export type AbaAdmin = "visao" | "usuarios" | "recompensas" | "configuracoes";
+
+/** Configuracao global do site (chave/valor gravada em site_config). */
+export interface SiteConfig {
+  link_votacao: string;
+}
 
 export interface Stats {
   total_usuarios: number;

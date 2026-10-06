@@ -4,6 +4,7 @@ import type {
   AdminForm,
   RecompensaAdmin,
   RecompensaForm,
+  SiteConfig,
   Stats,
   TagAdmin,
   TagResult,
@@ -141,6 +142,35 @@ export async function updateRecompensa(
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+/** Configuracao global do site (aba Configuracoes). */
+export async function fetchSiteConfig(token?: string | null): Promise<SiteConfig> {
+  const res = await fetch(`${API_URL}/api/admin/config`, {
+    headers: authHeaders(token),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as SiteConfig;
+}
+
+/** `link_votacao` vazio limpa o link e esconde o banner do dashboard. */
+export async function updateSiteConfig(
+  link: string,
+  token?: string | null
+): Promise<SiteConfig> {
+  const res = await fetch(`${API_URL}/api/admin/config`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify({ link_votacao: link }),
+  });
+  if (!res.ok) {
+    const erro = (await res.json().catch(() => null)) as { detail?: string } | null;
+    throw new Error(
+      typeof erro?.detail === "string" ? erro.detail : `HTTP ${res.status}`
+    );
+  }
+  return (await res.json()) as SiteConfig;
 }
 
 /** DELETE do backend e remocao do catalogo (soft delete): a linha fica para

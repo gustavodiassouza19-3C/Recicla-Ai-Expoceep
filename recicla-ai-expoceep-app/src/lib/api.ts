@@ -125,6 +125,15 @@ export function fetchScoreHistory(): Promise<ScoreDataPoint[]> {
   return apiFetch<ScoreDataPoint[]>("/api/recycle/score-history");
 }
 
+/** Configuracao publica do site. `link_votacao` vazio = banner escondido. */
+export interface SiteConfig {
+  link_votacao: string;
+}
+
+export function fetchSiteConfig(): Promise<SiteConfig> {
+  return apiFetch<SiteConfig>("/api/config");
+}
+
 export interface MeProfile {
   id: number;
   nome: string;

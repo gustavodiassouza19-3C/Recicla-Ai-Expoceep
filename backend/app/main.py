@@ -9,6 +9,7 @@ from app.routes import (
     eco_points_router,
     achievements_router,
     rewards_router,
+    config_router,
 )
 
 app = FastAPI(
@@ -33,6 +34,7 @@ app.include_router(recycling_router)
 app.include_router(eco_points_router)
 app.include_router(achievements_router)
 app.include_router(rewards_router)
+app.include_router(config_router)
 
 
 @app.get("/api/health")
