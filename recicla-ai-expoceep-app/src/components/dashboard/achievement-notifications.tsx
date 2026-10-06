@@ -41,13 +41,13 @@ function AchievementNotifications() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "relative flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-colors hover:bg-muted",
+          "relative flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-colors hover:bg-muted",
           open && "bg-muted"
         )}
       >
-        <Gift className="h-4 w-4" />
+        <Gift className="h-5 w-5" />
         <span
-          className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-success px-1 text-[10px] font-bold text-white"
+          className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-success px-1 text-[10px] font-bold text-white"
           aria-hidden
         >
           {pendingCount > 9 ? "9+" : pendingCount}
@@ -78,7 +78,7 @@ function AchievementNotifications() {
                 type="button"
                 aria-label="Fechar"
                 onClick={() => setOpen(false)}
-                className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -105,8 +105,9 @@ function AchievementNotifications() {
                     </p>
                   </div>
                   <Button
-                    size="xs"
+                    size="sm"
                     variant="outline"
+                    className="min-h-11 shrink-0"
                     disabled={claiming === item.codigo}
                     onClick={() => claim(item.codigo)}
                     aria-label={`Pegar prêmio: ${item.nome}`}
@@ -118,7 +119,7 @@ function AchievementNotifications() {
             </ul>
 
             <Button
-              className="w-full"
+              className="min-h-11 w-full"
               size="sm"
               disabled={claiming === "*"}
               onClick={claimAll}
