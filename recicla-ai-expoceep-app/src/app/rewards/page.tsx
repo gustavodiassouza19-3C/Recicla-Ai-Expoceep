@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Gift, TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle, CheckCircle2, Loader2 } from "lucide-react";
+import { TrendingUp, Clock, ChevronRight, Sparkles, TreePine, Droplets, Recycle, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { animate } from "animejs";
 import { toast } from "sonner";
@@ -227,27 +227,6 @@ const handleResgate = async (reward: RewardItem) => {
                 </>
               )}
 
-              {/* Acoes rapidas */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="default"
-                  className="w-full justify-center gap-2"
-                  onClick={() => {}}
-                  disabled={authPending}
-                >
-                  <Gift className="h-4 w-4" />
-                  Resgatar
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-center gap-2"
-                  onClick={() => {}}
-                  disabled={authPending}
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Historico
-                </Button>
-              </div>
             </motion.div>
           </div>
         </div>
