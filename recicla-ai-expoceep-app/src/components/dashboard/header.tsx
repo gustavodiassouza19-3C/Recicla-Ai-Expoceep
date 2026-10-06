@@ -26,7 +26,16 @@ function Header() {
 
   if (loading) return null;
   if (!user) return null;
-  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/admin-dashboard") return null;
+  // /about entra na lista: o link "Sobre" da landing abre so a pagina, sem a
+  // barra do app em cima (que passava a impressao de area do usuario logado).
+  if (
+    pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/admin-dashboard"
+  )
+    return null;
 
 
   return (
