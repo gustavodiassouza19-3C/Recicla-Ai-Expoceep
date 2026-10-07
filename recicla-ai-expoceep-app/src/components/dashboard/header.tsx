@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, Trophy, Gift, MapPin, User, Menu, X, LogOut, HelpCircle } from "lucide-react";
+import { Home, Trophy, Gift, MapPin, User, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { AchievementNotifications } from "@/components/dashboard/achievement-notifications";
@@ -14,7 +14,6 @@ const tabs = [
   { id: "/achievements", label: "Conquistas", icon: Trophy },
   { id: "/rewards", label: "Recompensas", icon: Gift },
   { id: "/eco-points", label: "Ecopontos", icon: MapPin },
-  { id: "/about", label: "Sobre", icon: HelpCircle },
   { id: "/profile", label: "Perfil", icon: User },
 ];
 
@@ -26,14 +25,14 @@ function Header() {
 
   if (loading) return null;
   if (!user) return null;
-  // /about entra na lista: o link "Sobre" da landing abre so a pagina, sem a
-  // barra do app em cima (que passava a impressao de area do usuario logado).
+  // Páginas publicas onde o cabeçalho fica oculto para não passar a impressão
+  // de área do usuário logado quando não há navegação ativa do app.
   if (
     pathname === "/" ||
-    pathname === "/about" ||
     pathname === "/login" ||
     pathname === "/register" ||
-    pathname === "/admin-dashboard"
+    pathname === "/admin-dashboard" ||
+    pathname === "/confirm-email"
   )
     return null;
 

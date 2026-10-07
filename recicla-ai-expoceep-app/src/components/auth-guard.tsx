@@ -6,8 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 /**
  * Porta unica de acesso do app: toda rota exige login.
- * Publicas sao a landing, o /about (link do proprio landing, nao pode pedir
- * login) e as telas de autenticacao — sem estas nao existe forma de entrar. Nao ha middleware porque a sessao vive em localStorage
+ * Publicas sao a landing, as telas de autenticacao — sem estas nao existe forma de entrar. Nao ha middleware porque a sessao vive em localStorage
  * (client do Supabase) e o middleware de borda nao enxerga.
  */
 const PUBLIC_PATHS = new Set([
@@ -17,6 +16,7 @@ const PUBLIC_PATHS = new Set([
   "/register",
   "/forgot-password",
   "/reset-password",
+  "/confirm-email",
 ]);
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {

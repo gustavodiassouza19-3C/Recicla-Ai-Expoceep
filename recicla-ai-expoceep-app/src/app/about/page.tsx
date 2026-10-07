@@ -1,78 +1,122 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Nfc, Recycle, Gift, Leaf, Database, Server, Smartphone } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Leaf, Users, Cpu, Target, Layers, Gift, Recycle, Wallet, Wrench, PiggyBank } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/auth-context";
-import { fetchTagCatalog, type TagCatalogItem } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 
-// Mesmo lexico do card de tags do dashboard: cor do badge segue o status,
-// nunca o texto sozinho, para o contraste nao depender da string.
-const TAG_STATUS: Record<
-  string,
-  { label: string; variant: "default" | "success" | "warning" | "destructive" }
-> = {
-  disponivel: { label: "disponivel", variant: "success" },
-  ativa: { label: "disponivel", variant: "success" },
-  em_uso: { label: "em uso", variant: "warning" },
-  indisponivel: { label: "indisponivel", variant: "default" },
-};
-
-const flow = [
+const projectSteps = [
   {
-    title: "Vinculo",
-    description:
-      "O cidadao recebe uma tag NFC fisica, vincula ao seu CPF no aplicativo e a prende na sacola de reciclaveis.",
+    step: 1,
+    title: "Cadastre-se",
+    description: "Crie sua conta no nosso aplicativo ou site em poucos segundos.",
   },
   {
-    title: "Coleta e triagem",
+    step: 2,
+    title: "Retire suas Tags",
     description:
-      "A sacola e recolhida pela coleta seletiva e enviada ao ecoponto ou centro de triagem.",
+      "Aproxime seu celular em um ponto automatizado e retire seus lacres inteligentes gratuitamente.",
   },
   {
-    title: "Validacao",
+    step: 3,
+    title: "Embale e Identifique",
     description:
-      "Um funcionario autorizado le a tag NFC no celular para confirmar que o material chegou.",
+      "Separe o lixo reciclável e feche o saco usando o lacre/tag com tecnologia RFID/NFC.",
   },
   {
-    title: "Recompensa",
+    step: 4,
+    title: "Acumule Pontos",
     description:
-      "A confirmacao libera automaticamente uma recompensa no app. Ate 5 recompensas mensais por CPF, sem depender do peso ou tipo do material.",
+      "Na central de triagem, a tag é lida automaticamente e os pontos caem direto na sua conta.",
   },
   {
-    title: "Reuso",
+    step: 5,
+    title: "Troque por Benefícios",
+    description: "Resgate vales-transporte, vale-alimentação, descontos e outros prêmios.",
+  },
+  {
+    step: 6,
+    title: "Ciclo Sustentável",
     description:
-      "O status da tag volta para disponivel e ela volta ao sistema para outra pessoa usar.",
+      "O lacre é limpo, zerado e retorna para as máquinas, garantindo reutilização contínua.",
   },
 ];
 
-const stack = [
+const goals = [
+  "Tecnologia Acessível: Aplicativo e site intuitivos para controle de reciclagem.",
+  "Tags Inteligentes: Identificação prática e reutilizável por RFID/NFC/QR Code.",
+  "Incentivo Real: Recompensas atrativas para moradores e empresas.",
+  "Aumento da Reciclagem: Elevar significativamente a taxa de reciclagem da cidade.",
+];
+
+const impacts = [
   {
-    icon: Smartphone,
-    layer: "Front-End",
-    tech: "Next.js (React)",
-    role: "Interface para acompanhar saldo/historico e para o funcionario ler a tag na triagem",
+    icon: Leaf,
+    text: "Environmental: Rios e ruas mais limpos, redução da poluição e incentivo à economia circular.",
   },
   {
-    icon: Server,
-    layer: "Back-End",
-    tech: "Python (FastAPI)",
-    role: "API REST com regras de limite por CPF, validacao de seguranca e atualizacao de status",
+    icon: Users,
+    text: "Social: Conscientização ambiental e apoio direto às cooperativas de reciclagem.",
   },
   {
-    icon: Database,
-    layer: "Banco de dados",
-    tech: "Supabase (PostgreSQL)",
-    role: "Tabelas de usuarios, tags, reciclagens, recompensas e RLS por conta",
-  },
-  {
-    icon: Nfc,
-    layer: "Hardware",
-    tech: "Tags NFC",
-    role: "Etiquetas fisicas com codigo unico, vinculadas temporariamente a cada entrega",
+    icon: Cpu,
+    text: "Technological: Rastreabilidade e leitura em lote para maior eficiência do sistema.",
   },
 ];
+
+const financeMetrics = [
+  {
+    label: "Economia Anual em Limpeza e Aterro (1/3 da Cidade)",
+    value: "R$ 6.660.000,00 / ano",
+    detail:
+      "Economia direta ao redirecionar ~33,3 mil toneladas de lixo para a reciclagem (calculado a R$ 200/tonelada).",
+    icon: PiggyBank,
+  },
+  {
+    label: "Investimento Inicial no Estoque de Tags (Ano 1)",
+    value: "R$ 18.450.000,00",
+    detail:
+      "Compra do parque tecnológico de 7,38 milhões de tags reutilizáveis (R$ 2,50/unidade) para atender 123 mil moradores.",
+    icon: Layers,
+  },
+  {
+    label: "Custo Anual de Manutenção (A partir do Ano 2)",
+    value: "R$ 1.845.000,00 / ano",
+    detail:
+      "Estimativa de 10% de reposição anual de tags danificadas ou perdidas. O restante das tags retorna ao ciclo continuamente.",
+    icon: Wrench,
+  },
+  {
+    label: "Economia Líquida Recorrente (A partir do Ano 2)",
+    value: "R$ 4.815.000,00 / ano",
+    detail:
+      "Resultado positivo limpo que fica nos cofres públicos a cada ano de operação do sistema.",
+    icon: Wallet,
+  },
+];
+
+const pillars = [
+  {
+    title: "Economia Recorrente vs. Custo Pontual",
+    description:
+      "Como as tags são higienizadas, zeradas e reutilizadas nas máquinas, o investimento pesado ocorre apenas no início. A partir do segundo ano, a economia com limpeza urbana supera em mais de 3,5 vezes o custo de manutenção do sistema.",
+  },
+  {
+    title: "Aumento da Vida Útil do Aterro Sanitário",
+    description:
+      "A cada tonelada reciclada, economiza-se espaço em aterros sanitários, adiando a necessidade de grandes investimentos milionários na criação de novas células de descarte.",
+  },
+  {
+    title: "Valorização da Economia Local",
+    description:
+      "O material triado e identificado chega com maior pureza às cooperativas de reciclagem, aumentando a renda dos cooperados e gerando movimentação econômica regional.",
+  },
+];
+
+function splitPrefix(text: string) {
+  const idx = text.indexOf(": ");
+  if (idx === -1) return null;
+  return { prefix: text.slice(0, idx), rest: text.slice(idx + 2) };
+}
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -82,118 +126,97 @@ const fadeUp = {
 };
 
 export default function AboutPage() {
-  const { user } = useAuth();
-  const userId = user?.id ?? null;
-  const [tags, setTags] = useState<TagCatalogItem[]>([]);
-  const [carregado, setCarregado] = useState(false);
-  const [erro, setErro] = useState("");
-
-  // Só quem está logado vê o inventário: o endpoint exige token. Enquanto o
-  // auth-context ainda não resolveu, a seção nem monta. O estado de carregando
-  // é derivado (userId + carregado) para não setar estado de forma síncrona
-  // dentro do effect.
-  const loading = userId !== null && !carregado;
-
-  useEffect(() => {
-    if (!userId) return;
-    let alive = true;
-    fetchTagCatalog()
-      .then((data) => {
-        if (!alive) return;
-        setTags(data);
-        setErro("");
-        setCarregado(true);
-      })
-      .catch(() => {
-        // Erro próprio, não vazio: fingir lista vazia esconderia um 401 ou o
-        // backend fora do ar como se não houvesse tag nenhuma.
-        if (!alive) return;
-        setErro("Não foi possível carregar as tags.");
-        setCarregado(true);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [userId]);
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Intro */}
+      {/* Hero do projeto */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-success/8 via-transparent to-primary/5" />
         <div className="absolute -top-24 right-0 w-72 h-72 bg-success/10 rounded-full blur-3xl" />
 
-        <div className="relative max-w-6xl mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-24">
-          <motion.div {...fadeUp} className="max-w-3xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[0.95] mb-6">
-              Reciclar urbano
-              <br />
-              <span className="text-success">sem friccao.</span>
+        <div className="relative max-w-6xl mx-auto px-4 md:px-8 pt-8 md:pt-16 pb-12 md:pb-20">
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Voltar para o início
+          </Link>
+
+          <motion.div {...fadeUp} className="max-w-3xl mt-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[0.95] mb-4">
+              Projeto <span className="text-success">Recicla+</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-              O <strong className="text-foreground font-semibold">Recicla Ai</strong> incentiva a
-              reciclagem urbana com tags NFC reutilizaveis vinculadas ao CPF do cidadao. O
-              sistema aproveita a coleta seletiva ja existente na cidade — sem equipamento novo
-              e sem coleta especial.
+              Recompensando você por um futuro mais sustentável.
             </p>
           </motion.div>
-
-          <motion.ul
-            {...fadeUp}
-            transition={{ ...fadeUp.transition, delay: 0.2 }}
-            className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-10 max-w-3xl"
-          >
-            {[
-              { icon: Recycle, text: "Validacao por NFC no ecoponto" },
-              { icon: Gift, text: "Pontos e recompensas reais" },
-              { icon: Leaf, text: "Impacto ambiental rastreavel" },
-            ].map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-start gap-3">
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-success/10"
-                  aria-hidden="true"
-                >
-                  <Icon className="h-5 w-5 text-success" />
-                </span>
-                <span className="text-sm text-muted-foreground leading-snug pt-2">{text}</span>
-              </li>
-            ))}
-          </motion.ul>
         </div>
       </section>
 
-      {/* Fluxo */}
-      <section aria-labelledby="fluxo-heading" className="py-16 md:py-24 border-t border-border/50">
+      {/* O que é + Objetivo */}
+      <section aria-labelledby="sobre-heading" className="py-12 md:py-20 border-t border-border/50">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <motion.div {...fadeUp} className="mb-12 md:mb-16 max-w-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <motion.div {...fadeUp}>
+              <h2
+                id="sobre-heading"
+                className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-4"
+              >
+                O que é o projeto?
+              </h2>
+              <p className="text-base text-muted-foreground leading-relaxed max-w-[75ch]">
+                Um aplicativo inovador que transforma a reciclagem em um hábito recompensador.
+                Através de um sistema inteligente de tags reutilizáveis, você descarta seu lixo
+                reciclável e ganha pontos para trocar por benefícios.
+              </p>
+            </motion.div>
+
+            <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.1 }}>
+              <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-success/10 mb-4">
+                <Target className="h-5 w-5 text-success" aria-hidden="true" />
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-4">
+                Nosso Objetivo
+              </h2>
+              <p className="text-base text-muted-foreground leading-relaxed max-w-[75ch]">
+                Incentivar a população a reciclar mais e melhor, conectando tecnologia,
+                consciência ambiental e recompensas no dia a dia.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Como Funciona */}
+      <section
+        aria-labelledby="como-funciona-heading"
+        className="py-12 md:py-20 bg-muted/30 border-t border-border/50"
+      >
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-2xl">
             <h2
-              id="fluxo-heading"
-              className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
+              id="como-funciona-heading"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
             >
-              Como o sistema
-              <br />
-              <span className="text-success">funciona.</span>
+              Como <span className="text-success">Funciona</span>
             </h2>
-            <p className="text-base text-muted-foreground leading-relaxed">
-              Do vinculo da tag ao reuso na proxima entrega — o ciclo completo em cinco etapas.
-            </p>
           </motion.div>
 
           <ol className="space-y-0">
-            {flow.map((step, i) => (
+            {projectSteps.map((step, i) => (
               <motion.li
-                key={step.title}
+                key={step.step}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-[auto_1fr] md:grid-cols-[4rem_1fr] gap-4 md:gap-8 py-6 border-b border-border/40 last:border-b-0"
+                transition={{ duration: 0.5, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                className="grid grid-cols-[auto_1fr] md:grid-cols-[4rem_1fr] gap-4 md:gap-8 py-5 md:py-6 border-b border-border/40 last:border-b-0"
               >
                 <span
                   className="text-sm font-semibold text-success font-mono tabular-nums pt-1"
                   aria-hidden="true"
                 >
-                  {String(i + 1).padStart(2, "0")}
+                  {String(step.step).padStart(2, "0")}
                 </span>
                 <div className="min-w-0">
                   <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1.5">
@@ -209,151 +232,236 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Inventário de tags */}
-      {userId && (
-        <section aria-labelledby="tags-heading" className="py-16 md:py-24 border-t border-border/50">
-          <div className="max-w-6xl mx-auto px-4 md:px-8">
-            <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-2xl">
-              <h2
-                id="tags-heading"
-                className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
-              >
-                Todas as
-                <br />
-                <span className="text-success">tags.</span>
-              </h2>
-              <p className="text-base text-muted-foreground leading-relaxed">
-                Inventário completo das tags NFC em circulação e o status atual de cada uma.
-              </p>
-            </motion.div>
+      {/* Metas */}
+      <section aria-labelledby="metas-heading" className="py-12 md:py-20 border-t border-border/50">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-2xl">
+            <h2
+              id="metas-heading"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
+            >
+              Nossas <span className="text-success">Metas</span>
+            </h2>
+          </motion.div>
 
-            {loading ? (
-              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" aria-hidden="true">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <li
-                    key={i}
-                    className="h-[68px] animate-pulse rounded-xl border border-border/40 bg-muted/30"
-                  />
-                ))}
-              </ul>
-            ) : erro ? (
-              <p role="alert" className="text-sm text-destructive">
-                {erro}
-              </p>
-            ) : tags.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma tag cadastrada ainda.</p>
-            ) : (
-              <motion.ul
-                {...fadeUp}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-              >
-                {tags.map((tag) => {
-                  const status = TAG_STATUS[tag.status] ?? {
-                    label: tag.status,
-                    variant: "default" as const,
-                  };
-                  return (
-                    <li
-                      key={tag.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-4 py-3"
-                    >
-                      <span className="flex min-w-0 items-center gap-2.5">
-                        <Nfc className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
-                        <span className="truncate font-mono text-sm font-bold text-foreground">
-                          {tag.codigo_nfc}
-                        </span>
-                      </span>
-                      <Badge variant={status.variant}>{status.label}</Badge>
-                    </li>
-                  );
-                })}
-              </motion.ul>
-            )}
-          </div>
-        </section>
-      )}
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            {goals.map((goal, i) => {
+              const parts = splitPrefix(goal);
+              return (
+                <motion.li
+                  key={goal}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  className="rounded-xl border border-border/60 bg-background p-4 md:p-5"
+                >
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                    {parts ? (
+                      <>
+                        <span className="font-semibold text-foreground">{parts.prefix}:</span>{" "}
+                        {parts.rest}
+                      </>
+                    ) : (
+                      goal
+                    )}
+                  </p>
+                </motion.li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
 
-      {/* Arquitetura */}
+      {/* Impactos */}
       <section
-        aria-labelledby="stack-heading"
-        className="py-16 md:py-24 bg-muted/30 border-t border-border/50"
+        aria-labelledby="impactos-heading"
+        className="py-12 md:py-20 bg-muted/30 border-t border-border/50"
       >
         <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <motion.div {...fadeUp} className="mb-12 md:mb-16 max-w-2xl">
+          <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-2xl">
             <h2
-              id="stack-heading"
+              id="impactos-heading"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
+            >
+              Nossos <span className="text-success">Impactos</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+            {impacts.map((impact, i) => {
+              const parts = splitPrefix(impact.text);
+              const Icon = impact.icon;
+              return (
+                <motion.div
+                  key={impact.text}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="rounded-xl border border-border/60 bg-background p-4 md:p-5"
+                >
+                  <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-success/10 mb-3">
+                    <Icon className="h-5 w-5 text-success" aria-hidden="true" />
+                  </span>
+                  <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                    {parts ? (
+                      <>
+                        <span className="font-semibold text-foreground">{parts.prefix}:</span>{" "}
+                        {parts.rest}
+                      </>
+                    ) : (
+                      impact.text
+                    )}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Plano de Expansão */}
+      <section
+        aria-labelledby="expansao-heading"
+        className="py-12 md:py-20 border-t border-border/50"
+      >
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <motion.div
+            {...fadeUp}
+            className="rounded-2xl border border-success/30 bg-success/5 p-6 md:p-10 max-w-3xl"
+          >
+            <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-success/10 mb-4">
+              <Recycle className="h-5 w-5 text-success" aria-hidden="true" />
+            </span>
+            <h2
+              id="expansao-heading"
+              className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-3"
+            >
+              Plano de <span className="text-success">Expansão</span>
+            </h2>
+            <p className="text-base text-muted-foreground leading-relaxed max-w-[75ch]">
+              Início em Cascavel (PR), com expansão planejada para todo o Estado do Paraná e, em
+              seguida, para todo o Brasil.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Viabilidade Financeira */}
+      <section
+        aria-labelledby="viabilidade-heading"
+        className="py-12 md:py-20 bg-muted/30 border-t border-border/50"
+      >
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <motion.div {...fadeUp} className="mb-8 md:mb-12 max-w-3xl">
+            <h2
+              id="viabilidade-heading"
               className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.05] mb-4"
             >
-              Arquitetura do
-              <br />
-              <span className="text-success">sistema.</span>
+              Viabilidade Financeira{" "}
+              <span className="text-primary">&amp; Economia Real</span>
             </h2>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Quatro camadas trabalhando juntas para validar entregas, liberar pontos e manter
-              os dados seguros.
+              Um modelo sustentável onde a tecnologia de prevenção reduz custos públicos e gera
+              economia recorrente.
             </p>
           </motion.div>
 
-          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <motion.table
-              {...fadeUp}
-              className="w-full min-w-[36rem] text-left border-collapse"
-            >
-              <caption className="sr-only">
-                Camadas da arquitetura do Recicla Ai e suas funcoes
-              </caption>
-              <thead>
-                <tr className="border-b border-border">
-                  <th
-                    scope="col"
-                    className="py-3 pr-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
+          {/* Lógica financeira */}
+          <motion.div {...fadeUp} className="mb-10 md:mb-14 max-w-[75ch]">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3">
+              Entenda a Lógica Financeira
+            </h3>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Atualmente, o município de Cascavel gera cerca de 100 mil toneladas de resíduos ao
+              ano. Tratar esse lixo custa aproximadamente R$ 200 por tonelada, resultando em um
+              custo direto de R$ 20 milhões anuais para os cofres públicos. Com a adesão de 1/3 da
+              população ao sistema de tags reutilizáveis, reduzimos significativamente esse custo
+              de limpeza e aterro.
+            </p>
+          </motion.div>
+
+          {/* Estudo de caso */}
+          <div className="mb-10 md:mb-14">
+            <motion.h3 {...fadeUp} className="text-xl sm:text-2xl font-bold text-foreground mb-5">
+              Análise Financeira: Estudo de Caso Cascavel/PR
+            </motion.h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+              {financeMetrics.map((metric, i) => {
+                const Icon = metric.icon;
+                return (
+                  <motion.div
+                    key={metric.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                    className="rounded-xl border border-border/60 bg-background p-4 md:p-5 flex flex-col gap-2"
                   >
-                    Camada
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 pr-4 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Tecnologia
-                  </th>
-                  <th
-                    scope="col"
-                    className="py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Funcao
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {stack.map((row) => {
-                  const Icon = row.icon;
-                  return (
-                    <tr key={row.layer} className="border-b border-border/40 last:border-b-0">
-                      <th scope="row" className="py-4 pr-4 align-top font-normal">
-                        <span className="flex items-center gap-2.5">
-                          <Icon
-                            className="h-4 w-4 text-success shrink-0"
-                            aria-hidden="true"
-                          />
-                          <span className="text-sm font-semibold text-foreground">
-                            {row.layer}
-                          </span>
-                        </span>
-                      </th>
-                      <td className="py-4 pr-4 align-top">
-                        <span className="text-sm text-foreground">{row.tech}</span>
-                      </td>
-                      <td className="py-4 align-top">
-                        <span className="text-sm text-muted-foreground leading-relaxed">
-                          {row.role}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </motion.table>
+                    <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <Icon className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                      {metric.label}
+                    </span>
+                    <span className="text-xl sm:text-2xl font-bold text-foreground font-mono tabular-nums tracking-tight break-words">
+                      {metric.value}
+                    </span>
+                    <span className="text-sm text-muted-foreground leading-relaxed">
+                      {metric.detail}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Pilares */}
+          <div className="mb-10 md:mb-14">
+            <motion.h3 {...fadeUp} className="text-xl sm:text-2xl font-bold text-foreground mb-5">
+              Por que este modelo traz &quot;lucro&quot; para a gestão pública?
+            </motion.h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              {pillars.map((pillar, i) => (
+                <motion.div
+                  key={pillar.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="rounded-xl border border-border/60 bg-background p-4 md:p-5"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-primary/10">
+                      <Gift className="h-4 w-4 text-primary" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <h4 className="text-base font-semibold text-foreground mb-1.5">
+                        {pillar.title}
+                      </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {pillar.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Payback */}
+          <motion.div
+            {...fadeUp}
+            className="rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-10"
+          >
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3">
+              Retorno sobre o Investimento (Payback)
+            </h3>
+            <p className="text-base md:text-lg text-foreground leading-relaxed max-w-[75ch] font-medium">
+              O investimento inicial do parque de tags é amortizado ao longo do tempo,
+              transformando a gestão de lixo municipal em uma operação com superávit de quase
+              R$ 5 milhões por ano a partir do segundo ano.
+            </p>
+          </motion.div>
         </div>
       </section>
     </div>

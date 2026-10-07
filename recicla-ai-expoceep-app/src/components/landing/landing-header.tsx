@@ -27,8 +27,8 @@ function LandingHeader() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-background/90 backdrop-blur-md border-b border-border/50"
-          : "bg-transparent"
-      }`}
+          : "bg-transparent"}`
+      }
     >
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-14 md:h-16">
@@ -40,14 +40,14 @@ function LandingHeader() {
             </span>
           </button>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6">
-            {[
-              { label: "Como funciona", href: "#como-funciona" },
-              { label: "Funcionalidades", href: "#features" },
-              { label: "Perguntas", href: "#faq" },
-              { label: "Sobre", href: "/about" },
-            ].map((link) => (
+{/* Desktop nav */}
+  <nav className="hidden md:flex items-center gap-6">
+    {[
+      { label: "Sobre", href: "/about" },
+      { label: "Como funciona", href: "#como-funciona" },
+      { label: "Funcionalidades", href: "#features" },
+      { label: "Perguntas", href: "#faq" },
+    ].map((link) => (
               <button
                 key={link.href}
                 type="button"
@@ -135,22 +135,19 @@ function LandingHeader() {
                   Funcionalidades
                 </a>
                 <a
+                  href="/about"
+                  onClick={() => setMenuOpen(false)}
+                  className="py-2.5 text-base text-foreground hover:text-success transition-colors"
+                >
+                  Sobre
+                </a>
+                <a
                   href="#faq"
                   onClick={() => setMenuOpen(false)}
                   className="py-2.5 text-base text-foreground hover:text-success transition-colors"
                 >
                   Perguntas
                 </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push("/about");
-                  }}
-                  className="py-2.5 text-base text-foreground hover:text-success transition-colors text-left"
-                >
-                  Sobre
-                </button>
                 <hr className="border-border" />
                 <button
                   onClick={() => { setMenuOpen(false); router.push("/login"); }}
