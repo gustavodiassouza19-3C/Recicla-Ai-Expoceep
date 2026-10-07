@@ -10,10 +10,23 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { SplashScreen } from "@/components/splash-screen";
+import { ArrowLeft } from "lucide-react";
 import { AuthGradientBackground } from "@/components/auth/auth-gradient-background";
 import { isAdminTipo } from "@/lib/roles";
 import { Repeat2 } from "lucide-react";
 import { animate } from "animejs";
+
+const BackToLoginLink = () => (
+  <div className="mt-6">
+    <Link
+      href="/login"
+      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+      Voltar ao login
+    </Link>
+  </div>
+);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -180,6 +193,8 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          <BackToLoginLink />
         </div>
 
         <div className="relative hidden flex-col items-center justify-center gap-6 overflow-hidden bg-auth-panel p-10 lg:flex lg:border-l lg:border-auth-panel-border">
