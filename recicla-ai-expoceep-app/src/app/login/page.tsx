@@ -186,7 +186,7 @@ export default function LoginPage() {
             </p>
             <p className="text-sm text-muted-foreground">
               <Link
-                href="/como-funciona"
+                href="/about"
                 className="inline-flex min-h-11 items-center text-success hover:underline font-semibold"
               >
                 Como funciona?
