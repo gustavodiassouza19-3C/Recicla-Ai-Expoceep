@@ -305,7 +305,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data: { nome, sexo, idade, household_size: householdSize },
         // Sem isto o Supabase manda o link de confirmacao para a Site URL
         // configurada no painel, que pode nao ser o dominio deste deploy.
-        emailRedirectTo: getSitePath("/"),
+        // /confirm-email e a tela especial de sucesso com o atalho pro login.
+        emailRedirectTo: getSitePath("/confirm-email"),
       },
     });
     if (error) return { error: error.message };
