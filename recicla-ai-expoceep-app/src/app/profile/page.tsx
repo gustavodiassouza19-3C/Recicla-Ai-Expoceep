@@ -9,9 +9,10 @@ import { usePoints } from "@/contexts/points-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
-import { fetchImpact, fetchMyTags } from "@/lib/api";
+import { fetchImpact, fetchMyTags, fetchTagCatalog, registerRecycling, type TagCatalogItem } from "@/lib/api";
 import { formatDate, getEcoProgress, getInitials } from "@/lib/eco-level";
 import { toast } from "sonner";
 import {
@@ -40,6 +41,8 @@ import {
   Cloud,
   Droplets,
   Fingerprint,
+  Wifi,
+  Plus,
 } from "lucide-react";
 
 type ThemeOption = "light" | "dark" | "system";
@@ -76,6 +79,12 @@ export default function ProfilePage() {
   const [co2Kg, setCo2Kg] = useState(0);
   const [waterLiters, setWaterLiters] = useState(0);
   const [tagsCount, setTagsCount] = useState(0);
+
+  // Tag catalog state (lista completa com status para cadastro no perfil)
+  const [catalogoTags, setCatalogoTags] = useState<TagCatalogItem[]>([]);
+  const [minhasTagIds, setMinhasTagIds] = useState<Set<number>>(new Set());
+  const [carregandoTags, setCarregandoTags] = useState(true);
+  const [cadastrandoTagId, setCadastrandoTagId] = useState<number | null>(null);
 
   // Theme & Logout State
   const [theme, setTheme] = useState<ThemeOption>("system");
@@ -222,15 +231,27 @@ export default function ProfilePage() {
         // Non-critical stat
       }
 
-      // 3. Fetch Tags count
+      // 3. Fetch Tags: as minhas (contador) e o catalogo completo
       try {
         const tags = await fetchMyTags();
         if (isMounted && Array.isArray(tags)) {
           setTagsCount(tags.length);
+          setMinhasTagIds(new Set(tags.map((tag) => tag.id)));
         }
       } catch {
         // Non-critical stat
       }
+
+      // 4. Catalogo de tags com status, para a secao de cadastro
+      try {
+        const catalogo = await fetchTagCatalog();
+        if (isMounted && Array.isArray(catalogo)) {
+          setCatalogoTags(catalogo);
+        }
+      } catch {
+        // Non-critical
+      }
+      if (isMounted) setCarregandoTags(false);
     }
 
     loadData();
@@ -389,6 +410,29 @@ export default function ProfilePage() {
   };
 
   const householdPresets = [1, 2, 3, 4, 5];
+
+  // Vincula uma tag do catalogo a conta do usuario. O backend faz o claim
+  // atomico (status -> em_uso) e registra a entrega; aqui so atualizamos a
+  // lista e o saldo de pontos apos o sucesso.
+  const handleCadastrarTag = async (tag: TagCatalogItem) => {
+    if (cadastrandoTagId !== null) return;
+    setCadastrandoTagId(tag.id);
+    try {
+      await registerRecycling(tag.codigo_nfc);
+      const [catalogo, minhas] = await Promise.all([fetchTagCatalog(), fetchMyTags()]);
+      setCatalogoTags(catalogo);
+      setMinhasTagIds(new Set(minhas.map((t) => t.id)));
+      setTagsCount(minhas.length);
+      refetchPoints();
+      toast.success("Tag cadastrada na sua conta!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao cadastrar a tag."
+      );
+    } finally {
+      setCadastrandoTagId(null);
+    }
+  };
 
   if (authLoading || !user) {
     return (
@@ -637,6 +681,103 @@ export default function ProfilePage() {
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5">Identificadores</p>
             </div>
+          </div>
+        </motion.section>
+
+        {/* Tag catalog - cadastro rapido na conta */}
+        <motion.section
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
+          className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4"
+        >
+          <div>
+            <div className="flex items-center gap-2">
+              <Wifi className="h-4 w-4 text-success" />
+              <h2 className="text-base font-bold tracking-tight text-foreground">
+                Tags NFC
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Toque em uma tag disponível para cadastrá-la na sua conta.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {carregandoTags ? (
+              [0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-xl" />
+              ))
+            ) : catalogoTags.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma tag cadastrada no sistema.
+              </p>
+            ) : (
+              catalogoTags.map((tag) => {
+                const minha = minhasTagIds.has(tag.id);
+                const disponivel =
+                  tag.status === "disponivel" || tag.status === "ativa";
+                const podeCadastrar =
+                  disponivel && !minha && cadastrandoTagId === null;
+                const emAndamento = cadastrandoTagId === tag.id;
+
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    disabled={!podeCadastrar}
+                    onClick={() => void handleCadastrarTag(tag)}
+                    aria-label={
+                      podeCadastrar
+                        ? `Cadastrar tag ${tag.codigo_nfc} na sua conta`
+                        : undefined
+                    }
+                    className={`w-full min-h-11 flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all touch-manipulation select-none text-left ${
+                      minha
+                        ? "border-border/30 bg-muted/20 cursor-default"
+                        : disponivel
+                          ? "border-success/30 bg-success/5 hover:border-success/60 hover:bg-success/10 active:scale-[0.98] cursor-pointer"
+                          : "border-border/30 bg-muted/20 opacity-70 cursor-not-allowed"
+                    }`}
+                  >
+                    <QrCode
+                      className={`h-4 w-4 shrink-0 ${
+                        disponivel && !minha
+                          ? "text-success"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                    <span className="font-mono text-sm font-bold text-foreground flex-1 truncate">
+                      {tag.codigo_nfc}
+                    </span>
+
+                    {minha ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                        <Badge variant="success">Sua tag</Badge>
+                      </>
+                    ) : emAndamento ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-success shrink-0" />
+                    ) : disponivel ? (
+                      <>
+                        <Badge variant="success">Disponível</Badge>
+                        <Plus className="h-4 w-4 text-success shrink-0" />
+                      </>
+                    ) : (
+                      <Badge
+                        variant={tag.status === "em_uso" ? "warning" : "default"}
+                      >
+                        {tag.status === "em_uso"
+                          ? "Em uso"
+                          : tag.status === "indisponivel"
+                            ? "Indisponível"
+                            : tag.status}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })
+            )}
           </div>
         </motion.section>
 
